@@ -1,7 +1,11 @@
+# SPDX-FileCopyrightText: 2026 punkzebub <punkzebub@gmail.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 - type: species
   id: Vulpkanin
   name: species-name-vulpkanin
-  roundStart: false # Trauma
+  roundStart: true # Whiskey Station - restored for playtest
   prototype: MobVulpkanin
   defaultSkinTone: "#5a3f2d"
   dollPrototype: AppearanceVulpkanin

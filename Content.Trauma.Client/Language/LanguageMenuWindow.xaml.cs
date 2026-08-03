@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 punkzebub <punkzebub@gmail.com>
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using Content.Trauma.Client.Language.Systems;
@@ -83,7 +84,7 @@ public sealed partial class LanguageMenuWindow : DefaultWindow
             HorizontalExpand = true
         };
 
-        var button = new Button { Text = "Choose" };
+        var button = new Button { Text = Loc.GetString("language-menu-choose") };
         button.OnPressed += _ => OnLanguageChosen(language);
         state.Button = button;
 

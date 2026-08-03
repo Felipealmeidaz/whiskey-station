@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 punkzebub <punkzebub@gmail.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 - type: guideEntry
   id: Species
   name: guide-entry-species
@@ -12,7 +16,7 @@
   - SlimePerson
   - Vox
   # <Trauma>
-  #- Vulpkanin
+  - Vulpkanin # Whiskey Station - restored for playtest
   - IPC
   - Plasmaman
   - Decapoid
@@ -58,8 +62,7 @@
   name: species-name-vox
   text: "/ServerInfo/Guidebook/Mobs/Vox.xml"
 
-# Trauma
-#- type: guideEntry
-#  id: Vulpkanin
-#  name: species-name-vulpkanin
-#  text: "/ServerInfo/Guidebook/Mobs/Vulpkanin.xml"
+- type: guideEntry # Whiskey Station - restored for playtest
+  id: Vulpkanin
+  name: species-name-vulpkanin
+  text: "/ServerInfo/Guidebook/Mobs/Vulpkanin.xml"

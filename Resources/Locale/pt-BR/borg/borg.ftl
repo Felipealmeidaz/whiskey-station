@@ -1,0 +1,53 @@
+# SPDX-FileCopyrightText: 2026 punkzebub <punkzebub@gmail.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+borg-player-not-allowed = O cérebro não cabe!
+borg-player-not-allowed-eject = O cérebro foi expelido do chassi!
+borg-panel-not-open = O painel do ciborgue não está aberto...
+borg-mind-added = {CAPITALIZE($name)} foi ativado!
+borg-mind-removed = {CAPITALIZE($name)} foi desligado!
+borg-module-too-many = Não há espaço para outro módulo...
+borg-module-duplicate = Este módulo já está instalado neste ciborgue...
+borg-module-whitelist-deny = Este módulo não cabe neste tipo de ciborgue...
+borg-module-incompatible = Este módulo não é compatível com {$existing}...
+borg-module-prerequisite-unfulfilled = Este módulo precisa de outro módulo para funcionar...
+borg-module-action-name = Ativar {$moduleName}
+borg-module-action-description = Selecione {$moduleName} para poder usar as ferramentas fornecidas.
+borg-construction-guide-string = Os membros e o torso do ciborgue devem ser conectados ao endoesqueleto.
+borg-ui-menu-title = Interface do ciborgue
+borg-ui-charge-label = Carga: {$charge}%
+borg-ui-no-brain = Nenhum cérebro presente
+borg-ui-remove-battery = Remover
+borg-ui-modules-label = Módulos:
+borg-ui-module-counter = {$actual}/{$max}
+borg-transponder-disabled-popup = Um cérebro é lançado pelo topo de {$name}!
+borg-transponder-disabling-popup = Seu transponder começa a bloquear seu acesso ao chassi!
+borg-transponder-destroying-popup = A autodestruição de {$name} começa a apitar!
+borg-transponder-emagged-disabled-popup = As luzes do seu transponder se apagam!
+borg-transponder-emagged-destroyed-popup = O fusível do seu transponder queima!
+borg-select-type-menu-title = Selecionar tipo de chassi
+borg-select-type-menu-bottom-text = A escolha do chassi é irreversível
+borg-select-type-menu-available = Tipos disponíveis
+borg-select-type-menu-information = Informações
+borg-select-type-menu-select-type = Selecione um tipo para ver as informações
+borg-select-type-menu-confirm = Confirmar seleção
+borg-select-type-menu-guidebook = Guidebook
+borg-type-generic-name = Genérico
+borg-type-generic-desc = Faz de tudo um pouco, sem se especializar. Execute tarefas variadas na estação ou ajude o departamento de Ciência que construiu você.
+borg-type-generic-transponder = ciborgue genérico
+borg-type-engineering-name = Engenharia
+borg-type-engineering-desc = Ajude a equipe de Engenharia a construir a estação, reparar danos e resolver problemas elétricos ou atmosféricos.
+borg-type-engineering-transponder = ciborgue de engenharia
+borg-type-mining-name = Salvamento
+borg-type-mining-desc = Junte-se ao Salvamento para minerar materiais, vasculhar destroços e enfrentar fauna hostil.
+borg-type-mining-transponder = ciborgue de salvamento
+borg-type-janitor-name = Zeladoria
+borg-type-janitor-desc = Mantenha a estação limpa e organizada: limpe derramamentos, recolha e descarte corretamente o lixo deixado por tripulantes preguiçosos.
+borg-type-janitor-transponder = ciborgue de zeladoria
+borg-type-medical-name = Medicina
+borg-type-medical-desc = Preste atendimento médico à tripulação, na ala médica ou em áreas perigosas inacessíveis a paramédicos convencionais.
+borg-type-medical-transponder = ciborgue médico
+borg-type-service-name = Serviço
+borg-type-service-desc = Ajude em diversos serviços à tripulação, de lanches e bebidas a botânica e entretenimento.
+borg-type-service-transponder = ciborgue de serviço

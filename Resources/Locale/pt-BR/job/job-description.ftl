@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: 2026 punkzebub <punkzebub@gmail.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+job-description-captain = Administre os recursos e o pessoal de toda a estação. Trabalhe com os demais chefes para manter a tripulação satisfeita e produtiva.
+job-description-ce = Administre os recursos e o pessoal da Engenharia para manter a estação intacta, funcional e habitável.
+job-description-cmo = Administre os recursos e o pessoal da Medicina para manter a tripulação viva e saudável.
+job-description-hop = Administre os recursos e o pessoal de Serviço e cumpra tarefas administrativas. Cuide da papelada, transfira funções e proteja seu corgi.
+job-description-hos = Administre os recursos e o pessoal da Segurança para manter a tripulação segura e obediente à lei.
+job-description-qm = Administre os recursos e o pessoal da Carga para manter a estação abastecida e o dinheiro circulando.
+job-description-rd = Administre os recursos e o pessoal da Ciência para que a pesquisa avance e os silícios da estação funcionem corretamente.
+job-description-cargotech = Entregue correspondências, gerencie requisições, pilote a nave de Carga para comprar e vender mercadorias e abasteça os departamentos.
+job-description-salvagespec = Use o ímã de salvamento para atrair asteroides e destroços, processe minérios e sucata, encontre saques e enfrente fauna espacial hostil.
+job-description-atmostech = Garanta ar respirável, mantenha o gerador termoelétrico ativo e sintetize gases raros para a estação.
+job-description-engineer = Mantenha a rede elétrica ativa, repare danos e execute reformas e expansões.
+job-description-technical-assistant = Aprenda os fundamentos de energizar a estação e reparar danos estruturais.
+job-description-chemist = Sintetize medicamentos, suprimentos botânicos e outros produtos químicos necessários.
+job-description-doctor = Diagnostique e trate tripulantes feridos e armazene adequadamente os cadáveres no necrotério.
+job-description-intern = Aprenda os fundamentos de administrar medicamentos, tratar ferimentos e resgatar tripulantes.
+job-description-paramedic = Resgate tripulantes em estado crítico, estabilize-os e transporte-os à ala médica.
+job-description-psychologist = Ofereça apoio emocional e aconselhamento à tripulação.
+job-description-research-assistant = Aprenda os fundamentos da pesquisa científica e do desenvolvimento tecnológico.
+job-description-scientist = Pesquise artefatos alienígenas e anomalias sobrenaturais para desenvolver equipamentos avançados. Construa e aprimore ciborgues.
+job-description-cadet = Aprenda os fundamentos de investigar crimes e prender criminosos.
+job-description-detective = Investigue cenas de crime com ferramentas forenses para identificar os culpados.
+job-description-security = Faça cumprir a lei, prenda criminosos e impeça que a estação caia em desordem.
+job-description-warden = Proteja a Segurança, administre o arsenal e garanta que prisioneiros sejam acusados corretamente e cumpram suas penas.
+job-description-bartender = Sirva bebidas e mantenha o bar animado.
+job-description-botanist = Cultive ingredientes frescos, ervas medicinais e suprimentos vegetais.
+job-description-chaplain = Pregue sua religião, realize cultos e funerais e opere milagres com seu livro sagrado.
+job-description-chef = Alimente a tripulação, abata e descarte animais mortos e ajude a manter o bar animado.
+job-description-clown = Divirta a tripulação com palhaçadas e piadas terríveis e mantenha uma rivalidade leve com o mímico.
+job-description-janitor = Mantenha a estação limpa, recicle lixo em matérias-primas e ajude a exterminar pragas.
+job-description-lawyer = Garanta representação e julgamento justo aos acusados. Informe direitos e organize julgamentos, processos e acordos.
+job-description-librarian = Organize a biblioteca e ofereça materiais educativos, histórias e jogos de mesa.
+job-description-mime = Divirta a tripulação com arte performática silenciosa e mantenha uma rivalidade leve com o palhaço.
+job-description-musician = Divirta a tripulação com seus talentos musicais.
+job-description-passenger = Aproveite sua estadia na estação sem nenhuma obrigação!
+job-description-reporter = Informe e divirta a tripulação com câmeras sem fio e boletins de notícias.
+job-description-serviceworker = Ajude o bar e a cozinha a alimentar a tripulação.
+job-description-borg = Use seu chassi robótico para executar várias tarefas especializadas.
+job-description-station-ai = Acesse remotamente câmeras, eclusas, rádio e outros dispositivos eletrônicos a partir da segurança de seu núcleo.
+job-description-centcommoff = Atue como representante junto à mais nova estação de última geração da frota NanoTrasen.
+job-description-ertchaplain = Garanta os últimos ritos à tripulação.
+job-description-ertengineer = Garanta energia e ar limpo à estação.
+job-description-ertjanitor = Garanta que a estação seja completamente limpa e esterilizada.
+job-description-ertleader = Lidere a Equipe de Resposta a Emergências para proteger e preservar os bens da NanoTrasen.
+job-description-ertmedic = Garanta tratamento aos tripulantes feridos.
+job-description-ertsecurity = Elimine todas as ameaças à estação.
+job-description-visitor = Aproveite sua visita à estação!
