@@ -243,9 +243,12 @@ public abstract partial class SharedKnowledgeSystem : CommonKnowledgeSystem
     /// </summary>
     public void TransferKnowledge(EntityUid ent, EntityUid otherHolder)
     {
-        if (TryGetAllKnowledgeUnits(ent) is not { } found)
+        if (GetContainer(ent) is not { } sourceContainer ||
+            TryGetAllKnowledgeUnits(ent) is not { } found)
             return;
 
+        var activeMartialArt = sourceContainer.Comp.ActiveMartialArt;
+        var activeLanguage = sourceContainer.Comp.ActiveLanguage;
         var mobContainer = EnsureKnowledgeContainer(otherHolder);
         if (mobContainer.Comp.Container is not { } container)
             return;
@@ -258,6 +261,12 @@ public abstract partial class SharedKnowledgeSystem : CommonKnowledgeSystem
                 mobContainer.Comp.KnowledgeDict[id] = knowledgeEnt.Owner;
         }
         ClearKnowledge(ent, false);
+
+        if (activeMartialArt is { } martialArt && mobContainer.Comp.KnowledgeDict.ContainsValue(martialArt))
+            ChangeMartialArts(mobContainer, otherHolder, martialArt);
+
+        if (activeLanguage is { } language && mobContainer.Comp.KnowledgeDict.ContainsValue(language))
+            ChangeLanguage(mobContainer, language);
     }
 
     /// <summary>

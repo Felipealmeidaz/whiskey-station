@@ -274,21 +274,55 @@
   abstract: true
   id: BaseCQCHeadCombo
   userConditions:
-  - !type:TargetingCondition
+  - !type:TargetBodyPartCondition
     target: Head
   conditions:
   - !type:HasOrgan
     organCategory: Head
   - !type:PulledByUser
   - !type:StaminaCritical
+  - !type:GrabStageCondition
+    minimumStage: Suffocate
 
 - type: combo
-  abstract: true # TODO: enable if finished
   parent: BaseCQCHeadCombo
   id: CQCNeckSnap
   attacks:
   - Harm
-  # TODO: break neck, damage head until dead
+  userEffects:
+  - !type:PlaySoundEffect
+    sound: /Audio/Weapons/genhit3.ogg
+  - !type:PopupMessage
+    messages:
+    - cqc-neck-snap
+  opponentEffects:
+  - !type:HealthChange
+    targetPart: Head
+    damage:
+      types:
+        Blunt: 200
+  - !type:StopPull
   levelRequired: 60
 
-# TODO: choke out
+# Leg sweep
+
+- type: combo
+  id: CQCLegSweep
+  attacks:
+  - Harm
+  userConditions:
+  - !type:StandingCondition
+    inverted: true
+  conditions:
+  - !type:StandingCondition
+  userEffects:
+  - !type:PlaySoundEffect
+    sound: /Audio/Weapons/genhit2.ogg
+  - !type:PopupMessage
+    messages:
+    - cqc-leg-sweep
+  opponentEffects:
+  - !type:LegSweep
+    time: 2.5
+  giveExperience: false
+  levelRequired: 0

@@ -134,9 +134,15 @@ public partial class MartialArtsSystem
             _effects.ApplyEffects(performer, proto.UserEffects, scale, user: performer);
         if (proto.OpponentEffects != null)
             _effects.ApplyEffects(target, proto.OpponentEffects, scale, user: performer);
+        if (proto.CombinedEffects != null)
+        {
+            _effects.ApplyEffects(performer, proto.CombinedEffects, scale, user: performer);
+            _effects.ApplyEffects(target, proto.CombinedEffects, scale, user: performer);
+        }
 
         ent.Comp.LastAttacks.Clear();
         Dirty(ent);
+        _speed.RefreshMovementSpeedModifiers(performer);
 
         var ev = new ComboPerformedEvent(performer, target);
         RaiseLocalEvent(ent, ref ev);

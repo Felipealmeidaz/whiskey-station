@@ -16,6 +16,7 @@ namespace Content.IntegrationTests.Tests._Trauma;
 public sealed class KnowledgeTest : GameTest
 {
     public static readonly EntProtoId Human = "MobHuman";
+    public static readonly EntProtoId HellRip = "MartialArtHellRip";
 
     /// <summary>
     /// Makes sure that humans brains can go in and out.
@@ -112,6 +113,34 @@ public sealed class KnowledgeTest : GameTest
             }
 
             Assert.That(missing, Is.Empty, $"The following languages are missing their 'Language<ID>' entity prototypes: \n{string.Join("\n", missing)}");
+        });
+    }
+
+    [Test]
+    public async Task TestActiveMartialArtTransfer()
+    {
+        var server = Pair.Server;
+        var entMan = server.EntMan;
+        var knowledge = entMan.System<SharedKnowledgeSystem>();
+
+        await server.WaitAssertion(() =>
+        {
+            var source = entMan.SpawnEntity(Human, MapCoordinates.Nullspace);
+            var target = entMan.SpawnEntity(Human, MapCoordinates.Nullspace);
+            var sourceContainer = knowledge.GetContainer(source);
+
+            Assert.That(sourceContainer, Is.Not.Null);
+            var martialArt = knowledge.EnsureKnowledge(sourceContainer!.Value, HellRip, 88);
+            Assert.That(martialArt, Is.Not.Null);
+
+            knowledge.ChangeMartialArts(sourceContainer.Value, source, martialArt!.Value);
+            knowledge.TransferKnowledge(source, target);
+
+            Assert.That(knowledge.GetActiveMartialArt(source), Is.Null);
+            Assert.That(knowledge.GetActiveMartialArt(target), Is.EqualTo(martialArt.Value.Owner));
+
+            entMan.DeleteEntity(source);
+            entMan.DeleteEntity(target);
         });
     }
 }

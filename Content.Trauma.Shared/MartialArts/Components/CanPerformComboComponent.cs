@@ -29,12 +29,6 @@ public sealed partial class CanPerformComboComponent : Component
     public List<ComboAttackType> LastAttacks = new();
 
     /// <summary>
-    /// Move storage.
-    /// </summary>
-    [DataField]
-    public List<ComboAttackType>? LastAttacksSaved = new();
-
-    /// <summary>
     /// Current combo list.
     /// </summary>
     [ViewVariables]

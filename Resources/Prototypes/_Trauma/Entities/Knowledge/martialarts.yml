@@ -23,6 +23,8 @@
     - CQCSlam
     - CQCConsecutiveAdvanced
     - CQCKickAdvanced
+    - CQCNeckSnap
+    - CQCLegSweep
 
 - type: entity
   parent: MartialArtCQC

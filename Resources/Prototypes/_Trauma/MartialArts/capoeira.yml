@@ -10,13 +10,17 @@
   - !type:PlaySoundEffect
     sound: /Audio/Weapons/genhit3.ogg
   opponentEffects:
-  - !type:ModifyParalysis
+  - !type:ModifyKnockdown
     time: 1
+    drop: false
   - !type:HealthChange
     targetPart: Chest
     damage:
       types:
-        Slash: 5
+        Blunt: 5
+  - !type:StopPull
+  - !type:GrabThrow
+    dropItems: false
   levelRequired: 10
 
 - type: combo
@@ -33,7 +37,10 @@
     targetPart: Chest
     damage:
       types:
-        Slash: 15
+        Blunt: 15
+  - !type:ModifyStatusEffect
+    effectProto: CircleKickSlowdownStatusEffect
+    time: 5
   levelRequired: 10
 
 - type: combo
@@ -50,9 +57,10 @@
     targetPart: Chest
     damage:
       types:
-        Slash: 10
-  - !type:ModifyParalysis
+        Blunt: 10
+  - !type:ModifyKnockdown
     time: 1
+    drop: false
   - !type:TakeStaminaDamage
     amount: 10
   levelRequired: 10
@@ -72,9 +80,10 @@
     targetPart: Chest
     damage:
       types:
-        Slash: 25
-  - !type:ModifyParalysis
+        Blunt: 25
+  - !type:ModifyKnockdown
     time: 2
+    drop: false
   - !type:TakeStaminaDamage
     amount: 15
   levelRequired: 10
@@ -84,7 +93,15 @@
   attacks:
   - Disarm
   - Disarm
+  userConditions:
+  - !type:StandingCondition
+    inverted: true
+  conditions:
+  - !type:SelfTargetCondition
   userEffects:
+  - !type:RemoveComponents
+    components:
+    - type: KnockedDown
   - !type:SetStanding
     standing: true
     force: true

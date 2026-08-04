@@ -176,7 +176,8 @@ public abstract partial class SharedKnowledgeSystem
         {
             if (GetKnowledge(brain, id) is { } unit && TryComp<MartialArtsKnowledgeComponent>(unit, out var martial))
             {
-                martial.Blocked = --martial.TemporaryBlockedCounter == 0;
+                martial.TemporaryBlockedCounter = Math.Max(0, martial.TemporaryBlockedCounter - 1);
+                martial.Blocked = martial.TemporaryBlockedCounter > 0;
                 Dirty(unit, martial);
             }
         }

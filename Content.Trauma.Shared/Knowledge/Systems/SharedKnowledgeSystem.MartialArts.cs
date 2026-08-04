@@ -75,6 +75,7 @@ public abstract partial class SharedKnowledgeSystem
             _actions.RemoveAction(user, action);
         }
         ent.Comp.ComboActions.Clear();
+        ent.Comp.QueuedPrototype = null;
         Dirty(ent);
     }
 

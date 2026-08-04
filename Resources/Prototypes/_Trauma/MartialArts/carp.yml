@@ -40,8 +40,9 @@
   opponentEffects:
   - !type:TakeStaminaDamage
     amount: 60
-  - !type:ModifyParalysis
+  - !type:ModifyKnockdown
     time: 6
+    drop: false
   - !type:HealthChange
     targetPart: Chest
     damage:
@@ -54,7 +55,21 @@
   attacks:
   - Harm
   - Disarm
+  conditions:
+  - !type:StandingCondition
+  userEffects:
+  - !type:PlaySoundEffect
+    sound: /Audio/Weapons/genhit2.ogg
   opponentEffects:
   - !type:TakeStaminaDamage
     amount: 25
+  - !type:HealthChange
+    targetPart: Chest
+    damage:
+      types:
+        Slash: 10
+  - !type:StopPull
+  - !type:GrabThrow
+    speed: 5
+    dropItems: false
   levelRequired: 26
