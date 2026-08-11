@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Antiparasitário. Fecha o buraco de os tipos Parasite não terem tratamento
+# nenhum, do mesmo jeito que Spaceacilin trata Bacterial e Devirate trata Viral.
+#
+# Nos parasitas vocais o tratamento tem uma regra própria que emerge do
+# LanguageDiseaseSystem: falar o idioma infectado devolve a taxa de infecção ao
+# valor de gatilho, então o paciente que não fica calado anula o próprio
+# tratamento.
+- type: reagent
+  id: Vermirate
+  name: reagent-name-vermirate
+  group: Medicine
+  desc: reagent-desc-vermirate
+  physicalDesc: reagent-physical-desc-wormy
+  flavor: bitter
+  color: "#7d6b4b"
+  metabolisms:
+    Bloodstream:
+      effects:
+      - !type:DiseaseProgressChange
+        affectedType: Parasite
+        progressModifier: -0.08 # strong
+      - !type:HealthChange
+        damage:
+          types:
+            Poison: 0.5

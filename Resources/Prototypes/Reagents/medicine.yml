@@ -622,6 +622,11 @@
     Bloodstream:
       metabolismRate: 0.1
       effects:
+      # <Whiskey> quimioterapia: trata o câncer ao preço de radiação e queimadura
+      - !type:DiseaseProgressChange
+        affectedType: OwnCells
+        progressModifier: -0.06
+      # </Whiskey>
       - !type:HealthChange
         damage:
           types:

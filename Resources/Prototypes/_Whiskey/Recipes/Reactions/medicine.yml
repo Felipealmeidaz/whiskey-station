@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Mesma estrutura das outras curas de virologia: Immurin como base, mais um
+# reagente que define o alvo. Spaceacilin usa Dylovene, Devirate usa Copper,
+# e o enxofre é o antiparasitário clássico.
+- type: reaction
+  id: Vermirate
+  reactants:
+    Immurin:
+      amount: 2
+    Sulfur:
+      amount: 1
+  products:
+    Vermirate: 2
