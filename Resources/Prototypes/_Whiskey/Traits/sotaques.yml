@@ -9,7 +9,7 @@
   components:
   - type: RegionalAccent
     accent: Carioca
-    prefixCount: 5
+    prefixCount: 6
     suffixCount: 5
     questionCount: 3
     exclamationCount: 3

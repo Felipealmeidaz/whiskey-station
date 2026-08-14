@@ -22,16 +22,15 @@ namespace Content.Shared._Whiskey.Speech;
 /// vira candidato a ser trocado também.
 /// </para>
 /// </remarks>
-public sealed class RegionalAccentSystem : RelayAccentSystem<RegionalAccentComponent>
+public sealed partial class RegionalAccentSystem : RelayAccentSystem<RegionalAccentComponent>
 {
     private static readonly Regex RegexUltimaPalavra = new(@"(\S+)$");
     private static readonly Regex RegexTerminaPergunta = new(@"\?+\s*$");
     private static readonly Regex RegexTerminaExclamacao = new(@"!+\s*$");
     private static readonly Regex RegexPontuacaoFinal = new(@"([.!?]+$)(?!.*[.!?])|(?<![.!?])$");
 
-    [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly ReplacementAccentSystem _replacement = default!;
+    [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private ReplacementAccentSystem _replacement = default!;
 
     public override string Accentuate(string message, Entity<RegionalAccentComponent>? ent = null)
     {

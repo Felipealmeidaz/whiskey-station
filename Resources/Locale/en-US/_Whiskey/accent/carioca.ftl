@@ -118,12 +118,64 @@ accent-carioca-words-replace-39 = o mano
 accent-carioca-words-40 = ela
 accent-carioca-words-replace-40 = a mina
 
+accent-carioca-words-41 = mano
+accent-carioca-words-replace-41 = cria
+
+accent-carioca-words-42 = corredor
+accent-carioca-words-replace-42 = viela
+
+accent-carioca-words-43 = corredores
+accent-carioca-words-replace-43 = vielas
+
+accent-carioca-words-44 = porta
+accent-carioca-words-replace-44 = portão
+
+accent-carioca-words-45 = esperto
+accent-carioca-words-replace-45 = cabeça
+
+accent-carioca-words-46 = inteligente
+accent-carioca-words-replace-46 = cabeça
+
+accent-carioca-words-47 = chefe
+accent-carioca-words-replace-47 = frente
+
+accent-carioca-words-48 = morreu
+accent-carioca-words-replace-48 = virou
+
+accent-carioca-words-49 = morrer
+accent-carioca-words-replace-49 = virar
+
+accent-carioca-words-50 = casa
+accent-carioca-words-replace-50 = quebrada
+
+accent-carioca-words-51 = difícil
+accent-carioca-words-replace-51 = sinistro
+
+accent-carioca-words-52 = ruim
+accent-carioca-words-replace-52 = zika
+
+accent-carioca-words-53 = segurança
+accent-carioca-words-replace-53 = caveira
+
+accent-carioca-words-54 = ciência
+accent-carioca-words-replace-54 = nerd
+
+accent-carioca-words-55 = engenharia
+accent-carioca-words-replace-55 = eletricista
+
+accent-carioca-words-56 = serviço
+accent-carioca-words-replace-56 = CLT
+
+accent-carioca-words-57 = emprego
+accent-carioca-words-replace-57 = trampo
+
 # Abertura. Só bordão carioca: "meu" e "mano" foram para o paulista.
 accent-carioca-prefix-1 = Óh,
 accent-carioca-prefix-2 = Pô,
 accent-carioca-prefix-3 = Ó só,
 accent-carioca-prefix-4 = Aí,
 accent-carioca-prefix-5 = Rapá,
+accent-carioca-prefix-6 = Pega a visão,
 
 accent-carioca-suffix-1 = , morou
 accent-carioca-suffix-2 = , tá ligado
