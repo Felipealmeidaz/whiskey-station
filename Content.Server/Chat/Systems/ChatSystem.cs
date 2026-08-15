@@ -46,6 +46,12 @@ public sealed partial class ChatSystem : SharedChatSystem
     [Dependency] private CommonScryingOrbSystem _scrying = default!;
     [Dependency] private CollectiveMindUpdateSystem _collectiveMind = default!;
     [Dependency] private CommonLanguageSystem _language = default!;
+
+    // <Whiskey> - ligado só durante o reenvio de uma fala já traduzida, que
+    // acontece na thread do jogo e termina antes de qualquer outra fala ser
+    // processada, então um campo simples basta.
+    private bool _reenviandoTraducao;
+    // </Whiskey>
     // </Trauma>
     [Dependency] private IReplayRecordingManager _replay = default!;
     [Dependency] private IConfigurationManager _configurationManager = default!;
@@ -184,8 +190,11 @@ public sealed partial class ChatSystem : SharedChatSystem
         if (TryComp<CollectiveMindComponent>(source, out var collective))
             _collectiveMind.UpdateCollectiveMind(source, collective);
 
-        if (player != null && _chatManager.HandleRateLimit(player) != RateLimitStatus.Allowed)
+        // <Whiskey> - não cobrar duas vezes pela mesma fala, ver o reenvio da
+        // tradução mais abaixo.
+        if (!_reenviandoTraducao && player != null && _chatManager.HandleRateLimit(player) != RateLimitStatus.Allowed)
             return;
+        // </Whiskey>
 
         // Sus
         if (player?.AttachedEntity is { Valid: true } entity && source != entity)
@@ -286,9 +295,26 @@ public sealed partial class ChatSystem : SharedChatSystem
         // Aqui, e não antes, porque neste ponto a mensagem já foi higienizada e
         // o rádio já retornou, então só sobra fala local e o prefixo de canal
         // não corre o risco de ir parar no tradutor.
+        // A frase traduzida volta por aqui, e por isso o limite de taxa é
+        // ignorado no reenvio: quem falou já pagou por esta fala na primeira
+        // passagem. Sem isso cada frase traduzida custaria o dobro, e quem usa
+        // tradutor seria calado na metade do tempo dos outros. Pior: se o
+        // limite estourasse justo no reenvio, a fala sumiria depois de já ter
+        // sido aceita.
         var interceptEv = new _Whiskey.Translation.SpeechInterceptEvent(source, message, desiredType,
-            traduzida => TrySendInGameICMessage(source, traduzida, desiredType, range, hideLog, shell, player,
-                nameOverride, false, ignoreActionBlocker, colorOverride, languageOverride));
+            traduzida =>
+            {
+                _reenviandoTraducao = true;
+                try
+                {
+                    TrySendInGameICMessage(source, traduzida, desiredType, range, hideLog, shell, player,
+                        nameOverride, false, ignoreActionBlocker, colorOverride, languageOverride);
+                }
+                finally
+                {
+                    _reenviandoTraducao = false;
+                }
+            });
         RaiseLocalEvent(source, interceptEv);
 
         if (interceptEv.Interceptado)

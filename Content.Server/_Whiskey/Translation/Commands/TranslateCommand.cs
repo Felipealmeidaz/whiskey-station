@@ -1,4 +1,5 @@
 using System.Linq;
+using Content.Server.Administration;
 using Content.Server.Chat.Systems;
 using Content.Shared.Administration;
 using Content.Shared.Chat;
@@ -8,24 +9,26 @@ using Robust.Shared.Enums;
 namespace Content.Server._Whiskey.Translation.Commands;
 
 /// <summary>
-/// Traduz uma frase e fala em voz alta o resultado.
+/// Traduz uma frase e fala em voz alta o resultado. Ferramenta de teste.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Sob demanda de propósito, em vez de traduzir toda fala da estação. Traduzir
-/// tudo muda como a estação inteira soa e depende de saber o volume real de
-/// fala, que só a medição em produção responde. Um comando não muda nada para
-/// quem não usa, e já resolve o caso concreto de brasileiro e russo precisando
-/// se entender.
+/// <b>Só administração.</b> Quem joga traduz usando o tradutor, que é um item
+/// com custo: sai da sci, depende de pesquisa e dá para perder. Deixar este
+/// comando aberto para todo mundo daria de graça exatamente o que o item
+/// existe para cobrar, e a mecânica inteira perderia o sentido.
+/// </para>
+/// <para>
+/// O que sobra dele é diagnóstico: dá para conferir se o serviço de tradução
+/// responde, e qual o erro quando não responde, sem precisar entrar em jogo com
+/// um tradutor na mão.
 /// </para>
 /// <para>
 /// A tradução é assíncrona, então o comando devolve na hora e a fala sai alguns
-/// centésimos depois, quando o resultado volta. Isso significa que a ordem das
-/// falas pode inverter se alguém falar no meio, o que é o preço de não travar o
-/// servidor esperando o modelo.
+/// décimos depois, quando o resultado volta.
 /// </para>
 /// </remarks>
-[AnyCommand]
+[AdminCommand(AdminFlags.Debug)]
 public sealed partial class TranslateCommand : LocalizedEntityCommands
 {
     [Dependency] private ChatSystem _chat = default!;
