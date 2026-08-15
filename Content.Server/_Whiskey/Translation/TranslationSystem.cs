@@ -50,9 +50,23 @@ public sealed partial class TranslationSystem : EntitySystem
     private ITranslationProvider _provider = new NullTranslationProvider();
 
     /// <summary>
+    /// Traduções em andamento, e quem está esperando cada uma.
+    /// </summary>
+    /// <remarks>
+    /// Serve para não pedir duas vezes a mesma coisa. Uma fala de rádio é
+    /// entregue ouvinte por ouvinte, então cinco russos no mesmo canal pediriam
+    /// cinco traduções idênticas do mesmo texto. Com isto, o primeiro pedido
+    /// vira trabalho e os outros só entram na fila do resultado.
+    ///
+    /// Só é tocado dentro de <see cref="Translate"/> e <see cref="Update"/>, os
+    /// dois na thread do jogo, por isso não precisa de trava.
+    /// </remarks>
+    private readonly Dictionary<(string Texto, string De, string Para), List<Action<TranslationResult>>> _emVoo = new();
+
+    /// <summary>
     /// Resultados esperando para serem entregues na thread do jogo.
     /// </summary>
-    private readonly ConcurrentQueue<(Action<TranslationResult> entregar, TranslationResult resultado)> _prontos = new();
+    private readonly ConcurrentQueue<((string Texto, string De, string Para) Chave, TranslationResult Resultado)> _prontos = new();
 
     private int _pendentes;
 
@@ -170,6 +184,16 @@ public sealed partial class TranslationSystem : EntitySystem
             return;
         }
 
+        // Já tem alguém pedindo exatamente isto: entra na fila do resultado em
+        // vez de gerar trabalho novo.
+        var chave = (text, from, to);
+
+        if (_emVoo.TryGetValue(chave, out var esperando))
+        {
+            esperando.Add(aoTerminar);
+            return;
+        }
+
         if (Interlocked.Increment(ref _pendentes) > MaxPendentes)
         {
             Interlocked.Decrement(ref _pendentes);
@@ -178,10 +202,11 @@ public sealed partial class TranslationSystem : EntitySystem
             return;
         }
 
-        _ = TraduzirAsync(text, from, to, aoTerminar);
+        _emVoo[chave] = new List<Action<TranslationResult>> { aoTerminar };
+        _ = TraduzirAsync(text, from, to, chave);
     }
 
-    private async Task TraduzirAsync(string text, string from, string to, Action<TranslationResult> aoTerminar)
+    private async Task TraduzirAsync(string text, string from, string to, (string, string, string) chave)
     {
         TranslationResult resultado;
 
@@ -206,20 +231,28 @@ public sealed partial class TranslationSystem : EntitySystem
         }
 
         // Volta para a thread do jogo em vez de entregar aqui.
-        _prontos.Enqueue((aoTerminar, resultado));
+        _prontos.Enqueue((chave, resultado));
     }
 
     public override void Update(float frameTime)
     {
         while (_prontos.TryDequeue(out var item))
         {
-            try
+            if (!_emVoo.Remove(item.Chave, out var esperando))
+                continue;
+
+            foreach (var entregar in esperando)
             {
-                item.entregar(item.resultado);
-            }
-            catch (Exception exc)
-            {
-                _sawmill.Error($"Falha ao entregar tradução: {exc}");
+                try
+                {
+                    entregar(item.Resultado);
+                }
+                catch (Exception exc)
+                {
+                    // Um ouvinte com problema não pode impedir a entrega para
+                    // os outros que estavam esperando a mesma tradução.
+                    _sawmill.Error($"Falha ao entregar tradução: {exc}");
+                }
             }
         }
     }

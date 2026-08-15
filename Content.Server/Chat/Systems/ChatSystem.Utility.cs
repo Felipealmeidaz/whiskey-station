@@ -10,6 +10,7 @@ using Content.Shared.Ghost.Components;
 using Content.Shared.Players;
 using Content.Shared.Speech.Prototypes;
 using Robust.Shared.Console;
+using Robust.Shared.Enums;
 using Robust.Shared.Network;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
@@ -74,6 +75,14 @@ public sealed partial class ChatSystem
         LanguagePrototype? languageOverride = null, bool checkLOS = false, SpeechVerbPrototype? speech = null, Color? colorOverride = null) // Trauma
     {
         var language = languageOverride ?? _language.GetLanguage(source); // Trauma
+
+        // <Whiskey> - ouvintes que querem tradução, agrupados por idioma de
+        // destino. Agrupar importa: cinco russos na mesma sala pedem a mesma
+        // tradução do mesmo texto, e traduzir uma vez por ouvinte multiplicaria
+        // o custo pelo número de gente sem nenhum ganho.
+        Dictionary<string, List<(ICommonSession Sessao, bool EsconderChat)>>? porIdioma = null;
+        // </Whiskey>
+
         foreach (var (session, data) in GetRecipients(source, VoiceRange))
         {
             var entRange = MessageRangeCheck(session, data, range);
@@ -97,13 +106,122 @@ public sealed partial class ChatSystem
 
             // If the channel does not support languages, or the entity can understand the message, send the original message, otherwise send the obfuscated version
             if (channel == ChatChannel.LOOC || channel == ChatChannel.Emotes || _language.CanUnderstand(listener, language.ID))
+            {
+                // <Whiskey> - quem está com tradutor recebe no idioma dele.
+                // Dentro deste ramo de propósito: só quem já entenderia a fala
+                // recebe tradução. Quem não entende o idioma do jogo continua
+                // recebendo a versão embaralhada, senão o tradutor de idioma
+                // real furaria o sistema de idiomas fictícios.
+                if (TryIdiomaDoOuvinte(listener, source, channel, message, speech, out var destino))
+                {
+                    porIdioma ??= new Dictionary<string, List<(ICommonSession, bool)>>();
+
+                    if (!porIdioma.TryGetValue(destino, out var fila))
+                        porIdioma[destino] = fila = new List<(ICommonSession, bool)>();
+
+                    fila.Add((session, entHideChat));
+                    continue;
+                }
+                // </Whiskey>
+
                 _chatManager.ChatMessageToOne(channel, message, wrappedMessage, source, entHideChat, session.Channel, author: author);
+            }
             else
                 _chatManager.ChatMessageToOne(channel, ev.Message, ev.WrappedMessage, source, entHideChat, session.Channel, author: author);
             // </Trauma>
         }
 
+        // <Whiskey> - uma tradução por idioma presente, e não por ouvinte.
+        if (porIdioma != null && speech != null)
+        {
+            foreach (var (destino, fila) in porIdioma)
+                EntregarTraduzido(destino, fila, channel, source, name, message, speech, language, colorOverride, author);
+        }
+        // </Whiskey>
+
         _replay.RecordServerMessage(new ChatMessage(channel, message, wrappedMessage, GetNetEntity(source), null, MessageRangeHideChatForReplay(range)));
+    }
+
+    /// <summary>
+    ///     Whiskey: entrega a fala traduzida para um ouvinte que esteja com
+    ///     tradutor, em vez de mandar o texto original.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///     Devolvendo verdadeiro, quem chamou não deve mandar nada: a mensagem
+    ///     chega depois, quando a tradução volta, uns três décimos mais tarde.
+    ///     Só quem tem tradutor paga esse atraso; todo mundo em volta continua
+    ///     recebendo na hora.
+    ///     </para>
+    ///     <para>
+    ///     Falha de tradução não engole a fala, porque o resultado sempre
+    ///     carrega o texto original dentro.
+    ///     </para>
+    /// </remarks>
+    private bool TryIdiomaDoOuvinte(
+        EntityUid listener,
+        EntityUid source,
+        ChatChannel channel,
+        string message,
+        SpeechVerbPrototype? speech,
+        out string destino)
+    {
+        destino = string.Empty;
+
+        // Sem verbo de fala não dá para remontar o "Fulano diz", e é o caso de
+        // canal que não é fala, onde traduzir não faria sentido de qualquer
+        // jeito.
+        if (channel != ChatChannel.Local || speech == null || !_translation.CanTranslate)
+            return false;
+
+        // Quem falou não recebe a própria fala traduzida de volta. Se a fala
+        // dele já foi traduzida na saída, traduzir de novo aqui seria ida e
+        // volta pelo modelo, que estraga a frase e ainda mostra para ele uma
+        // versão diferente da que ele digitou.
+        if (listener == source)
+            return false;
+
+        var pergunta = new _Whiskey.Translation.ListenerLanguageEvent(listener);
+        RaiseLocalEvent(listener, pergunta);
+
+        if (pergunta.Idioma is not { } idioma)
+            return false;
+
+        if (_translation.DetectarIdioma(message) == idioma)
+            return false;
+
+        destino = idioma;
+        return true;
+    }
+
+    private void EntregarTraduzido(
+        string destino,
+        List<(ICommonSession Sessao, bool EsconderChat)> fila,
+        ChatChannel channel,
+        EntityUid source,
+        string name,
+        string message,
+        SpeechVerbPrototype speech,
+        LanguagePrototype language,
+        Color? colorOverride,
+        NetUserId? author)
+    {
+        var origem = _translation.DetectarIdioma(message);
+
+        _translation.Translate(message, origem, destino, resultado =>
+        {
+            var embrulhada = WrapPublicMessage(source, name, resultado.Text, speech, language, colorOverride);
+
+            foreach (var (sessao, esconderChat) in fila)
+            {
+                // A resposta chega décimos depois, e nesse meio tempo o jogador
+                // pode ter saído.
+                if (sessao.Status != SessionStatus.InGame)
+                    continue;
+
+                _chatManager.ChatMessageToOne(channel, resultado.Text, embrulhada, source, esconderChat, sessao.Channel, author: author);
+            }
+        });
     }
 
     /// <summary>

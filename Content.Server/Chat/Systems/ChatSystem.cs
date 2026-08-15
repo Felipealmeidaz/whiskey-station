@@ -47,6 +47,8 @@ public sealed partial class ChatSystem : SharedChatSystem
     [Dependency] private CollectiveMindUpdateSystem _collectiveMind = default!;
     [Dependency] private CommonLanguageSystem _language = default!;
 
+    [Dependency] private _Whiskey.Translation.TranslationSystem _translation = default!; // Whiskey
+
     // <Whiskey> - ligado só durante o reenvio de uma fala já traduzida, que
     // acontece na thread do jogo e termina antes de qualquer outra fala ser
     // processada, então um campo simples basta.
@@ -269,6 +271,19 @@ public sealed partial class ChatSystem : SharedChatSystem
         {
             if (TryProcessRadioMessage(source, message, out var modMessage, out var channel))
             {
+                // <Whiskey> - tradução de fala de rádio para quem está com um
+                // tradutor. Aqui o prefixo de canal já foi separado da frase,
+                // então só o texto vai para o tradutor e o roteamento fica
+                // intacto. O reenvio chama direto o envio do rádio, mantendo o
+                // canal escolhido.
+                var evRadio = new _Whiskey.Translation.SpeechInterceptEvent(source, modMessage, desiredType,
+                    traduzida => SendEntityWhisper(source, traduzida, range, channel, nameOverride, language, hideLog, ignoreActionBlocker, colorOverride));
+                RaiseLocalEvent(source, evRadio);
+
+                if (evRadio.Interceptado)
+                    return;
+                // </Whiskey>
+
                 SendEntityWhisper(source, modMessage, range, channel, nameOverride, language, hideLog, ignoreActionBlocker, colorOverride); // Goob edit & Einstein Engines - Language
                 return;
             }

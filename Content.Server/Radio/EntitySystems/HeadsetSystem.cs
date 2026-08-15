@@ -7,6 +7,7 @@ using Content.Shared.Inventory.Events;
 using Content.Shared.Radio;
 using Content.Shared.Radio.Components;
 using Content.Shared.Radio.EntitySystems;
+using Robust.Shared.Enums;
 using Robust.Shared.Network;
 using Robust.Shared.Player;
 
@@ -20,6 +21,7 @@ public sealed partial class HeadsetSystem : SharedHeadsetSystem
     // </Trauma>
     [Dependency] private INetManager _netMan = default!;
     [Dependency] private RadioSystem _radio = default!;
+    [Dependency] private _Whiskey.Translation.TranslationSystem _translation = default!; // Whiskey
 
     public override void Initialize()
     {
@@ -119,6 +121,14 @@ public sealed partial class HeadsetSystem : SharedHeadsetSystem
         if (TryComp(parent, out ActorComponent? actor))
         {
             var canUnderstand = _language.CanUnderstand(parent, args.Language.ID);
+
+            // <Whiskey> - quem está com tradutor recebe o rádio no idioma dele.
+            // Só quando já entenderia a fala, senão o tradutor de idioma real
+            // furaria o sistema de idiomas fictícios.
+            if (canUnderstand && TryEntregarTraduzido(parent, actor.PlayerSession, ref args))
+                return;
+            // </Whiskey>
+
             var msg = new MsgChatMessage
             {
                 Message = canUnderstand ? args.OriginalChatMsg : args.LanguageObfuscatedChatMsg
@@ -126,6 +136,48 @@ public sealed partial class HeadsetSystem : SharedHeadsetSystem
             _netMan.ServerSendMessage(msg, actor.PlayerSession.Channel);
         }
         // Einstein Engines - Language end
+    }
+
+    /// <summary>
+    ///     Whiskey: entrega a mensagem de rádio traduzida, se este ouvinte
+    ///     estiver com tradutor.
+    /// </summary>
+    /// <remarks>
+    ///     Devolvendo verdadeiro, quem chamou não deve mandar nada: a mensagem
+    ///     chega uns três décimos depois. Só quem tem tradutor paga o atraso, e
+    ///     falha de tradução não engole a fala, porque o resultado sempre
+    ///     carrega o texto original dentro.
+    /// </remarks>
+    private bool TryEntregarTraduzido(EntityUid ouvinte, ICommonSession sessao, ref RadioReceiveEvent args)
+    {
+        if (args.Remontar is not { } remontar || !_translation.CanTranslate)
+            return false;
+
+        // Quem falou não recebe a própria fala traduzida de volta.
+        if (ouvinte == args.MessageSource)
+            return false;
+
+        var pergunta = new _Whiskey.Translation.ListenerLanguageEvent(ouvinte);
+        RaiseLocalEvent(ouvinte, pergunta);
+
+        if (pergunta.Idioma is not { } destino)
+            return false;
+
+        var texto = args.OriginalChatMsg.Message;
+        var origem = _translation.DetectarIdioma(texto);
+
+        if (origem == destino)
+            return false;
+
+        _translation.Translate(texto, origem, destino, resultado =>
+        {
+            if (sessao.Status != SessionStatus.InGame)
+                return;
+
+            _netMan.ServerSendMessage(new MsgChatMessage { Message = remontar(resultado.Text) }, sessao.Channel);
+        });
+
+        return true;
     }
 
     // Goobstation - Whitelisted radio channel

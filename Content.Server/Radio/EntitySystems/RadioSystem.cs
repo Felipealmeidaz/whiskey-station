@@ -180,7 +180,17 @@ public sealed partial class RadioSystem : EntitySystem
         // Added GetNetEntity(messageSource), to source
         var obfuscatedWrapped = _chat.WrapMessage(null, null, channel, messageSource, name, obfuscated, speech, language, null, jobIcon, jobName);
         var notUdsMsg = new ChatMessage(ChatChannel.Radio, obfuscated, obfuscatedWrapped, GetNetEntity(messageSource), null);
-        var ev = new RadioReceiveEvent(messageSource, channel, msg, notUdsMsg, language, radioSource);
+        // <Whiskey> - a função de remontar leva junto os ingredientes do
+        // embrulho, que só existem aqui, para quem precisar entregar outro
+        // texto ao mesmo ouvinte poder reaproveitar a mesma montagem.
+        var ev = new RadioReceiveEvent(messageSource, channel, msg, notUdsMsg, language, radioSource,
+            outroTexto => new ChatMessage(
+                ChatChannel.Radio,
+                outroTexto,
+                _chat.WrapMessage(null, null, channel, messageSource, name, outroTexto, speech, language, null, jobIcon, jobName),
+                GetNetEntity(messageSource),
+                null));
+        // </Whiskey>
         // Einstein Engines - Language end
 
         var sendAttemptEv = new RadioSendAttemptEvent(channel, radioSource);

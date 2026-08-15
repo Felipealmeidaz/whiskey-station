@@ -64,6 +64,38 @@ public sealed partial class AutoTranslateSystem : EntitySystem
         // que é a maioria esmagadora.
         SubscribeLocalEvent<HoldsTranslatorComponent, SpeechInterceptEvent>(OnFalaSeguraTradutor);
         SubscribeLocalEvent<IntrinsicTranslatorComponent, SpeechInterceptEvent>(OnFalaTradutorInterno);
+
+        SubscribeLocalEvent<HoldsTranslatorComponent, ListenerLanguageEvent>(OnOuvinteSeguraTradutor);
+        SubscribeLocalEvent<IntrinsicTranslatorComponent, ListenerLanguageEvent>(OnOuvinteTradutorInterno);
+    }
+
+    private void OnOuvinteSeguraTradutor(EntityUid uid, HoldsTranslatorComponent comp, ListenerLanguageEvent args)
+    {
+        Responder(args);
+    }
+
+    private void OnOuvinteTradutorInterno(EntityUid uid, IntrinsicTranslatorComponent comp, ListenerLanguageEvent args)
+    {
+        Responder(args);
+    }
+
+    /// <summary>
+    /// Diz em que idioma este ouvinte quer receber a fala.
+    /// </summary>
+    /// <remarks>
+    /// É o mesmo tradutor que cuida dos dois lados, então o idioma é o mesmo
+    /// que ele usa para falar. O russo com o tradutor de russo fala e escuta em
+    /// russo, e é por isso que um item só resolve as duas direções.
+    /// </remarks>
+    private void Responder(ListenerLanguageEvent args)
+    {
+        // Quem tem tradutor na mão e implante ao mesmo tempo recebe o evento
+        // duas vezes.
+        if (args.Idioma != null)
+            return;
+
+        if (TryIdiomaDoTradutor(args.Ouvinte, out var idioma))
+            args.Idioma = idioma;
     }
 
     private void OnFalaSeguraTradutor(EntityUid uid, HoldsTranslatorComponent comp, SpeechInterceptEvent args)
