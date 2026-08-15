@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Content.Shared._Whiskey.CCVar;
@@ -120,39 +121,131 @@ public sealed partial class TranslationSystem : EntitySystem
     public string IdiomaDaEstacao => _cfg.GetCVar(WhiskeyCVars.TranslationStationLanguage);
 
     /// <summary>
-    /// Se a detecção tem como opinar sobre este idioma.
+    /// Letras que existem em português e não em inglês. Achar qualquer uma
+    /// delas já resolve, do mesmo jeito que o cirílico resolve o russo.
     /// </summary>
-    /// <remarks>
-    /// A detecção é por alfabeto, então ela só sabe dizer alguma coisa sobre
-    /// idioma escrito em alfabeto diferente. Para russo ela acerta sempre; para
-    /// inglês e português, que dividem o mesmo alfabeto, ela não tem base
-    /// nenhuma e responder seria chute. Quem chama precisa saber a diferença,
-    /// senão trata chute como certeza.
-    /// </remarks>
-    public bool DeteccaoConfiavel(string idioma)
-    {
-        return idioma == "ru";
-    }
+    private const string AcentosPortugueses = "ãõçâêôáíóúàü";
 
     /// <summary>
-    /// Descobre em que idioma o texto foi escrito, até onde dá para descobrir
-    /// barato.
+    /// Palavras curtas e comuns de cada idioma.
     /// </summary>
     /// <remarks>
-    /// O alfabeto resolve o russo com certeza, porque cirílico não aparece em
-    /// português nem em inglês. Já português e inglês compartilham o alfabeto, e
-    /// separar os dois exigiria detector de idioma de verdade, então quem cai
-    /// nesse caso recebe o padrão configurado no servidor.
+    /// São de propósito as mais banais, e não vocabulário de estação: palavra
+    /// comum aparece em quase toda frase, e é isso que faz a contagem
+    /// funcionar em fala de jogo, que é curta. As versões sem acento estão na
+    /// lista porque muita gente digita "nao" e "voce" no calor do momento.
     /// </remarks>
-    public string DetectarIdioma(string texto)
+    private static readonly HashSet<string> PalavrasPortugues = new(StringComparer.OrdinalIgnoreCase)
     {
+        "que", "nao", "não", "para", "com", "uma", "por", "mais", "voce", "você",
+        "esta", "está", "isso", "aqui", "tem", "ele", "ela", "meu", "minha", "seu",
+        "sua", "quem", "onde", "porque", "entao", "então", "tambem", "também",
+        "muito", "pra", "vou", "vai", "foi", "eu", "nos", "nós", "sim", "obrigado",
+        "preciso", "ajuda", "alguem", "alguém",
+    };
+
+    private static readonly HashSet<string> PalavrasIngles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "the", "and", "you", "is", "are", "was", "this", "that", "have", "has",
+        "with", "for", "not", "what", "where", "who", "your", "here", "there",
+        "they", "them", "will", "can", "just", "get", "got", "need", "help",
+        "please", "yes", "someone", "anyone", "going", "about",
+    };
+
+    /// <summary>
+    /// Descobre em que idioma o texto foi escrito, e diz quando não sabe.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Três sinais, do mais forte para o mais fraco. Cirílico resolve o russo
+    /// com certeza, porque não aparece nos outros dois. Acento de português
+    /// resolve o português pelo mesmo motivo, já que inglês não usa nenhum
+    /// deles. Sobrando os dois que dividem o alfabeto sem acento, vale a
+    /// contagem de palavras comuns.
+    /// </para>
+    /// <para>
+    /// Devolver falso quando não sabe é o ponto: frase de uma ou duas palavras
+    /// não dá sinal nenhum, e tratar chute como certeza foi exatamente o que
+    /// fazia o tradutor de inglês estragar frase que já estava certa.
+    /// </para>
+    /// </remarks>
+    public bool TryDetectarIdioma(string texto, out string idioma)
+    {
+        idioma = string.Empty;
+
         foreach (var c in texto)
         {
             if (c >= 'Ѐ' && c <= 'ӿ')
-                return "ru";
+            {
+                idioma = "ru";
+                return true;
+            }
         }
 
-        return IdiomaDaEstacao;
+        foreach (var c in texto)
+        {
+            if (AcentosPortugueses.IndexOf(char.ToLowerInvariant(c)) >= 0)
+            {
+                idioma = "pt";
+                return true;
+            }
+        }
+
+        var pontosPt = 0;
+        var pontosEn = 0;
+
+        foreach (var palavra in SepararPalavras(texto))
+        {
+            if (PalavrasPortugues.Contains(palavra))
+                pontosPt++;
+            else if (PalavrasIngles.Contains(palavra))
+                pontosEn++;
+        }
+
+        if (pontosPt > pontosEn)
+        {
+            idioma = "pt";
+            return true;
+        }
+
+        if (pontosEn > pontosPt)
+        {
+            idioma = "en";
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Descobre o idioma, e chuta o da estação quando não dá para saber.
+    /// </summary>
+    public string DetectarIdioma(string texto)
+    {
+        return TryDetectarIdioma(texto, out var idioma) ? idioma : IdiomaDaEstacao;
+    }
+
+    private static IEnumerable<string> SepararPalavras(string texto)
+    {
+        var atual = new StringBuilder();
+
+        foreach (var c in texto)
+        {
+            if (char.IsLetter(c))
+            {
+                atual.Append(char.ToLowerInvariant(c));
+                continue;
+            }
+
+            if (atual.Length > 0)
+            {
+                yield return atual.ToString();
+                atual.Clear();
+            }
+        }
+
+        if (atual.Length > 0)
+            yield return atual.ToString();
     }
 
     /// <summary>

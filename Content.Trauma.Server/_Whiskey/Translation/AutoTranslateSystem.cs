@@ -151,15 +151,13 @@ public sealed partial class AutoTranslateSystem : EntitySystem
         if (idiomaDono == destino)
             return false;
 
-        // Trava para o caso do dono arriscar falar o idioma da estação: sem
-        // isso a frase já certa seria traduzida de novo e estragada.
+        // Trava para o caso do dono arriscar falar outro idioma: sem isso a
+        // frase já certa seria traduzida de novo e estragada.
         //
-        // Mas só vale quando a detecção tem base para opinar, ou seja, quando o
-        // idioma do dono usa outro alfabeto. Para inglês contra português ela
-        // não sabe de nada, e aplicar a trava mesmo assim faria o tradutor de
-        // inglês nunca funcionar.
-        if (_translation.DeteccaoConfiavel(idiomaDono)
-            && _translation.DetectarIdioma(mensagem) != idiomaDono)
+        // Só vale quando a detecção tem certeza. Em dúvida ela devolve falso, e
+        // aí seguimos com o idioma configurado no tradutor, que é a melhor
+        // informação que existe sobre quem está falando.
+        if (_translation.TryDetectarIdioma(mensagem, out var detectado) && detectado != idiomaDono)
             return false;
 
         _translation.Translate(mensagem, idiomaDono, destino, resultado =>
