@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Tradutores de verdade, que traduzem entre idiomas reais em vez de embaralhar
+# sílaba como os idiomas ficticios do Einstein Engines.
+#
+# O idioma configurado é o de quem carrega, e não o de destino. Um russo leva o
+# tradutor de russo, e as duas direções saem sozinhas: o que ele fala vira o
+# idioma da estação, e o que ele escuta vira russo. É por isso que um item só
+# resolve os dois sentidos.
+#
+# Herdam de TranslatorPoweredBase, então já vêm com célula de energia, botão de
+# ligar, luzinha e a checagem de carga. Perder o tradutor ou ficar sem bateria
+# tira a tradução, que é a mecânica pedida.
+
+# Vêm com célula dentro, ao contrário dos tradutores de idioma ficticio, que
+# herdam do base de slot vazio. Aqueles saem do lathe, e quem imprime põe a
+# célula; estes podem vir do loadout, e começar a rodada com o tradutor morto
+# seria só uma armadilha para o jogador novo.
+
+- type: entity
+  parent: [ PowerCellSlotMediumItem, TranslatorPoweredBase ]
+  id: RussianTranslator
+  name: Russian translator
+  description: Translates speech between Russian and the station language.
+  components:
+  - type: RealTranslator
+    idioma: ru
+
+- type: entity
+  parent: [ PowerCellSlotMediumItem, TranslatorPoweredBase ]
+  id: EnglishTranslator
+  name: English translator
+  description: Translates speech between English and the station language.
+  components:
+  - type: RealTranslator
+    idioma: en

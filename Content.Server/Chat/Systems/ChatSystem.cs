@@ -282,6 +282,19 @@ public sealed partial class ChatSystem : SharedChatSystem
             }
         }
 
+        // <Whiskey> - tradução de fala para quem está com um tradutor.
+        // Aqui, e não antes, porque neste ponto a mensagem já foi higienizada e
+        // o rádio já retornou, então só sobra fala local e o prefixo de canal
+        // não corre o risco de ir parar no tradutor.
+        var interceptEv = new _Whiskey.Translation.SpeechInterceptEvent(source, message, desiredType,
+            traduzida => TrySendInGameICMessage(source, traduzida, desiredType, range, hideLog, shell, player,
+                nameOverride, false, ignoreActionBlocker, colorOverride, languageOverride));
+        RaiseLocalEvent(source, interceptEv);
+
+        if (interceptEv.Interceptado)
+            return;
+        // </Whiskey>
+
         // Otherwise, send whatever type.
         switch (desiredType)
         {

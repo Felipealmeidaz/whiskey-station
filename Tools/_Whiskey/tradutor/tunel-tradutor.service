@@ -1,0 +1,47 @@
+# Túnel do servidor do jogo até o serviço de tradução.
+#
+# Vai em /etc/systemd/system/tunel-tradutor.service na máquina do jogo, e não na
+# máquina do tradutor.
+#
+# Serve para quando as duas máquinas não compartilham rede privada. O túnel sai
+# de dentro para fora, pela porta 22 que já está aberta, então não é preciso
+# abrir porta nenhuma no tradutor nem criar regra de firewall. Do ponto de vista
+# do servidor do jogo o tradutor passa a ser localhost, o que também dispensa o
+# segredo compartilhado, já que nada fica exposto.
+#
+# Antes de ligar, a chave pública desta máquina precisa estar autorizada na
+# máquina do tradutor.
+#
+#   systemctl daemon-reload
+#   systemctl enable --now tunel-tradutor.service
+#
+# E no config do servidor do jogo:
+#
+#   whiskey.translation.url = "http://127.0.0.1:18080"
+
+[Unit]
+Description=Túnel até o serviço de tradução
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=admin
+Type=simple
+
+# ExitOnForwardFailure faz o serviço morrer se a porta local já estiver ocupada,
+# em vez de subir um túnel que não encaminha nada e parecer saudável.
+# ServerAliveInterval derruba o túnel quando a conexão cai calada, e aí o
+# Restart levanta de novo. Sem isso ele fica de pé sem passar tráfego.
+ExecStart=/usr/bin/ssh -N \
+    -o ExitOnForwardFailure=yes \
+    -o ServerAliveInterval=30 \
+    -o ServerAliveCountMax=3 \
+    -o StrictHostKeyChecking=accept-new \
+    -L 18080:127.0.0.1:8080 \
+    USUARIO@ENDERECO-DO-SERVICO
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

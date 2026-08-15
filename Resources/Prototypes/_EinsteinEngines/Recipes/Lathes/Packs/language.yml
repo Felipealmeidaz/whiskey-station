@@ -11,6 +11,10 @@
   - XenoTranslator
   - AnimalTranslator
   - NewKinPidginTranslator
+  # <Whiskey> - tradutores de idioma real
+  - RussianTranslator
+  - EnglishTranslator
+  # </Whiskey>
 
 - type: latheRecipePack
   id: TranslatorImplanters

@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Mesmo custo dos tradutores de idioma ficticio, para não haver caminho barato
+# de contornar a pesquisa imprimindo o de verdade em vez do de mentira.
+
+- type: latheRecipe
+  id: RussianTranslator
+  result: RussianTranslator
+  completetime: 2
+  materials:
+    Steel: 500
+    Glass: 100
+    Plastic: 50
+    Gold: 50
+
+- type: latheRecipe
+  id: EnglishTranslator
+  result: EnglishTranslator
+  completetime: 2
+  materials:
+    Steel: 500
+    Glass: 100
+    Plastic: 50
+    Gold: 50

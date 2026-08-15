@@ -1,0 +1,43 @@
+# Serviço de tradução rodando na própria máquina do jogo, sem root.
+#
+# Vai em ~/.config/systemd/user/tradutor.service do usuário que roda o servidor.
+#
+# Antes, uma vez só, para o serviço subir no boot mesmo sem ninguém logado:
+#
+#   loginctl enable-linger SEU_USUARIO
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now tradutor.service
+#
+# E no config do servidor do jogo:
+#
+#   whiskey.translation.url = "http://127.0.0.1:8080"
+
+[Unit]
+Description=Serviço de tradução do Whiskey
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/tradutor
+Environment=RAIZ=%h/tradutor
+Environment=ENDERECO=127.0.0.1
+Environment=PORTA=8080
+
+# Um núcleo por tradução, e duas de cada vez. Duas e não doze porque aqui o
+# tradutor divide a máquina com o jogo: o teto garante que ele nunca ocupe mais
+# que dois núcleos, aconteça o que acontecer.
+Environment=NUCLEOS=1
+Environment=SIMULTANEAS=2
+
+ExecStart=%h/tradutor/.venv/bin/python %h/tradutor/servico.py
+
+# Prioridade baixa de propósito: quando o jogo e o tradutor quiserem CPU ao
+# mesmo tempo, o jogo ganha e o tradutor espera. Somado ao teto acima, ele não
+# tem como atrapalhar o tick.
+Nice=15
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# O tradutor entra em Trinkets, que é a seção de itens miscelâneos do loadout, e
+# vale para qualquer cargo. Quem escolhe começa com um; quem perder depende da
+# sci imprimir outro, e isso exige pesquisa tier 2.
+#
+# Equipa no pescoço em vez de ir para a mochila. Guardar depende de caber, e o
+# código que entrega loadout cria o item no chão antes de tentar guardar e
+# descarta o resultado da tentativa, então mochila cheia vira item caído sem
+# nenhum aviso. Equipar não depende de espaço, e ainda deixa o tradutor à vista,
+# o que combina com ele ser um item que dá para perder.
+
+- type: loadout
+  id: RussianTranslator
+  equipment:
+    neck: RussianTranslator
+
+- type: loadout
+  id: EnglishTranslator
+  equipment:
+    neck: EnglishTranslator
