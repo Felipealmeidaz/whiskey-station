@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+- type: lobbyBackground
+  id: WhiskeyBloodCultLobby
+  background: /Textures/_Whiskey/LobbyScreens/bloodcult.png
+  title: lobby-state-background-blood-cult
+  artist: lobby-state-background-artist-struater

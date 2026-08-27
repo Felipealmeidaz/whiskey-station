@@ -16,7 +16,6 @@ using Content.Shared.Cuffs.Components;
 using Content.Shared.Damage;
 using Content.Shared.Mindshield;
 using Content.Shared.Mobs.Systems;
-using Content.Shared.StatusEffect;
 using Content.Shared.WhiteDream.BloodCult.BloodCultist;
 using Content.Shared.Damage.Systems;
 using Content.Server.Popups;
@@ -42,7 +41,6 @@ public sealed partial class CultRuneOfferingSystem : EntitySystem
     [Dependency] private MindSystem _mind = default!;
     [Dependency] private MindShieldSystem _mindShield = default!;
     [Dependency] private MobStateSystem _mobState = default!;
-    [Dependency] private StatusEffectsSystem _statusEffects = default!;
     [Dependency] private StatusEffectsNewSystem _statusEffectsNew = default!; // Trauma
     [Dependency] private AudioSystem _audio = default!;
     [Dependency] private PopupSystem _popup = default!;
@@ -135,6 +133,10 @@ public sealed partial class CultRuneOfferingSystem : EntitySystem
 
     private void Sacrifice(Entity<CultRuneOfferingComponent> rune, EntityUid target)
     {
+        // Whiskey - the marked one only counts once they are given on the rune. Before this the
+        // objective completed on death alone, so a body in the morgue unlocked the rending rune.
+        _bloodCultRule.MarkOfferingSacrificed(target);
+
         _cultRuneRevive.AddCharges(rune, rune.Comp.ReviveChargesPerOffering);
 
         // WhiteDream - the veil takes its due.

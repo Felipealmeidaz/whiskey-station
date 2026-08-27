@@ -103,17 +103,25 @@ public sealed partial class SoulShardSystem : EntitySystem
         var shadeUid = Spawn(proto, position);
         _mind.TransferTo(mindId, shadeUid);
         _mind.UnVisit(mindId);
+        shard.Comp.ShadeUid = shadeUid;
     }
 
     private void DespawnShade(Entity<SoulShardComponent> shard)
     {
-        if (!_mind.TryGetMind(shard.Comp.ShadeUid!.Value, out var mindId, out _))
+        if (shard.Comp.ShadeUid is not { } shade || TerminatingOrDeleted(shade))
+        {
+            shard.Comp.ShadeUid = null;
+            return;
+        }
+
+        if (_mind.TryGetMind(shade, out var mindId, out _))
         {
             _mind.TransferTo(mindId, shard);
             _mind.UnVisit(mindId);
         }
 
-        Del(shard.Comp.ShadeUid);
+        QueueDel(shade);
+        shard.Comp.ShadeUid = null;
     }
 
     private void UpdateGlowVisuals(Entity<SoulShardComponent> shard, bool state)

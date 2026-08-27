@@ -16,11 +16,11 @@ blood-cult-role-briefing-rending-site = O véu é fino { $location }.
 blood-cult-role-briefing-emergency-rending = Podemos desenhar mais {$amount} runas de rasgo ou apocalipse!
 
 objective-issuer-blood-cult = [color=red]A Geômetra de Sangue[/color]
-blood-cult-condition-win = A Geômetra de Sangue invocou com sucesso sua Deusa Eldritch!
+blood-cult-condition-win = O Culto de Sangue invocou com sucesso sua Deusa Eldritch!
 blood-cult-condition-draw = Ambos os lados foram destruídos.
 blood-cult-condition-failure = A tripulação conseguiu impedir o rasgo da realidade!
 
-blood-cultists-list-start = Os membros da Geômetra de Sangue eram:
+blood-cultists-list-start = Os membros do Culto de Sangue eram:
 blood-cultists-list-name = [color=White]{ $name }[/color] ([color=gray]{ $user }[/color])
 
 blood-cult-ui-roundstart-title = Culto de Sangue de Nar'Si
@@ -41,9 +41,16 @@ blood-cult-stage-pentagram = pentagrama
 
 # WhiteDream - ascensão + objetivos
 cult-offering-target-chosen = Nar'Sie escolheu uma oferenda: [color=#d43a3a]{ $name }[/color].
+cult-offering-accepted = [color=#d43a3a]{ $name }[/color] foi entregue sobre a runa. Nar'Sie está satisfeita.
 cult-ascension-warning = O fim se aproxima. Em { $minutes } minutos a marca dela aparecerá sobre todos nós - reúnam-se, e preparem-se para a ascensão de nossa Mãe.
 cult-ascension-rending-unlocked = Somos fortes o bastante para rasgar o véu. A runa de rasgo dimensional é nossa para desenhar.
 cult-ascension-marked = A marca dela está sobre nós. Não há mais como se esconder.
 
 role-subtype-blood-cultist = Cultista de Sangue
 verb-categories-blood-cult = Magias de Sangue
+
+# Whiskey - os olhos vermelhos ganharam o mesmo aviso que o halo ja tinha, e as marcas agora
+# sao permanentes depois que aparecem.
+cult-red-eyes-warning = O véu enfraquece. Em { $minutes } minutos o olhar dela vai arder em nossos olhos, cubram-nos, ou deixem que vejam.
+cult-red-eyes-marked = Nossos olhos se encheram de sangue. Os não-iniciados vão notar, cubra-os com qualquer óculo, ou evite encará-los de perto.
+cult-eyes-examine = [color=#d43a3a]Há um brilho vermelho nesses olhos que não deveria estar ali.[/color]

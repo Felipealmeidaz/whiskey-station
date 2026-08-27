@@ -106,16 +106,21 @@ public sealed partial class BloodCultRuleSystem
         report.Append(Loc.GetString("cult-status-stage",
             ("stage", Loc.GetString(GetStageLocId(rule.Stage)))));
 
+        // Whiskey - the thresholds are a share of the crew now, so the report has to resolve
+        // them to a head count instead of subtracting the raw field.
+        var eyesRequired = GetRedEyesRequirement(rule);
+        var pentagramRequired = GetPentagramRequirement(rule);
+
         report.Append('\n');
-        if (totalCultists < rule.ReadEyeThreshold)
+        if (totalCultists < eyesRequired)
         {
             report.Append(Loc.GetString("cult-status-next-eyes",
-                ("amount", rule.ReadEyeThreshold - totalCultists)));
+                ("amount", eyesRequired - totalCultists)));
         }
-        else if (totalCultists < rule.PentagramThreshold)
+        else if (totalCultists < pentagramRequired)
         {
             report.Append(Loc.GetString("cult-status-next-pentagram",
-                ("amount", rule.PentagramThreshold - totalCultists)));
+                ("amount", pentagramRequired - totalCultists)));
         }
         else
         {
@@ -124,7 +129,13 @@ public sealed partial class BloodCultRuleSystem
 
         // Sacrifice.
         report.Append('\n');
-        if (rule.OfferingTarget is { } target && !TerminatingOrDeleted(target))
+        if (rule.OfferingSacrificed)
+        {
+            // Whiskey - keyed off the offering itself rather than off the body being gone. A body
+            // can be gibbed without ever reaching a rune, and that is not an offering.
+            report.Append(Loc.GetString("cult-status-offering-done"));
+        }
+        else if (rule.OfferingTarget is { } target && !TerminatingOrDeleted(target))
         {
             report.Append(Loc.GetString(_mobState.IsDead(target)
                     ? "cult-status-offering-dead"

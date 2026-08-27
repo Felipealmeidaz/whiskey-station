@@ -3,6 +3,7 @@
 
 using Content.Shared.Actions;
 using Content.Shared.Chat;
+using Content.Shared.Whitelist;
 using Content.Shared.DoAfter;
 using Content.Shared.Magic;
 using Content.Shared.StatusEffect;
@@ -19,6 +20,26 @@ public sealed partial class BloodCultStunEvent : EntityTargetActionEvent, ISpeak
 
     [DataField]
     public TimeSpan MuteDuration = TimeSpan.FromSeconds(12);
+
+    // <Whiskey> - the bigger the cult, the weaker the hand.
+    [DataField]
+    public TimeSpan MinParalyzeDuration = TimeSpan.FromSeconds(4);
+
+    [DataField]
+    public TimeSpan MinMuteDuration = TimeSpan.FromSeconds(3);
+
+    /// <summary>
+    ///     Share of the crew at which the stun has already decayed to its minimum.
+    /// </summary>
+    [DataField]
+    public float DecayShare = 0.4f;
+
+    /// <summary>
+    ///     What is left of the stun against someone carrying a mindshield.
+    /// </summary>
+    [DataField]
+    public float MindShieldMultiplier = 0.5f;
+    // </Whiskey>
 
     [DataField]
     public string? Speech { get; set; }
@@ -99,6 +120,62 @@ public sealed partial class SummonEquipmentEvent : InstantActionEvent, ISpeakSpe
     public InGameICChatType ChatType => InGameICChatType.Whisper;
 }
 
+// <Whiskey> - the three spells only the cult leader gets.
+
+/// <summary>
+///     Drags every living cultist and construct to the leader. One use per cult.
+/// </summary>
+public sealed partial class BloodCultFinalReckoningEvent : InstantActionEvent, ISpeakSpell
+{
+    /// <summary>
+    ///     How long the leader has to stand still calling the cult in. Long enough that the spell
+    ///     cannot be used as an escape button mid-fight.
+    /// </summary>
+    [DataField]
+    public TimeSpan DoAfterDuration = TimeSpan.FromSeconds(10);
+
+    [DataField]
+    public string? Speech { get; set; }
+
+    public InGameICChatType ChatType => InGameICChatType.Whisper;
+}
+
+/// <summary>
+///     Points the whole cult at one of the uninitiated.
+/// </summary>
+public sealed partial class BloodCultMarkTargetEvent : EntityTargetActionEvent, ISpeakSpell
+{
+    [DataField]
+    public TimeSpan Duration = TimeSpan.FromSeconds(90);
+
+    [DataField]
+    public string? Speech { get; set; }
+
+    public InGameICChatType ChatType => InGameICChatType.Whisper;
+}
+
+/// <summary>
+///     Two clicks: the first takes hold of something, the second throws it across the station.
+///     Deliberately a world target and not an entity target. With both, one click on something outside
+///     the whitelist invalidates the whole action; with only the world target every click lands and the
+///     system picks the entity itself.
+/// </summary>
+public sealed partial class BloodCultEldritchPulseEvent : WorldTargetActionEvent, ISpeakSpell
+{
+    [DataField]
+    public float Range = 15f;
+
+    [DataField]
+    public EntityWhitelist? Whitelist;
+
+    [DataField]
+    public string? Speech { get; set; }
+
+    public InGameICChatType ChatType => InGameICChatType.Whisper;
+}
+
+// </Whiskey>
+
 public sealed partial class BloodCultSelectSpellsEvent : InstantActionEvent;
 
 public sealed partial class BloodCultRemoveSpellsEvent : InstantActionEvent;
@@ -131,6 +208,10 @@ public sealed partial class PhaseShiftEvent : InstantActionEvent
     // WhiteDream - the StatusEffectId field is gone: this fork has no "PhaseShifted" status effect
     // prototype, so the phase shift is applied as a component directly by ConstructActionsSystem.
 }
+
+// Whiskey - the leader spends ten seconds calling the cult in before anyone moves.
+[Serializable, NetSerializable]
+public sealed partial class BloodCultFinalReckoningDoAfterEvent : SimpleDoAfterEvent;
 
 [Serializable, NetSerializable]
 public sealed partial class BloodCultShacklesDoAfterEvent : SimpleDoAfterEvent;

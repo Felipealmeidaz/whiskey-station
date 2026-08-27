@@ -40,7 +40,7 @@ cult-leader-lost = Her voice among us has been silenced. She will ask again shor
 # Rending requirements
 cult-status-rending-locked = The veil cannot be torn yet:
 cult-status-rending-need-cultists = { $amount } more of us must join. { $required } are needed in all.
-cult-status-rending-need-offering = The marked offering still breathes.
+cult-status-rending-need-offering = The marked offering has not been given upon a rune.
 cult-status-rending-ready = The veil is ready to be torn.
 cult-rending-unlocked = We are enough, and the offering is made. The veil can be torn now.
 
@@ -55,3 +55,6 @@ cult-ascension-centcom-announcement = Attention: our long-range sensors have pic
 ghost-role-information-hellspawn-cult-name = Hellspawn
 ghost-role-information-hellspawn-cult-description = Crawl out of the blood rift and tear apart anyone who comes to close it.
 ghost-role-information-hellspawn-cult-rules = You are a beast of Nar'Sie, dragged through the tear in reality. You are not a cultist and you take no orders, but the cult is not your prey - the crew is. Guard the rift. Kill anything that is not of the Geometer.
+
+# Whiskey
+cult-status-offering-done = The offering has been made.

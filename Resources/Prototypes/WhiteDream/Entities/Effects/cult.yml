@@ -56,3 +56,20 @@
     drawdepth: Effects
   - type: PointLight
     color: "#FF0000"
+
+# Whiskey - the bolt Nar'Sie reaches down with when she takes one of the chanters. It is the
+# hypercharged look with the teeth pulled: Electrified is off, so it cannot shock the cultists
+# standing on the runes around the rift. This is spectacle, not a weapon.
+- type: entity
+  parent: HyperchargedLightning
+  id: CultSacrificeLightning
+  name: her reach
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Electrified
+    enabled: false
+    onBump: false
+    onAttacked: false
+    onHandInteract: false
+    onInteractUsing: false
+    shockDamage: 0

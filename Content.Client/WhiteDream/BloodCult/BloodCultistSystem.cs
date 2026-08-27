@@ -21,6 +21,11 @@ namespace Content.Client.WhiteDream.BloodCult;
 
 public sealed partial class BloodCultistSystem : EntitySystem
 {
+    private static readonly ResPath LeaderAuraRsi =
+        new("WhiteDream/BloodCult/Effects/leader_aura.rsi");
+
+    private const string LeaderAuraState = "leader_aura";
+
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private IPrototypeManager _prototype = default!;
     [Dependency] private IPlayerManager _player = default!;
@@ -29,14 +34,18 @@ public sealed partial class BloodCultistSystem : EntitySystem
     {
         SubscribeLocalEvent<PentagramComponent, ComponentStartup>(OnPentagramAdded);
         SubscribeLocalEvent<PentagramComponent, ComponentShutdown>(OnPentagramRemoved);
+        SubscribeLocalEvent<BloodCultLeaderComponent, ComponentStartup>(OnLeaderAdded);
+        SubscribeLocalEvent<BloodCultLeaderComponent, ComponentShutdown>(OnLeaderRemoved);
 
         SubscribeLocalEvent<ConstructComponent, GetStatusIconsEvent>(GetCultStatusIcon);
         SubscribeLocalEvent<BloodCultistComponent, GetStatusIconsEvent>(GetBloodCultistStatusIcon);
         SubscribeLocalEvent<BloodCultLeaderComponent, GetStatusIconsEvent>(GetCultStatusIcon);
+        SubscribeLocalEvent<BloodCultMarkComponent, GetStatusIconsEvent>(GetCultStatusIcon); // Whiskey
 
         SubscribeLocalEvent<ConstructComponent, CanDisplayStatusIconsEvent>(OnCanShowCultIcon);
         SubscribeLocalEvent<BloodCultistComponent, CanDisplayStatusIconsEvent>(OnCanShowCultIcon);
         SubscribeLocalEvent<BloodCultLeaderComponent, CanDisplayStatusIconsEvent>(OnCanShowCultIcon);
+        SubscribeLocalEvent<BloodCultMarkComponent, CanDisplayStatusIconsEvent>(OnCanShowCultIcon); // Whiskey
     }
 
     private void GetCultStatusIcon<T>(Entity<T> ent, ref GetStatusIconsEvent args)
@@ -61,22 +70,60 @@ public sealed partial class BloodCultistSystem : EntitySystem
 
     private void OnPentagramAdded(EntityUid uid, PentagramComponent component, ComponentStartup args)
     {
-        if (!TryComp<SpriteComponent>(uid, out var sprite) || sprite.LayerMapTryGet(PentagramKey.Key, out _))
+        if (!TryComp<SpriteComponent>(uid, out var sprite))
             return;
 
-        var adj = sprite.Bounds.Height / 2 + 1.0f / 32 * 10.0f;
+        if (!sprite.LayerMapTryGet(PentagramKey.Key, out _))
+        {
+            var adj = sprite.Bounds.Height / 2 + 1.0f / 32 * 10.0f;
 
-        var randomState = _random.Pick(component.States);
+            var randomState = _random.Pick(component.States);
 
-        var layer = sprite.AddLayer(new SpriteSpecifier.Rsi(component.RsiPath, randomState));
+            var layer = sprite.AddLayer(new SpriteSpecifier.Rsi(component.RsiPath, randomState));
 
-        sprite.LayerMapSet(PentagramKey.Key, layer);
-        sprite.LayerSetOffset(layer, new Vector2(0.0f, adj));
+            sprite.LayerMapSet(PentagramKey.Key, layer);
+            sprite.LayerSetOffset(layer, new Vector2(0.0f, adj));
+        }
+
+        if (HasComp<BloodCultLeaderComponent>(uid))
+            RefreshLeaderAura(uid);
     }
 
     private void OnPentagramRemoved(EntityUid uid, PentagramComponent component, ComponentShutdown args)
     {
-        if (!TryComp<SpriteComponent>(uid, out var sprite) || !sprite.LayerMapTryGet(PentagramKey.Key, out var layer))
+        if (TryComp<SpriteComponent>(uid, out var sprite) &&
+            sprite.LayerMapTryGet(PentagramKey.Key, out var layer))
+            sprite.RemoveLayer(layer);
+
+        RemoveLeaderAura(uid);
+    }
+
+    private void OnLeaderAdded(EntityUid uid, BloodCultLeaderComponent component, ComponentStartup args)
+        => RefreshLeaderAura(uid);
+
+    private void OnLeaderRemoved(EntityUid uid, BloodCultLeaderComponent component, ComponentShutdown args)
+        => RemoveLeaderAura(uid);
+
+    private void RefreshLeaderAura(EntityUid uid)
+    {
+        if (!HasComp<BloodCultLeaderComponent>(uid) || !HasComp<PentagramComponent>(uid))
+        {
+            RemoveLeaderAura(uid);
+            return;
+        }
+
+        if (!TryComp<SpriteComponent>(uid, out var sprite) ||
+            sprite.LayerMapTryGet(BloodCultVisualLayers.LeaderAura, out _))
+            return;
+
+        var layer = sprite.AddLayer(new SpriteSpecifier.Rsi(LeaderAuraRsi, LeaderAuraState));
+        sprite.LayerMapSet(BloodCultVisualLayers.LeaderAura, layer);
+    }
+
+    private void RemoveLeaderAura(EntityUid uid)
+    {
+        if (!TryComp<SpriteComponent>(uid, out var sprite) ||
+            !sprite.LayerMapTryGet(BloodCultVisualLayers.LeaderAura, out var layer))
             return;
 
         sprite.RemoveLayer(layer);
@@ -103,4 +150,9 @@ public sealed partial class BloodCultistSystem : EntitySystem
 
         return visibleToGhost && HasComp<GhostComponent>(uid);
     }
+}
+
+internal enum BloodCultVisualLayers : byte
+{
+    LeaderAura,
 }

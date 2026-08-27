@@ -23,7 +23,6 @@ public sealed partial class TwistedConstructionSystem : EntitySystem
     [Dependency] private StackSystem _stack = default!;
     [Dependency] private TagSystem _tag = default!;
 
-    private static readonly ProtoId<MaterialPrototype> SteelMaterial = "Steel";
     private static readonly ProtoId<MaterialPrototype> PlasteelMaterial = "Plasteel";
     private static readonly ProtoId<TagPrototype> TwistedConstructionTargetTag = "TwistedConstructionTarget";
 
@@ -41,8 +40,8 @@ public sealed partial class TwistedConstructionSystem : EntitySystem
         if (HasComp<TwistedConstructionTargetComponent>(ent) || !HasComp<StackComponent>(ent))
             return;
 
-        if (!ent.Comp.MaterialComposition.ContainsKey(SteelMaterial)
-            && !ent.Comp.MaterialComposition.ContainsKey(PlasteelMaterial))
+        // Whiskey - plasteel only. Steel is too cheap to be worth runed metal.
+        if (!ent.Comp.MaterialComposition.ContainsKey(PlasteelMaterial))
             return;
 
         var twisted = EnsureComp<TwistedConstructionTargetComponent>(ent);

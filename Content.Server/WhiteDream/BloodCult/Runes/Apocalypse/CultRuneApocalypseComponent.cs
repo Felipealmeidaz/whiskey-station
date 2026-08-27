@@ -12,6 +12,35 @@ public sealed partial class CultRuneApocalypseComponent : Component
     public float InvokeTime = 20;
 
     /// <summary>
+    ///     Time between the verses chanted while the rune is being invoked.
+    /// </summary>
+    [DataField]
+    public float ChantInterval = 4;
+
+    /// <summary>
+    ///     The opening invocation comes from CultRuneBase; these are the following verses.
+    /// </summary>
+    [DataField]
+    public List<string> ChantPhrases = new()
+    {
+        "Mah'weyh pleggh at e'ntrath!",
+        "N'ath reth sh'yro eth d'rekkathnor!",
+        "TOK-LYR RQA-NAP G'OLT-ULOFT!!!",
+        "Nar'Sie, k'ah sath ka!",
+    };
+
+    [ViewVariables]
+    public bool Invoking;
+
+    [ViewVariables]
+    public float TimeUntilNextChant;
+
+    [ViewVariables]
+    public int ChantIndex;
+
+    public readonly HashSet<EntityUid> Chanters = new();
+
+    /// <summary>
     ///     If cult has less than this percent of current server population,
     ///     one of the possible events will be triggered.
     /// </summary>

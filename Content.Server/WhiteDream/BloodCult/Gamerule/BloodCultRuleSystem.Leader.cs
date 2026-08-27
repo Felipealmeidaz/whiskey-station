@@ -98,12 +98,18 @@ public sealed partial class BloodCultRuleSystem
 
     private void PromoteLeader(BloodCultRuleComponent rule, EntityUid leader)
     {
-        if (rule.CultLeader is { } previous && !TerminatingOrDeleted(previous))
+        if (rule.CultLeader is { } previous && previous != leader && !TerminatingOrDeleted(previous))
             RemComp<BloodCultLeaderComponent>(previous);
 
-        AddComp<BloodCultLeaderComponent>(leader);
+        // Whiskey - the bookkeeping goes first. It used to run after AddComp, and AddComp runs the
+        // component's startup handler inline: anything that threw in there (a bad action prototype,
+        // a missing actions container) escaped before CultLeader was ever assigned. The result was
+        // the exact bug reported: someone wearing the leader mark with no spells, who the rule did
+        // not consider the leader, so their death never called another vote.
         rule.CultLeader = leader;
         rule.LeaderSelected = true;
+
+        EnsureComp<BloodCultLeaderComponent>(leader);
 
         NotifyCultists(Loc.GetString("cult-leader-chosen", ("name", Name(leader))));
     }
@@ -116,14 +122,60 @@ public sealed partial class BloodCultRuleSystem
         var query = QueryActiveRules();
         while (query.MoveNext(out _, out var rule, out _))
         {
-            if (rule.CultLeader != dead)
+            if (rule.CultLeader == dead)
+                LoseLeader(rule, dead);
+        }
+    }
+
+    private void LoseLeader(BloodCultRuleComponent rule, EntityUid leader)
+    {
+        if (!TerminatingOrDeleted(leader))
+            RemCompDeferred<BloodCultLeaderComponent>(leader);
+
+        rule.CultLeader = null;
+        rule.LeaderSelected = false;
+
+        NotifyCultists(Loc.GetString("cult-leader-lost"));
+        ScheduleLeaderVote(rule, rule.LeaderRevoteDelay);
+    }
+
+    /// <summary>
+    ///     Whiskey - runs on the objective tick and makes the rule and the world agree about who
+    ///     speaks for Nar'Sie. MobStateChangedEvent covers a cultist dying in the ordinary way; it
+    ///     does not cover being gibbed, spaced, deleted, cloned or talked back out of the cult, and
+    ///     any of those used to leave the cult with a leader who could never be replaced.
+    /// </summary>
+    private void ReconcileLeader(BloodCultRuleComponent rule)
+    {
+        // She has already come through and the cult is being harvested. Leave it alone.
+        if (rule.VictoryEndTime is not null || rule.WinCondition == CultWinCondition.Win)
+            return;
+
+        var orphaned = false;
+
+        var stray = EntityQueryEnumerator<BloodCultLeaderComponent>();
+        while (stray.MoveNext(out var uid, out _))
+        {
+            if (rule.CultLeader == uid)
                 continue;
 
-            RemComp<BloodCultLeaderComponent>(dead);
-            rule.CultLeader = null;
-            rule.LeaderSelected = false;
+            RemCompDeferred<BloodCultLeaderComponent>(uid);
+            orphaned = true;
+        }
 
-            NotifyCultists(Loc.GetString("cult-leader-lost"));
+        if (rule.CultLeader is { } leader)
+        {
+            if (TerminatingOrDeleted(leader) || _mobState.IsDead(leader) || !HasComp<BloodCultistComponent>(leader))
+                LoseLeader(rule, leader);
+
+            return;
+        }
+
+        // Someone was wearing the mark without the rule knowing. Now that it is off them, get a
+        // real leader elected instead of waiting for a death that will never be noticed.
+        if (orphaned)
+        {
+            rule.LeaderSelected = false;
             ScheduleLeaderVote(rule, rule.LeaderRevoteDelay);
         }
     }

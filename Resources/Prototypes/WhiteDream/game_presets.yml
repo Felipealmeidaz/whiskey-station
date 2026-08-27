@@ -1,11 +1,14 @@
-﻿- type: gamePreset
+- type: gamePreset
   id: BloodCult
   alias:
   - cult
   - bloodcult
   name: blood-cult-title
   showInVote: true
-  minPlayers: 15
+  # Whiskey - matches GameRules/roundstart.yml. The cult is a strong antag; at 15 players it wins
+  # by default, and a preset that can be drawn below the rule's own minimum starts a round with no
+  # cult at all and no warning.
+  minPlayers: 30
   description: blood-cult-description
   rules:
   - BloodCult

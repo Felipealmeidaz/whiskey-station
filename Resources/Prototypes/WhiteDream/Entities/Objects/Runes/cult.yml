@@ -162,6 +162,7 @@
     # WhiteDream - three cultists on the rune to set it off. Drawn only by the leader, so it no
     # longer eats one of the three rending sites.
     requiredInvokers: 3
+    invokeChatType: Speak
     invokePhrase: "Ta'gh fara'qha fel d'amar det!"
     canBeErased: false
     activationDamage:

@@ -24,7 +24,7 @@ blood-cult-summon-being-pulled = O cultista está sendo arrastado e não pode se
 blood-cult-summon-cuffed = O cultista está algemado e não pode ser invocado!
 
 cult-rending-drawing-finished = A Geômetra de Sangue terminou de desenhar a runa do fim {$location}!
-cult-rending-target-alive = Não é possível iniciar o ritual: o alvo está vivo.
+cult-rending-target-alive = Não é possível iniciar o ritual: a oferenda marcada ainda não foi entregue sobre uma runa.
 cult-rending-already-summoning = Não é possível iniciar o ritual: ele já está em andamento.
 cult-rending-started = A Geômetra de Sangue iniciou o ritual de Rasgo Dimensional {$location}!
 cult-rending-prevented = Alguém interrompeu o ritual.

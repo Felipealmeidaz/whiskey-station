@@ -60,8 +60,28 @@ public sealed partial class TimedFactorySystem : EntitySystem
         if (factory.Comp.CooldownRemaining > 0)
             return;
 
-        var product = Spawn(args.SelectedItem, Transform(args.Actor).Coordinates);
-        _hands.TryPickupAnyHand(args.Actor, product);
+        // Whiskey - never trust a prototype id sent by the client. Besides closing an arbitrary-spawn
+        // hole, resolving the configured entry gives factories their per-selection batch size.
+        RadialSelectorEntry? entry = null;
+        foreach (var candidate in factory.Comp.Entries)
+        {
+            if (candidate.Prototype != args.SelectedItem)
+                continue;
+
+            entry = candidate;
+            break;
+        }
+
+        if (entry?.Prototype is not { } prototype)
+            return;
+
+        var amount = Math.Max(1, entry.Amount);
+        for (var i = 0; i < amount; i++)
+        {
+            var product = Spawn(prototype, Transform(args.Actor).Coordinates);
+            if (i == 0)
+                _hands.TryPickupAnyHand(args.Actor, product);
+        }
 
         // WhiteDream - each structure has its own voice.
         if (factory.Comp.ProductionSound is { } sound)

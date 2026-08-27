@@ -40,7 +40,7 @@ cult-leader-lost = A voz dela entre nós foi silenciada. Ela perguntará de novo
 # Requisitos do rasgo
 cult-status-rending-locked = O véu ainda não pode ser rasgado:
 cult-status-rending-need-cultists = Mais { $amount } de nós devem se juntar. { $required } são necessários ao todo.
-cult-status-rending-need-offering = A oferenda marcada ainda respira.
+cult-status-rending-need-offering = A oferenda marcada ainda não foi entregue sobre uma runa.
 cult-status-rending-ready = O véu está pronto para ser rasgado.
 cult-rending-unlocked = Somos o bastante, e a oferenda foi feita. O véu pode ser rasgado agora.
 
@@ -55,3 +55,6 @@ cult-ascension-centcom-announcement = Atenção: nossos sensores de longo alcanc
 ghost-role-information-hellspawn-cult-name = Hellspawn
 ghost-role-information-hellspawn-cult-description = Rasteje para fora da fenda de sangue e despedace quem vier fechá-la.
 ghost-role-information-hellspawn-cult-rules = Você é uma besta de Nar'Sie, arrastada pelo rasgo na realidade. Você não é um cultista e não recebe ordens, mas o culto não é sua presa - a tripulação é. Guarde a fenda. Mate tudo que não for da Geômetra.
+
+# Whiskey
+cult-status-offering-done = A oferenda foi realizada.

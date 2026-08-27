@@ -41,7 +41,8 @@ public sealed partial class BloodCultConstructionMenuBoundUserInterface : BoundU
         _menu = this.CreateWindow<SimpleRadialMenu>();
         _menu.Track(Owner);
         _menu.SetButtons(ConvertToButtons(construction.Entries));
-        _menu.OpenOverMouseScreenPosition();
+        // Whiskey - centred like the other cult menus, instead of over the pointer.
+        _menu.OpenCentered();
     }
 
     private IEnumerable<RadialMenuOptionBase> ConvertToButtons(IReadOnlyList<RadialSelectorEntry> entries)

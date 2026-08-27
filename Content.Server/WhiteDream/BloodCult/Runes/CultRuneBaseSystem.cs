@@ -11,6 +11,7 @@ using Content.Server.Chat.Systems;
 using Content.Server.Chemistry.Components;
 using Content.Server.DoAfter;
 using Content.Server.Fluids.Components;
+using Content.Server.Mind;
 using Content.Server.Popups;
 using Content.Server.WhiteDream.BloodCult.Empower;
 using Content.Server.WhiteDream.BloodCult.Gamerule;
@@ -21,6 +22,7 @@ using Content.Shared.DoAfter;
 using Content.Shared.Examine;
 using Content.Shared.Ghost;
 using Content.Shared.Interaction;
+using Content.Shared.Mobs.Systems;
 using Content.Shared.UserInterface;
 using Content.Shared.WhiteDream.BloodCult.BloodCultist;
 using Content.Shared.WhiteDream.BloodCult.Constructs;
@@ -48,6 +50,8 @@ public sealed partial class CultRuneBaseSystem : EntitySystem
     [Dependency] private TransformSystem _transform = default!;
     [Dependency] private SharedMapSystem _map = default!;
     [Dependency] private EntityLookupSystem _lookup = default!;
+    [Dependency] private MindSystem _mind = default!;
+    [Dependency] private MobStateSystem _mobState = default!;
     [Dependency] private SharedSolutionContainerSystem _solutionContainer = default!;
     [Dependency] private PopupSystem _popup = default!;
     [Dependency] private UserInterfaceSystem _ui = default!;
@@ -81,8 +85,9 @@ public sealed partial class CultRuneBaseSystem : EntitySystem
         var runeSelectorArray = _protoManager.EnumeratePrototypes<RuneSelectorPrototype>().OrderBy(r => r.ID).ToArray();
         foreach (var runeSelector in runeSelectorArray)
         {
+            // Whiskey - the requirement can be a share of the crew
             if (runeSelector.RequireTargetDead && !_cultRule.IsObjectiveFinished() ||
-                runeSelector.RequiredTotalCultists > _cultRule.GetTotalCultists())
+                _cultRule.GetRequiredCultists(runeSelector) > _cultRule.GetTotalCultists())
                 continue;
 
             // WhiteDream - leader-only runes stay hidden from everyone else.
@@ -156,7 +161,12 @@ public sealed partial class CultRuneBaseSystem : EntitySystem
         if (TryComp(runeEnt, out CultRuneBaseComponent? rune)
             && rune.TriggerRendingMarkers
             && !_cultRule.TryConsumeNearestMarker(args.User))
+        {
+            // Another drawing may have finished on this site during our do-after. Never leave the
+            // newly spawned rending rune behind unless this attempt actually spent a site.
+            QueueDel(runeEnt);
             return;
+        }
 
         var ev = new AfterRunePlaced(args.User);
         RaiseLocalEvent(runeEnt, ev);
@@ -301,8 +311,8 @@ public sealed partial class CultRuneBaseSystem : EntitySystem
         var newDamage = new DamageSpecifier(damage);
         if (TryComp(user, out BloodCultEmpoweredComponent? empowered))
         {
-            foreach (var (key, value) in damage.DamageDict)
-                damage.DamageDict[key] = value * empowered.RuneDamageMultiplier;
+            foreach (var (key, value) in newDamage.DamageDict)
+                newDamage.DamageDict[key] = value * empowered.RuneDamageMultiplier;
         }
 
         _damageable.TryChangeDamage(user, newDamage, true);

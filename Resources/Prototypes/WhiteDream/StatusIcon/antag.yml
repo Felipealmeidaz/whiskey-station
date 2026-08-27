@@ -1,4 +1,4 @@
-﻿- type: factionIcon
+- type: factionIcon
   id: BloodCultMember
   priority: 11
   locationPreference: left
@@ -13,3 +13,13 @@
   icon:
     sprite: /Textures/WhiteDream/BloodCult/cult_hud.rsi
     state: cult_leader
+
+# Whiskey - whoever the leader has pointed Nar'Sie at. Higher priority than the cult icons
+# so a marked target never has it hidden behind something else.
+- type: factionIcon
+  id: BloodCultTarget
+  priority: 10
+  locationPreference: right
+  icon:
+    sprite: /Textures/WhiteDream/BloodCult/cult_hud.rsi
+    state: cult_target

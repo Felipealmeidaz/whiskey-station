@@ -2,6 +2,7 @@
 // Blood Cult: ported from WWhiteDreamProject/wwdpublic. See Content.Shared/WhiteDream/BloodCult/ATTRIBUTION.md
 
 // Ported from funky-station (BloodCultRiftComponent) and adapted.
+using Content.Shared.AlertLevel;
 using Content.Shared.Chemistry.Reagent;
 using Robust.Shared.Audio;
 using Robust.Shared.Prototypes;
@@ -112,6 +113,13 @@ public sealed partial class BloodCultRiftComponent : Component
     [ViewVariables(VVAccess.ReadOnly)]
     public int SacrificesDone;
 
+    /// <summary>
+    ///     The participant requirement at the beginning of the current attempt. Sacrifices lower
+    ///     <see cref="RequiredCultists"/>, so an aborted ritual needs this exact value to reset.
+    /// </summary>
+    [ViewVariables(VVAccess.ReadOnly)]
+    public int? RitualStartingRequiredCultists;
+
     [ViewVariables(VVAccess.ReadOnly)]
     public float TimeUntilNextChant;
 
@@ -155,6 +163,16 @@ public sealed partial class BloodCultRiftComponent : Component
     public int RitualMaxGuardians = 1;
 
     /// <summary>
+    ///     Whiskey - how many the rift will ever produce, across the whole round. One and done:
+    ///     killing the hellspawn is meant to be worth the fight, not the start of a treadmill.
+    /// </summary>
+    [DataField]
+    public int TotalGuardians = 1;
+
+    [ViewVariables(VVAccess.ReadOnly)]
+    public int GuardiansSpawned;
+
+    /// <summary>
     ///     How far from the rift a guardian can crawl out.
     /// </summary>
     [DataField]
@@ -180,6 +198,24 @@ public sealed partial class BloodCultRiftComponent : Component
     public bool MusicPlaying;
 
     #endregion
+
+    // <Whiskey> - every offering has to be felt across the station, not just on the runes.
+    [DataField]
+    public SoundSpecifier SummonSound = new SoundPathSpecifier("/Audio/WhiteDream/BloodCult/narsie_summoned.ogg");
+
+    [DataField]
+    public EntProtoId SacrificeLightningProto = "CultSacrificeLightning";
+
+    [DataField]
+    public TimeSpan SacrificeFlickerTime = TimeSpan.FromSeconds(3);
+
+    /// <summary>
+    ///     Raised on the station the moment Nar'Sie takes the first of the chanters. Delta was
+    ///     already called when the veil tore; this is the code for what is coming through it.
+    /// </summary>
+    [DataField]
+    public ProtoId<AlertLevelPrototype> FirstSacrificeAlertLevel = "Octarine";
+    // </Whiskey>
 
     [DataField]
     public EntProtoId NarsiePrototype = "MobNarsieSpawn";

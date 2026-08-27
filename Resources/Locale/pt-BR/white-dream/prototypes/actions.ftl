@@ -15,7 +15,7 @@ ent-ActionBloodCultEmp = Pulso Eletromagnético
 ent-ActionBloodCultShadowShackles = Grilhões das Sombras
     .desc = Fortalece sua mão para algemar uma vítima ao toque, e emudecê-la se der certo.
 ent-ActionBloodCultTwistedConstruction = Construção Retorcida
-    .desc = Fortalece sua mão para corromper certos objetos metálicos.
+    .desc = Fortalece sua mão para transformar uma pilha de plasteel em metal rúnico ao toque.
 ent-ActionBloodCultSummonCombatEquipment = Invocar Equipamento de Combate
     .desc = Permite invocar o equipamento de combate do culto, incluindo mantos, capuz, botas, uma lâmina eldritch e uma bola do culto.
 ent-ActionBloodCultSummonRitualDagger = Invocar Adaga Ritual
@@ -38,3 +38,11 @@ ent-ActionPhaseShift = Mudança de Fase
     .desc = Esta magia permite que você atravesse paredes.
 ent-ActionGauntletEcho = Eco da Manopla
     .desc = Canaliza energia na sua manopla - disparando sua essência à frente em um ataque lento, porém devastador.
+
+# Whiskey - magias do lider do culto
+ent-ActionBloodCultFinalReckoning = Acerto de Contas Final
+    .desc = Chama o culto inteiro para o seu lado. Dez segundos parado, e Nar'Sie concede isso uma única vez: desperdice e não haverá outra.
+ent-ActionBloodCultMarkTarget = Marcar Alvo
+    .desc = Marca um dos não-iniciados para o culto. Cada acólito aprende o nome dele e onde ele está.
+ent-ActionBloodCultEldritchPulse = Pulso Eldritch
+    .desc = Agarra um cultista ou uma obra do culto e o arremessa pelo espaço até onde você apontar em seguida.

@@ -7,6 +7,7 @@ using Content.Server.DoAfter;
 using Content.Server.Emp;
 using Content.Server.Hands.Systems;
 using Content.Server.Popups;
+using Content.Server.WhiteDream.BloodCult.Gamerule; // Whiskey
 using Content.Shared.Actions.Components;
 using Content.Shared.Stunnable;
 using Content.Shared.Actions;
@@ -20,7 +21,6 @@ using Content.Shared.Popups;
 using Content.Goobstation.Shared.ListViewSelector;
 using Content.Trauma.Common.RadialSelector;
 using Content.Shared.Speech.Muting;
-using Content.Shared.StatusEffect;
 using Content.Shared.WhiteDream.BloodCult.Spells;
 using Robust.Server.Audio;
 using Robust.Server.GameObjects;
@@ -47,10 +47,10 @@ public sealed partial class BloodCultSpellsSystem : EntitySystem
     [Dependency] private EmpSystem _empSystem = default!;
     [Dependency] private HandsSystem _hands = default!;
     [Dependency] private MindShieldSystem _mindShield = default!;
+    [Dependency] private BloodCultRuleSystem _cultRule = default!; // Whiskey
     [Dependency] private InventorySystem _inventory = default!;
     [Dependency] private TransformSystem _transform = default!;
     [Dependency] private PopupSystem _popup = default!;
-    [Dependency] private StatusEffectsSystem _statusEffects = default!;
     [Dependency] private StatusEffectsNewSystem _statusEffectsNew = default!; // Trauma
     [Dependency] private SharedStunSystem _stun = default!;
     [Dependency] private UserInterfaceSystem _ui = default!;
@@ -61,6 +61,7 @@ public sealed partial class BloodCultSpellsSystem : EntitySystem
     {
         base.Initialize();
 
+        SubscribeLocalEvent<BaseCultSpellComponent, ActionAttemptEvent>(OnCultActionAttempt);
         SubscribeLocalEvent<BaseCultSpellComponent, EntityTargetActionEvent>(OnCultTargetEvent);
         SubscribeLocalEvent<BaseCultSpellComponent, ActionGettingDisabledEvent>(OnActionGettingDisabled);
 
@@ -80,14 +81,14 @@ public sealed partial class BloodCultSpellsSystem : EntitySystem
 
     #region BaseHandlers
 
+    private void OnCultActionAttempt(Entity<BaseCultSpellComponent> spell, ref ActionAttemptEvent args)
+    {
+        if (_statusEffectsNew.HasStatusEffect(args.User, MutedEffect))
+            args.Cancelled = true;
+    }
+
     private void OnCultTargetEvent(Entity<BaseCultSpellComponent> spell, ref EntityTargetActionEvent args)
     {
-        if (_statusEffects.HasStatusEffect(args.Performer, "Muted"))
-        {
-            args.Handled = true;
-            return;
-        }
-
         if (spell.Comp.BypassProtection)
             return;
 
@@ -216,14 +217,46 @@ public sealed partial class BloodCultSpellsSystem : EntitySystem
 
     #region SpellsHandlers
 
+    // Whiskey - the stun decays as the cult grows, so it does not turn into a stunlock late in
+    // the round, and a mindshield takes half of whatever is left instead of blocking it outright.
     private void OnStun(BloodCultStunEvent ev)
     {
         if (ev.Handled)
             return;
 
-        _statusEffectsNew.TryUpdateStatusEffectDuration(ev.Target, MutedEffect, ev.MuteDuration); // Trauma
-        _stun.TryAddParalyzeDuration(ev.Target, ev.ParalyzeDuration);
+        var decay = GetCultDecay(ev.DecayShare);
+        var paralyze = Interpolate(ev.ParalyzeDuration, ev.MinParalyzeDuration, decay);
+        var mute = Interpolate(ev.MuteDuration, ev.MinMuteDuration, decay);
+
+        // WhiteDream - the mindshield lives on the implant, never on the person, so ask the system.
+        if (_mindShield.IsShielded(ev.Target))
+        {
+            paralyze *= ev.MindShieldMultiplier;
+            mute *= ev.MindShieldMultiplier;
+        }
+
+        _statusEffectsNew.TryUpdateStatusEffectDuration(ev.Target, MutedEffect, mute); // Trauma
+        _stun.TryAddParalyzeDuration(ev.Target, paralyze);
         ev.Handled = true;
+    }
+
+    /// <summary>
+    ///     Whiskey - how far along the cult is towards <paramref name="decayShare"/> of the crew.
+    ///     0 means the stun is at full strength, 1 means it has bottomed out at the minimum.
+    /// </summary>
+    private float GetCultDecay(float decayShare)
+    {
+        var crew = _cultRule.GetActivePlayerCount();
+        if (crew <= 0 || decayShare <= 0f)
+            return 0f;
+
+        return Math.Clamp(_cultRule.GetTotalCultists() / (float) crew / decayShare, 0f, 1f);
+    }
+
+    // Whiskey
+    private static TimeSpan Interpolate(TimeSpan from, TimeSpan to, float amount)
+    {
+        return from + (to - from) * amount;
     }
 
     private void OnEmp(BloodCultEmpEvent ev)
@@ -341,8 +374,6 @@ public sealed partial class BloodCultSpellsSystem : EntitySystem
             return;
         }
 
-        cultist.Comp.AddSpellsMode = true;
-
         var radialList = new List<RadialSelectorEntry>();
         foreach (var spellId in pool.Powers)
         {
@@ -355,10 +386,7 @@ public sealed partial class BloodCultSpellsSystem : EntitySystem
             radialList.Add(entry);
         }
 
-        var state = new RadialSelectorState(radialList, true);
-
-        _ui.SetUiState(cultist.Owner, RadialSelectorUiKey.Key, state);
-        _ui.TryToggleUi(cultist.Owner, RadialSelectorUiKey.Key, cultist.Owner);
+        ShowSpellSelector(cultist, true, new RadialSelectorState(radialList, true));
     }
 
     private void RemoveBloodSpells(Entity<BloodCultSpellsHolderComponent> cultist)
@@ -368,8 +396,6 @@ public sealed partial class BloodCultSpellsSystem : EntitySystem
             _popup.PopupEntity(Loc.GetString("blood-cult-no-spells"), cultist, cultist, PopupType.Medium);
             return;
         }
-
-        cultist.Comp.AddSpellsMode = false;
 
         var radialList = new List<RadialSelectorEntry>();
         foreach (var spell in cultist.Comp.SelectedSpells)
@@ -384,10 +410,33 @@ public sealed partial class BloodCultSpellsSystem : EntitySystem
             radialList.Add(entry);
         }
 
-        var state = new RadialSelectorState(radialList, true);
+        ShowSpellSelector(cultist, false, new RadialSelectorState(radialList, true));
+    }
+
+    /// <summary>
+    ///     Whiskey - both menus share one UI key, and the old code called TryToggleUi, which only
+    ///     ever flips. Going straight from one menu to the other closed the window instead of swapping
+    ///     what was in it, so it took two clicks. Toggle now only closes when it is already this menu.
+    /// </summary>
+    private void ShowSpellSelector(
+        Entity<BloodCultSpellsHolderComponent> cultist,
+        bool addSpellsMode,
+        RadialSelectorState state
+    )
+    {
+        var alreadyOpen = _ui.IsUiOpen(cultist.Owner, RadialSelectorUiKey.Key, cultist.Owner);
+        var sameMenu = cultist.Comp.AddSpellsMode == addSpellsMode;
+
+        cultist.Comp.AddSpellsMode = addSpellsMode;
+
+        if (alreadyOpen && sameMenu)
+        {
+            CloseSpellSelector(cultist);
+            return;
+        }
 
         _ui.SetUiState(cultist.Owner, RadialSelectorUiKey.Key, state);
-        _ui.TryToggleUi(cultist.Owner, RadialSelectorUiKey.Key, cultist.Owner);
+        _ui.OpenUi(cultist.Owner, RadialSelectorUiKey.Key, cultist.Owner);
     }
 
     private void EnsureCultUi(EntityUid uid)

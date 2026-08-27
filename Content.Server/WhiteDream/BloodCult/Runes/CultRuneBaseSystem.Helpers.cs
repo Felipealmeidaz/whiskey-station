@@ -2,6 +2,7 @@
 // Blood Cult: ported from WWhiteDreamProject/wwdpublic. See Content.Shared/WhiteDream/BloodCult/ATTRIBUTION.md
 
 using Content.Shared.Humanoid;
+using Content.Shared.Mobs.Components;
 using Content.Shared.Movement.Pulling.Components;
 using Content.Shared.Movement.Pulling.Systems;
 using Content.Shared.WhiteDream.BloodCult.BloodCultist;
@@ -20,7 +21,12 @@ public sealed partial class CultRuneBaseSystem
     {
         var runeTransform = Transform(rune);
         var entities = _lookup.GetEntitiesInRange(runeTransform.Coordinates, range);
-        entities.RemoveWhere(entity => !HasComp<BloodCultistComponent>(entity) && !HasComp<ConstructComponent>(entity));
+        entities.RemoveWhere(entity =>
+            (!HasComp<BloodCultistComponent>(entity) && !HasComp<ConstructComponent>(entity)) ||
+            !HasComp<MobStateComponent>(entity) ||
+            _mobState.IsDead(entity) ||
+            _mobState.IsCritical(entity) ||
+            !_mind.TryGetMind(entity, out _, out _));
         return entities;
     }
 

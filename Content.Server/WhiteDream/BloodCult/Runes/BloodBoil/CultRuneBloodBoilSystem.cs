@@ -7,6 +7,7 @@ using Content.Server.Atmos.Components;
 using Content.Server.Atmos.EntitySystems;
 using Content.Shared.Atmos.Components;
 using Content.Shared.Body.Components;
+using Content.Shared.Mobs.Systems;
 using Content.Server.Examine;
 using Content.Server.Popups;
 using Content.Server.Weapons.Ranged.Systems;
@@ -29,6 +30,7 @@ public sealed partial class CultRuneBloodBoilSystem : EntitySystem
     [Dependency] private ExamineSystem _examine = default!;
     [Dependency] private FlammableSystem _flammable = default!;
     [Dependency] private GunSystem _gun = default!;
+    [Dependency] private MobStateSystem _mobState = default!;
     [Dependency] private TransformSystem _transform = default!;
     [Dependency] private PopupSystem _popup = default!;
 
@@ -46,6 +48,7 @@ public sealed partial class CultRuneBloodBoilSystem : EntitySystem
                 entity =>
                     HasComp<BloodCultistComponent>(entity) ||
                     !HasComp<BloodstreamComponent>(entity) ||
+                    _mobState.IsDead(entity) ||
                     !_examine.InRangeUnOccluded(ent, entity, ent.Comp.TargetsLookupRange))
             .ToList();
 
@@ -56,7 +59,10 @@ public sealed partial class CultRuneBloodBoilSystem : EntitySystem
             return;
         }
 
-        for (var i = 0; i < ent.Comp.ProjectileCount; i++)
+        // Every projectile takes a distinct target. If fewer than the configured maximum are
+        // available, fire fewer projectiles instead of picking from an empty list.
+        var projectileCount = Math.Min(ent.Comp.ProjectileCount, targets.Count);
+        for (var i = 0; i < projectileCount; i++)
         {
             var target = _random.PickAndTake(targets);
             if (HasComp<FlammableComponent>(target))

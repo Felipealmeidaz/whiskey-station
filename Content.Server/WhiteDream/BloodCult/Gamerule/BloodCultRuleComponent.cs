@@ -1,7 +1,8 @@
-﻿// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Blood Cult: ported from WWhiteDreamProject/wwdpublic. See Content.Shared/WhiteDream/BloodCult/ATTRIBUTION.md
 
 using Content.Shared.NPC.Prototypes;
+using Content.Shared.Roles;
 using Content.Server.WhiteDream.BloodCult.RendingRunePlacement;
 using Content.Shared.WhiteDream.BloodCult.BloodCultist;
 using Content.Shared.WhiteDream.BloodCult.Constructs;
@@ -24,11 +25,20 @@ public sealed partial class BloodCultRuleComponent : Component
     [DataField]
     public Color EyeColor = Color.FromHex("#f80000");
 
+    // Whiskey - stage thresholds are a share of the active crew, not a flat count.
+    // tg uses 20% for the red eyes and 40% for the halo.
     [DataField]
-    public int ReadEyeThreshold = 5;
+    public float ReadEyeThreshold = 0.2f;
 
     [DataField]
-    public int PentagramThreshold = 8;
+    public float PentagramThreshold = 0.4f;
+
+    /// <summary>
+    ///     Whiskey - the final reckoning is one per cult, not one per leader. Killing the leader
+    ///     and electing another must not hand the spell back.
+    /// </summary>
+    [ViewVariables(VVAccess.ReadOnly)]
+    public bool FinalReckoningUsed;
 
     [DataField]
     public int RendingRunePlacementsAmount = 3;
@@ -67,6 +77,34 @@ public sealed partial class BloodCultRuleComponent : Component
     [ViewVariables(VVAccess.ReadOnly)]
     public EntityUid? OfferingTarget;
 
+    /// <summary>
+    ///     The target currently written into already granted offering objectives. Kept separately
+    ///     so a target changed during objective assignment is reconciled on the next rule tick.
+    /// </summary>
+    [ViewVariables(VVAccess.ReadOnly)]
+    public EntityUid? ObjectivesOfferingTarget;
+
+    /// <summary>
+    ///     Whiskey - set only when the marked one is actually given up on an offering rune. Killing
+    ///     them used to be enough on its own, which handed the cult the rending rune for free.
+    /// </summary>
+    [ViewVariables(VVAccess.ReadOnly)]
+    public bool OfferingSacrificed;
+
+    /// <summary>
+    ///     Whiskey - who Nar'Sie will accept. A random passenger was nobody's problem: the cult
+    ///     could take them apart in maintenance and the crew would never know a name was missing.
+    ///     Asking for security or command puts the offering behind the people who are armed and
+    ///     the people who are watched, which is the fight the objective is supposed to start.
+    ///     Leave the list empty to let her take anyone.
+    /// </summary>
+    [DataField]
+    public List<ProtoId<DepartmentPrototype>> OfferingDepartments = new()
+    {
+        "Security",
+        "Command"
+    };
+
     [ViewVariables(VVAccess.ReadOnly)]
     public EntityUid? CultLeader;
 
@@ -78,13 +116,15 @@ public sealed partial class BloodCultRuleComponent : Component
     #region Veil progression (ported from funky-station)
 
     /// <summary>
-    ///     Fraction of the living crew that must chant together to tear the veil.
+    ///     Whiskey - the chant is a flat head count, not a share of the crew. Scaling it meant a full
+    ///     round needed eight people standing still on runes, which is a different game from the three
+    ///     it was written for. Leave at zero to keep it flat; anything above zero brings scaling back.
     /// </summary>
     [DataField]
-    public float VeilRitualCultistRatio = 0.125f;
+    public float VeilRitualCultistRatio;
 
     [DataField]
-    public int VeilRitualMinCultists = 2;
+    public int VeilRitualMinCultists = 3;
 
     /// <summary>
     ///     How long after the veil is torn before the blood rift bleeds through.
@@ -124,6 +164,19 @@ public sealed partial class BloodCultRuleComponent : Component
     ///     Grace period between the cult being told the pentagram is coming and it actually showing up,
     ///     so nobody gets branded mid-conversation with security.
     /// </summary>
+    /// <summary>
+    ///     Whiskey - the red eyes get the same grace period the pentagram already had. They used
+    ///     to appear out of nowhere.
+    /// </summary>
+    [DataField]
+    public TimeSpan RedEyesWarningDelay = TimeSpan.FromMinutes(1);
+
+    [ViewVariables(VVAccess.ReadOnly)]
+    public TimeSpan? RedEyesTime;
+
+    [ViewVariables(VVAccess.ReadOnly)]
+    public bool RedEyesApplied;
+
     [DataField]
     public TimeSpan PentagramWarningDelay = TimeSpan.FromMinutes(2);
 
@@ -175,6 +228,16 @@ public sealed partial class BloodCultRuleComponent : Component
     public List<Entity<BloodCultistComponent>> Cultists = new();
 
     public List<Entity<ConstructComponent>> Constructs = new();
+
+    /// <summary>
+    ///     Whiskey - Nar'Sie harvests every cultist the moment she arrives, which empties both lists
+    ///     above before the round end summary is built. These two survive it.
+    /// </summary>
+    [ViewVariables(VVAccess.ReadOnly)]
+    public int PeakCultists;
+
+    [ViewVariables(VVAccess.ReadOnly)]
+    public int TotalConstructs;
 }
 
 /// <summary>

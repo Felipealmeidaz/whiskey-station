@@ -17,6 +17,7 @@ using Content.Server.Mind;
 using Content.Server.NPC.Systems;
 using Content.Server.Pinpointer;
 using Content.Server.Roles;
+using Content.Server.Roles.Jobs;
 using Content.Server.RoundEnd;
 using Content.Server.WhiteDream.BloodCult.Items.BloodSpear;
 using Content.Server.WhiteDream.BloodCult.Objectives;
@@ -34,6 +35,7 @@ using Content.Shared.Mobs.Systems;
 using Content.Shared.NPC.Systems;
 using Content.Shared.Pinpointer;
 using Content.Shared.Movement.Pulling.Components;
+using Content.Shared.WhiteDream.BloodCult;
 using Content.Shared.WhiteDream.BloodCult.Components;
 using Content.Shared.WhiteDream.BloodCult.BloodCultist;
 using Content.Shared.WhiteDream.BloodCult.Items;
@@ -62,6 +64,8 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
     [Dependency] private NpcFactionSystem _faction = default!;
     [Dependency] private MindSystem _mind = default!;
     [Dependency] private MobStateSystem _mobState = default!;
+    [Dependency] private BloodCultPopulationSystem _cultPopulation = default!; // Whiskey
+    [Dependency] private JobSystem _job = default!;
     [Dependency] private RoleSystem _role = default!;
     [Dependency] private RoundEndSystem _roundEnd = default!;
     [Dependency] private TransformSystem _transform = default!;
@@ -110,8 +114,12 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
         var winText = Loc.GetString($"blood-cult-condition-{component.WinCondition.ToString().ToLower()}");
         args.AddLine(winText);
 
-        args.AddLine(Loc.GetString("blood-cult-roundend-stats-cultists", ("count", component.Cultists.Count)));
-        args.AddLine(Loc.GetString("blood-cult-roundend-stats-constructs", ("count", component.Constructs.Count)));
+        // Whiskey - read the tallies, not the live lists. Nar'Sie harvests the whole cult on
+        // arrival, so by the time this runs a winning round has nobody left in either of them.
+        args.AddLine(Loc.GetString("blood-cult-roundend-stats-cultists",
+            ("count", Math.Max(component.PeakCultists, component.Cultists.Count))));
+        args.AddLine(Loc.GetString("blood-cult-roundend-stats-constructs",
+            ("count", Math.Max(component.TotalConstructs, component.Constructs.Count))));
         args.AddLine(Loc.GetString("blood-cult-roundend-stats-stage",
             ("stage", Loc.GetString(GetStageLocId(component.Stage)))));
 
@@ -171,6 +179,7 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
         while (query.MoveNext(out _, out var cult, out _))
         {
             cult.Cultists.Add(cultist);
+            cult.PeakCultists = Math.Max(cult.PeakCultists, cult.Cultists.Count);
             UpdateCultStage(cult);
 
             // WhiteDream - anyone converted after the cult already reached a stage still gets its marks.
@@ -183,7 +192,9 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
     /// </summary>
     private void ApplyCurrentStageAppearance(BloodCultRuleComponent cultRule, Entity<BloodCultistComponent> cultist)
     {
-        if (cultRule.Stage >= CultStage.RedEyes)
+        // Whiskey - keyed off what has actually been applied, not off the stage. Someone
+        // converted during the warning window should not be branded before the warning fires.
+        if (cultRule.RedEyesApplied)
         {
             cultist.Comp.OriginalEyeColor ??= _humanoid.GetEyeColor(_humanoid.GetOrgansData(cultist));
             _humanoid.SetEyeColor(cultist, cultRule.EyeColor);
@@ -285,8 +296,35 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
         // </WhiteDream>
     }
 
-    public bool IsObjectiveFinished() =>
-        !TryGetTarget(out var target) || !HasComp<MobStateComponent>(target) || _mobState.IsDead(target.Value);
+    /// <summary>
+    ///     Whiskey - the offering counts when it is given, not when it dies. A corpse in the morgue
+    ///     used to satisfy this on its own and hand the cult the rending rune without a rune ever
+    ///     being drawn on the body.
+    /// </summary>
+    public bool IsObjectiveFinished()
+    {
+        var query = QueryActiveRules();
+        while (query.MoveNext(out _, out var rule, out _))
+            return rule.OfferingSacrificed;
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Called by the offering rune when the marked one is actually consumed on it.
+    /// </summary>
+    public void MarkOfferingSacrificed(EntityUid target)
+    {
+        var query = QueryActiveRules();
+        while (query.MoveNext(out _, out var rule, out _))
+        {
+            if (rule.OfferingTarget != target || rule.OfferingSacrificed)
+                continue;
+
+            rule.OfferingSacrificed = true;
+            NotifyCultists(Loc.GetString("cult-offering-accepted", ("name", Name(target))));
+        }
+    }
 
     public bool TryGetTarget([NotNullWhen(true)] out EntityUid? target)
     {
@@ -313,11 +351,28 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
         return false;
     }
 
+    /// <summary>
+    ///     Whiskey - crew currently playing, ignoring the lobby, observers and the dead.
+    /// </summary>
+    public int GetActivePlayerCount() => _cultPopulation.GetActivePlayerCount();
+
+    public int GetRedEyesRequirement(BloodCultRuleComponent cultRule)
+    {
+        return (int) MathF.Ceiling(GetActivePlayerCount() * cultRule.ReadEyeThreshold);
+    }
+
+    public int GetPentagramRequirement(BloodCultRuleComponent cultRule)
+    {
+        return (int) MathF.Ceiling(GetActivePlayerCount() * cultRule.PentagramThreshold);
+    }
+
     public int GetTotalCultists()
     {
         var query = QueryActiveRules();
         while (query.MoveNext(out _, out var rule, out _))
-            return rule.Cultists.Count + rule.Constructs.Count;
+            // Conversion thresholds describe the share of the crew that joined the cult.
+            // Constructs are tracked separately and must not make the rending rune appear early.
+            return rule.Cultists.Count;
 
         return 0;
     }
@@ -363,22 +418,51 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
         return false;
     }
 
+    /// <summary>
+    ///     Whiskey - Nar'Sie names someone the crew will miss. Security and command first; everyone
+    ///     else only if the station has nobody left in either, so a wiped security force cannot
+    ///     leave the cult with no offering to make and no way to reach the rending rune.
+    /// </summary>
     public void SetRandomCultTarget(BloodCultRuleComponent rule)
     {
-        var querry =
+        var query =
             EntityQueryEnumerator<MindContainerComponent, HumanoidProfileComponent, ActorComponent>();
 
-        var potentialTargets = new List<EntityUid>();
+        var wanted = new List<EntityUid>();
+        var everyoneElse = new List<EntityUid>();
 
-        while (querry.MoveNext(out var uid, out _, out _, out _))
+        while (query.MoveNext(out var uid, out var mindContainer, out _, out _))
         {
-            if (HasComp<BloodCultistComponent>(uid))
+            if (!IsAvailableOfferingTarget(uid))
                 continue;
 
-            potentialTargets.Add(uid);
+            if (IsWorthOffering(rule, mindContainer))
+                wanted.Add(uid);
+            else
+                everyoneElse.Add(uid);
         }
 
-        rule.OfferingTarget = potentialTargets.Count > 0 ? _random.Pick(potentialTargets) : null;
+        var pool = wanted.Count > 0 ? wanted : everyoneElse;
+        rule.OfferingTarget = pool.Count > 0 ? _random.Pick(pool) : null;
+    }
+
+    /// <summary>
+    ///     Whether this person holds a job in one of the departments the offering is restricted to.
+    /// </summary>
+    private bool IsWorthOffering(BloodCultRuleComponent rule, MindContainerComponent mindContainer)
+    {
+        // No restriction configured, so anyone will do and nobody is preferred.
+        if (rule.OfferingDepartments.Count == 0)
+            return false;
+
+        if (mindContainer.Mind is not { } mind)
+            return false;
+
+        if (!_job.MindTryGetJob(mind, out var job) ||
+            !_job.TryGetAllDepartments(job.ID, out var departments))
+            return false;
+
+        return departments.Any(department => rule.OfferingDepartments.Contains(department.ID));
     }
 
     public bool TryConsumeNearestMarker(EntityUid user)
@@ -412,7 +496,7 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
                 continue;
 
             marker.IsActive = false;
-            break;
+            return true;
         }
 
         return false;
@@ -423,6 +507,12 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
         var query = QueryActiveRules();
         while (query.MoveNext(out _, out var cult, out _))
         {
+            // Whiskey - she came through, so nothing that happens to the cult afterwards is a loss.
+            // Harvesting gibs every cultist, which emptied the list and flipped a won round to
+            // "the crew stopped the rending of reality" a tick later.
+            if (cult.WinCondition == CultWinCondition.Win)
+                continue;
+
             var aliveCultists = cult.Cultists.Count(cultist => !_mobState.IsDead(cultist));
             if (aliveCultists != 0)
                 return;
@@ -572,12 +662,10 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
         var cultistsCount = cultRule.Cultists.Count;
         var prevStage = cultRule.Stage;
 
-        if (cultistsCount >= cultRule.PentagramThreshold)
-        {
+        // Whiskey - the leader comes from the vote now, the pentagram no longer picks one
+        if (cultistsCount >= GetPentagramRequirement(cultRule))
             cultRule.Stage = CultStage.Pentagram;
-            SelectRandomLeader(cultRule);
-        }
-        else if (cultistsCount >= cultRule.ReadEyeThreshold)
+        else if (cultistsCount >= GetRedEyesRequirement(cultRule))
             cultRule.Stage = CultStage.RedEyes;
         else
             cultRule.Stage = CultStage.Start;
@@ -588,49 +676,34 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
 
     private void UpdateCultistsAppearance(BloodCultRuleComponent cultRule, CultStage prevStage)
     {
+        // Whiskey - the marks are permanent once they land, as on tg. Only deconversion clears
+        // them. Shrinking below a threshold used to un-paint the whole cult, so three deaths were enough
+        // to hide everyone again. What shrinking still does is cancel a warning that has not fired yet.
         switch (cultRule.Stage)
         {
             case CultStage.Start when prevStage == CultStage.RedEyes:
-                foreach (var cultist in cultRule.Cultists)
-                    RemoveCultistAppearance(cultist);
-
+                cultRule.RedEyesTime = null;
                 break;
             case CultStage.RedEyes when prevStage == CultStage.Start:
-                foreach (var cultist in cultRule.Cultists)
-                {
-                    // Trauma - eye colour is stored on the eye organ now
-                    cultist.Comp.OriginalEyeColor ??= _humanoid.GetEyeColor(_humanoid.GetOrgansData(cultist));
-                    _humanoid.SetEyeColor(cultist, cultRule.EyeColor);
-                }
-
+                BeginRedEyes(cultRule);
+                break;
+            case CultStage.RedEyes when prevStage == CultStage.Pentagram:
+                cultRule.PentagramTime = null;
                 break;
             case CultStage.Pentagram:
+                // A mass conversion, or the crew count dropping, can move the cult straight from Start
+                // to Pentagram without ever passing through RedEyes. Start both: BeginRedEyes no-ops if
+                // it already ran, so nobody skips the eyes just by growing fast.
+                BeginRedEyes(cultRule);
+
                 // WhiteDream - warn the cult first, brand them two minutes later.
                 BeginAscension(cultRule);
                 break;
         }
     }
 
-    /// <summary>
-    ///     A crutch while we have no NORMAL voting system. The DarkRP one fucking sucks.
-    /// </summary>
-    private void SelectRandomLeader(BloodCultRuleComponent cultRule)
-    {
-        if (cultRule.LeaderSelected)
-            return;
-
-        var candidats = cultRule.Cultists;
-        candidats.RemoveAll(
-            entity =>
-                TryComp(entity, out PullableComponent? pullable) && pullable.BeingPulled ||
-                TryComp(entity, out CuffableComponent? cuffable) && cuffable.CuffedHandCount > 0);
-
-        if (candidats.Count == 0)
-            return;
-
-        var leader = _random.Pick(candidats);
-        AddComp<BloodCultLeaderComponent>(leader);
-        cultRule.LeaderSelected = true;
-        cultRule.CultLeader = leader;
-    }
+    // Whiskey - SelectRandomLeader lived here. It was a stopgap ("a crutch while we have no
+    // NORMAL voting system") that fired the moment the cult hit the pentagram, and it fought with the
+    // vote in BloodCultRuleSystem.Leader.cs, which it usually won. It also mutated cultRule.Cultists
+    // in place while filtering candidates, quietly dropping cultists from the rule's own list.
 }
