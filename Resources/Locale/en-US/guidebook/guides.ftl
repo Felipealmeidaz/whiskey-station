@@ -143,6 +143,7 @@ guide-entry-revolutionaries = Revolutionaries
 guide-entry-minor-antagonists = Minor Antagonists
 guide-entry-blood-cult = Blood Cult
 guide-entry-blood-cult-arsenal = Runes, spells, and structures
+guide-entry-blood-cult-equipment = Cult arsenal
 guide-entry-blood-cult-leader = The Cult Leader
 guide-entry-blood-cult-deconversion = Deconversion
 guide-entry-space-ninja = Space Ninja

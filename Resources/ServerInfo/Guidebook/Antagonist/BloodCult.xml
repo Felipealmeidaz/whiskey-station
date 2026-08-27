@@ -6,7 +6,8 @@
   A Geômetra de Sangue, Nar'Sie, enviou seus seguidores à Estação Espacial 14. Como cultista, você deve trabalhar com seus irmãos, ampliar o culto, entregar a oferenda marcada e rasgar o véu para trazer sua deusa a esta realidade.
 
   <Box Orientation="Vertical">
-    [textlink="Runas, magias, equipamentos e estruturas" link="BloodCultArsenal"]
+    [textlink="Runas, magias e estruturas" link="BloodCultArsenal"]
+    [textlink="Arsenal do culto" link="BloodCultEquipment"]
     [textlink="O líder do culto e o ritual final" link="BloodCultLeader"]
     [textlink="Desconversão e como impedir conversões" link="BloodCultDeconversion"]
   </Box>
@@ -23,8 +24,8 @@
   O culto avança conforme sua parcela da tripulação viva aumenta. Uma marca já aplicada não desaparece apenas porque o número de cultistas diminuiu.
 
   - [color=#d43a3a]Estágio inicial[/color] — o culto ainda pode agir sem marcas visíveis. Converta discretamente e prepare uma base.
-  - [color=#d43a3a]Olhos vermelhos[/color] — ao alcançar [bold]20% da tripulação viva[/bold], todos os cultistas recebem um aviso de 1 minuto. Depois disso, seus olhos ficam vermelhos e o detalhe aparece ao examiná-los. Óculos e vendas escondem essa pista.
-  - [color=#d43a3a]Pentagrama[/color] — ao alcançar [bold]40% da tripulação viva[/bold], o culto recebe um aviso de 2 minutos. Em seguida, um pentagrama impossível de esconder aparece sobre cada cultista, as luzes piscam e a Central anuncia distúrbios no espaço-tempo.
+  - [color=#d43a3a]Olhos vermelhos[/color] — ao alcançar [bold]10% da tripulação viva[/bold], todos os cultistas recebem um aviso de 1 minuto. Depois disso, seus olhos ficam vermelhos e o detalhe aparece ao examiná-los. Óculos e vendas escondem essa pista.
+  - [color=#d43a3a]Pentagrama[/color] — ao alcançar [bold]20% da tripulação viva[/bold], o culto recebe um aviso de 2 minutos. Em seguida, um pentagrama impossível de esconder aparece sobre cada cultista, as luzes piscam e a Central anuncia distúrbios no espaço-tempo.
 
   No estágio do pentagrama, o líder também passa a ter uma [color=#d43a3a]aura vermelha aos pés[/color], visível para todos.
 
@@ -46,7 +47,7 @@
   3. Prepare magias e produza metal rúnico, equipamentos e constructos.
   4. Participe da votação do líder, iniciada cerca de cinco minutos após o começo da rodada.
   5. Converta novos membros e capture a oferenda marcada.
-  6. Entregue a oferenda na runa e reúna pelo menos 40% da tripulação no culto.
+  6. Entregue a oferenda na runa e reúna pelo menos 20% da tripulação no culto.
   7. Proteja o líder enquanto ele desenha uma runa de rasgo dimensional em um dos locais indicados pelo véu.
   8. Mantenha três cultistas sobre as runas de rasgo durante o cântico coletivo.
   9. Localize a fenda que aparecerá dois minutos depois e conclua o ritual final.

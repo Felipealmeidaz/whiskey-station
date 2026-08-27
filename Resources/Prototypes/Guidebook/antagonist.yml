@@ -88,6 +88,7 @@
   text: "/ServerInfo/Guidebook/Antagonist/BloodCult.xml"
   children:
   - BloodCultArsenal
+  - BloodCultEquipment
   - BloodCultLeader
   - BloodCultDeconversion
 
@@ -95,6 +96,11 @@
   id: BloodCultArsenal
   name: guide-entry-blood-cult-arsenal
   text: "/ServerInfo/Guidebook/Antagonist/BloodCultArsenal.xml"
+
+- type: guideEntry
+  id: BloodCultEquipment
+  name: guide-entry-blood-cult-equipment
+  text: "/ServerInfo/Guidebook/Antagonist/BloodCultEquipment.xml"
 
 - type: guideEntry
   id: BloodCultLeader

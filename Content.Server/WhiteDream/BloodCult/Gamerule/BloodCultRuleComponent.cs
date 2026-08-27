@@ -26,12 +26,12 @@ public sealed partial class BloodCultRuleComponent : Component
     public Color EyeColor = Color.FromHex("#f80000");
 
     // Whiskey - stage thresholds are a share of the active crew, not a flat count.
-    // tg uses 20% for the red eyes and 40% for the halo.
+    // 10% reveals the eyes; 20% reveals the pentagram.
     [DataField]
-    public float ReadEyeThreshold = 0.2f;
+    public float ReadEyeThreshold = 0.1f;
 
     [DataField]
-    public float PentagramThreshold = 0.4f;
+    public float PentagramThreshold = 0.2f;
 
     /// <summary>
     ///     Whiskey - the final reckoning is one per cult, not one per leader. Killing the leader
