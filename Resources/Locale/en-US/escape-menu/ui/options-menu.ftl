@@ -63,6 +63,7 @@ ui-options-show-ooc-patron-color = Show OOC Patreon color
 ui-options-show-looc-on-head = Show LOOC chat above characters head
 ui-options-fancy-speech = Show names in speech bubbles
 ui-options-fancy-name-background = Add background to speech bubble names
+# Whiskey - CMSS runechat
 ui-options-original-speech-bubbles = Use the original SS14 speech bubbles
 ui-options-runechat-speech-scale = CMSS-style runechat speech bubble size
 ui-options-chat-follow-button = As ghost, show a follow button next to chat messages

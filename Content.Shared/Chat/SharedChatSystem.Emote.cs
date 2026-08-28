@@ -3,7 +3,6 @@ using Content.Goobstation.Common.Emoting;
 using Content.Trauma.Common.Language.Systems;
 // </Trauma>
 using System.Collections.Frozen;
-using Content.Shared._Whiskey.Chat;
 using Content.Shared.Chat.Prototypes;
 using Content.Shared.Speech;
 using Robust.Shared.Audio;
@@ -13,37 +12,6 @@ namespace Content.Shared.Chat;
 
 public abstract partial class SharedChatSystem
 {
-    private const string ScreamEmoteId = "Scream";
-
-    private static readonly string[] RunechatPainMessages =
-    [
-        "runechat-pain-1",
-        "runechat-pain-2",
-        "runechat-pain-3",
-        "runechat-pain-4",
-        "runechat-pain-5",
-        "runechat-pain-6",
-    ];
-
-    private static readonly string[] RunechatScreamMessages =
-    [
-        "runechat-scream-1",
-        "runechat-scream-2",
-        "runechat-scream-3",
-        "runechat-scream-4",
-        "runechat-scream-5",
-        "runechat-scream-6",
-        "runechat-scream-7",
-        "runechat-scream-8",
-    ];
-
-    private static readonly FrozenSet<string> RunechatPainEmoteIds = new[]
-    {
-        "PainGrimace",
-        "TroubleEyeOpen",
-        "TroubleStanding",
-    }.ToFrozenSet();
-
     [Dependency] private CommonLanguageSystem _language = default!; // Trauma
 
     private FrozenDictionary<string, EmotePrototype> _wordEmoteDict = FrozenDictionary<string, EmotePrototype>.Empty;
@@ -138,6 +106,7 @@ public abstract partial class SharedChatSystem
             // not all emotes are loc'd, but for the ones that are we pass in entity
             var action = Loc.GetString(_random.Pick(emote.ChatMessages), ("entity", source));
             var language = _language.GetLanguage(source); // Einstein Engines - Language
+            // <Whiskey> - CMSS runechat
             var bubbleMessage = GetRunechatEmoteMessage(emote, out var speechStyleClass);
             SendEntityEmote(
                 source,
@@ -150,28 +119,21 @@ public abstract partial class SharedChatSystem
                 ignoreActionBlocker: ignoreActionBlocker,
                 speechBubbleMessage: bubbleMessage,
                 speechStyleClass: speechStyleClass); // Einstein Engines - Language
+            // </Whiskey>
         }
 
         return didEmote;
     }
 
+    // <Whiskey> - CMSS runechat
     private string? GetRunechatEmoteMessage(EmotePrototype emote, out string? speechStyleClass)
     {
-        if (emote.ID == ScreamEmoteId)
-        {
-            speechStyleClass = RunechatStyles.Scream;
-            return Loc.GetString(_random.Pick(RunechatScreamMessages));
-        }
-
-        if (RunechatPainEmoteIds.Contains(emote.ID))
-        {
-            speechStyleClass = RunechatStyles.Pain;
-            return Loc.GetString(_random.Pick(RunechatPainMessages));
-        }
-
-        speechStyleClass = null;
-        return null;
+        speechStyleClass = emote.RunechatStyle;
+        return speechStyleClass == null || emote.RunechatMessages.Count == 0
+            ? null
+            : Loc.GetString(_random.Pick(emote.RunechatMessages));
     }
+    // </Whiskey>
 
     /// <summary>
     /// Makes the selected entity emote using the given <see cref="EmotePrototype"/> without sending any messages to chat.

@@ -71,7 +71,7 @@ public sealed partial class ChatSystem
     // Trauma - added name and obfuscated strings
     private void SendInVoiceRange(ChatChannel channel, string name, string message, string wrappedMessage, string obfuscated, string obfuscatedWrappedMessage, EntityUid source, ChatTransmitRange range, NetUserId? author = null,
         LanguagePrototype? languageOverride = null, bool checkLOS = false, SpeechVerbPrototype? speech = null, Color? colorOverride = null,
-        string? speechStyleClass = null) // Trauma
+        string? speechStyleClass = null) // Whiskey - CMSS runechat
     {
         var language = languageOverride ?? _language.GetLanguage(source); // Trauma
 
@@ -123,10 +123,10 @@ public sealed partial class ChatSystem
                 }
                 // </Whiskey>
 
-                _chatManager.ChatMessageToOne(channel, message, wrappedMessage, source, entHideChat, session.Channel, author: author, speechStyleClass: speechStyleClass);
+                _chatManager.ChatMessageToOne(channel, message, wrappedMessage, source, entHideChat, session.Channel, author: author, speechStyleClass: speechStyleClass); // Whiskey - CMSS runechat
             }
             else
-                _chatManager.ChatMessageToOne(channel, ev.Message, ev.WrappedMessage, source, entHideChat, session.Channel, author: author, speechStyleClass: speechStyleClass);
+                _chatManager.ChatMessageToOne(channel, ev.Message, ev.WrappedMessage, source, entHideChat, session.Channel, author: author, speechStyleClass: speechStyleClass); // Whiskey - CMSS runechat
             // </Trauma>
         }
 
@@ -134,11 +134,11 @@ public sealed partial class ChatSystem
         if (porIdioma != null && speech != null)
         {
             foreach (var (destino, fila) in porIdioma)
-                EntregarTraduzido(destino, fila, channel, source, name, message, speech, language, colorOverride, author, speechStyleClass);
+                EntregarTraduzido(destino, fila, channel, source, name, message, speech, language, colorOverride, author, speechStyleClass); // Whiskey - CMSS runechat
         }
         // </Whiskey>
 
-        _replay.RecordServerMessage(new ChatMessage(channel, message, wrappedMessage, GetNetEntity(source), null, MessageRangeHideChatForReplay(range), speechStyleClass: speechStyleClass));
+        _replay.RecordServerMessage(new ChatMessage(channel, message, wrappedMessage, GetNetEntity(source), null, MessageRangeHideChatForReplay(range), speechStyleClass: speechStyleClass)); // Whiskey - CMSS runechat
     }
 
     /// <summary>
@@ -204,7 +204,7 @@ public sealed partial class ChatSystem
         LanguagePrototype language,
         Color? colorOverride,
         NetUserId? author,
-        string? speechStyleClass)
+        string? speechStyleClass) // Whiskey - CMSS runechat
     {
         var origem = _translation.DetectarIdioma(message);
 
@@ -219,7 +219,7 @@ public sealed partial class ChatSystem
                 if (sessao.Status != SessionStatus.InGame)
                     continue;
 
-                _chatManager.ChatMessageToOne(channel, resultado.Text, embrulhada, source, esconderChat, sessao.Channel, author: author, speechStyleClass: speechStyleClass);
+                _chatManager.ChatMessageToOne(channel, resultado.Text, embrulhada, source, esconderChat, sessao.Channel, author: author, speechStyleClass: speechStyleClass); // Whiskey - CMSS runechat
             }
         });
     }

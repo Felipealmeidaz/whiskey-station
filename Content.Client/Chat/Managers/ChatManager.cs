@@ -59,7 +59,7 @@ internal sealed partial class ChatManager : IChatManager
     /// Trauma - dummy function for client chat manager.
     /// </summary>
     public void ChatMessageToOne(ChatChannel channel, string message, string wrappedMessage, EntityUid source, bool hideChat,
-        INetChannel client, Color? colorOverride = null, bool recordReplay = false, string? audioPath = null, float audioVolume = 0, NetUserId? author = null, bool canCoalesce = true, bool hidePopup = false, string? speechStyleClass = null) // Trauma added hide popup
+        INetChannel client, Color? colorOverride = null, bool recordReplay = false, string? audioPath = null, float audioVolume = 0, NetUserId? author = null, bool canCoalesce = true, bool hidePopup = false, string? speechStyleClass = null) // Whiskey - CMSS runechat style
     {
         // See server-side manager. This just exists for shared code.
     }

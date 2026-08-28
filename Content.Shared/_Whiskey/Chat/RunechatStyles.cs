@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2026 HellFire <46168133+TheHellFireo@users.noreply.github.com>
+// SPDX-FileCopyrightText: 2026 Whiskey Station Contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 namespace Content.Shared._Whiskey.Chat;
 
 /// <summary>

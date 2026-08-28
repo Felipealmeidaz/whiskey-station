@@ -250,8 +250,8 @@ public sealed partial class ChatSystem
         bool checkEmote = true,
         bool ignoreActionBlocker = false,
         NetUserId? author = null,
-        string? speechBubbleMessage = null,
-        string? speechStyleClass = null
+        string? speechBubbleMessage = null, // Whiskey - CMSS runechat
+        string? speechStyleClass = null // Whiskey - CMSS runechat
         )
     {
         if (!_actionBlocker.CanEmote(source) && !ignoreActionBlocker)
@@ -271,7 +271,7 @@ public sealed partial class ChatSystem
             !TryEmoteChatInput(source, action))
             return;
 
-        // Trauma - add name, empty obfuscation strings and checkLOS
+        // Whiskey - CMSS runechat metadata; Trauma - name, obfuscation strings and checkLOS
         SendInVoiceRange(
             ChatChannel.Emotes,
             name,

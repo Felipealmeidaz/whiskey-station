@@ -77,9 +77,10 @@ namespace Content.Client.Chat.UI
         // man down
         public event Action<EntityUid, SpeechBubble>? OnDied;
 
-        public static SpeechBubble CreateSpeechBubble(SpeechType type, ChatMessage message, EntityUid senderEntity)
+        // <Whiskey> - CMSS runechat
+        public static SpeechBubble CreateSpeechBubble(SpeechType type, ChatMessage message, EntityUid senderEntity, bool useSs14SpeechBubbles)
         {
-            if (!IoCManager.Resolve<IConfigurationManager>().GetCVar(CCVars.ChatUseSs14SpeechBubbles))
+            if (!useSs14SpeechBubbles)
                 return new RunechatSpeechBubble(type, message, senderEntity);
 
             switch (type)
@@ -100,13 +101,14 @@ namespace Content.Client.Chat.UI
                     throw new ArgumentOutOfRangeException();
             }
         }
+        // </Whiskey>
 
-        public SpeechBubble(ChatMessage message, EntityUid senderEntity, string speechStyleClass, Color? fontColor = null, TimeSpan? totalTime = null)
+        public SpeechBubble(ChatMessage message, EntityUid senderEntity, string speechStyleClass, Color? fontColor = null, TimeSpan? totalTime = null) // Whiskey - CMSS runechat lifetime
         {
             IoCManager.InjectDependencies(this);
             _senderEntity = senderEntity;
             _transformSystem = _entityManager.System<SharedTransformSystem>();
-            MouseFilter = MouseFilterMode.Ignore;
+            MouseFilter = MouseFilterMode.Ignore; // Whiskey - bubbles must not intercept clicks
 
             // Use text clipping so new messages don't overlap old ones being pushed up.
             RectClipContent = true;
@@ -120,7 +122,7 @@ namespace Content.Client.Chat.UI
             bubble.Measure(Vector2Helpers.Infinity);
             ContentSize = bubble.DesiredSize;
             _verticalOffsetAchieved = -ContentSize.Y;
-            _deathTime = _timing.RealTime + (totalTime ?? TotalTime);
+            _deathTime = _timing.RealTime + (totalTime ?? TotalTime); // Whiskey - CMSS runechat lifetime
         }
 
         protected abstract Control BuildBubble(ChatMessage message, string speechStyleClass, Color? fontColor = null);

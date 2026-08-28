@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2026 HellFire <46168133+TheHellFireo@users.noreply.github.com>
+// SPDX-FileCopyrightText: 2026 Whiskey Station Contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 using System.Globalization;
 using System.Numerics;
 using System.Text;
@@ -335,6 +340,7 @@ public sealed partial class RunechatSpeechBubble : SpeechBubble
         private readonly RunechatVisualStyle _style;
         private readonly float _scale;
         private readonly Font _font;
+        private float _textOpacity;
 
         private readonly List<RunechatPageLayout> _layouts = new();
         private Vector2 _cachedSize;
@@ -351,6 +357,7 @@ public sealed partial class RunechatSpeechBubble : SpeechBubble
             _pages = pages;
             _color = color;
             _style = style;
+            _configManager.OnValueChanged(CCVars.SpeechBubbleTextOpacity, OnTextOpacityChanged, true);
             _scale = BaselineRunechatScale *
                      Math.Clamp(_configManager.GetCVar(CCVars.ChatRunechatBubbleScale), MinimumRunechatScale, MaximumRunechatScale);
             _font = LoadRunechatFont(style.GetScaledFontSize(_scale));
@@ -389,7 +396,7 @@ public sealed partial class RunechatSpeechBubble : SpeechBubble
             EnsureLayout();
 
             var layout = _layouts[Math.Min(_currentPage, _layouts.Count - 1)];
-            var textOpacity = _configManager.GetCVar(CCVars.SpeechBubbleTextOpacity) * CmuMaxAlpha;
+            var textOpacity = _textOpacity;
             var outlineColor = Color.Black.WithAlpha(textOpacity);
             var textColor = _color.WithAlpha(_color.A * textOpacity);
             var lineHeight = GetLineHeight();
@@ -634,6 +641,19 @@ public sealed partial class RunechatSpeechBubble : SpeechBubble
 
             var amount = PanicShakeSize * _style.PanicShakeScale * _scale / BaselineRunechatScale * UIScale;
             return MathF.Sin(_animationTime * MathF.PI * PanicShakeFrequency) * amount;
+        }
+
+        private void OnTextOpacityChanged(float value)
+        {
+            _textOpacity = value * CmuMaxAlpha;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+                _configManager.UnsubValueChanged(CCVars.SpeechBubbleTextOpacity, OnTextOpacityChanged);
+
+            base.Dispose(disposing);
         }
 
         private float GetIconGap()

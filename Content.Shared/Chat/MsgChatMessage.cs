@@ -40,17 +40,19 @@ namespace Content.Shared.Chat
         public bool CanCoalesce; // Goobstation Edit
         public bool HidePopup; // Trauma phones
 
+        // <Whiskey> - CMSS runechat
         /// <summary>
         /// Optional client-side visual style for the overhead speech bubble.
         /// This does not change how the message is rendered in the chat window.
         /// </summary>
         public string? SpeechStyleClass;
+        // </Whiskey>
 
         [NonSerialized]
         public bool Read;
 
         // Goobstation Edit - Coalescing Chat, Trauma added HidePopup
-        public ChatMessage(ChatChannel channel, string message, string wrappedMessage, NetEntity source, int? senderKey, bool hideChat = false, Color? colorOverride = null, string? audioPath = null, float audioVolume = 0, bool canCoalesce = true, bool hidePopup = false, string? speechStyleClass = null)
+        public ChatMessage(ChatChannel channel, string message, string wrappedMessage, NetEntity source, int? senderKey, bool hideChat = false, Color? colorOverride = null, string? audioPath = null, float audioVolume = 0, bool canCoalesce = true, bool hidePopup = false, string? speechStyleClass = null) // Whiskey - CMSS runechat
         {
             Channel = channel;
             Message = message;
@@ -63,7 +65,7 @@ namespace Content.Shared.Chat
             AudioVolume = audioVolume;
             CanCoalesce = canCoalesce; // Goobstation Edit
             HidePopup = hidePopup; // Trauma phones
-            SpeechStyleClass = speechStyleClass;
+            SpeechStyleClass = speechStyleClass; // Whiskey - CMSS runechat
         }
 
         public ChatMessage(ChatMessage copyFrom)
@@ -79,7 +81,7 @@ namespace Content.Shared.Chat
             AudioVolume = copyFrom.AudioVolume;
             CanCoalesce = copyFrom.CanCoalesce;
             HidePopup = copyFrom.HidePopup;
-            SpeechStyleClass = copyFrom.SpeechStyleClass;
+            SpeechStyleClass = copyFrom.SpeechStyleClass; // Whiskey - CMSS runechat
             Read = copyFrom.Read;
         }
     }

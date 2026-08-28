@@ -56,6 +56,7 @@ ui-options-show-ooc-patron-color = Mostrar cor de patrono Não OOC
 ui-options-show-looc-on-head = Mostrar chat LOOC acima da cabeça dos personagens
 ui-options-fancy-speech = Mostrar nomes em balões de fala
 ui-options-fancy-name-background = Adicionar fundo aos nomes nos balões de fala
+# Whiskey - CMSS runechat
 ui-options-original-speech-bubbles = Usar os balões de fala originais do SS14
 ui-options-runechat-speech-scale = Tamanho dos balões de fala no estilo CMSS13
 ui-options-chat-follow-button = Como fantasma, mostrar botão de seguir nas mensagens de chat
