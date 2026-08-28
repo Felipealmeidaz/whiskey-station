@@ -42,6 +42,14 @@ jobs:
         cd RobustToolbox/
         git submodule update --init --recursive
 
+    # <Trauma>
+    - &native_dependencies
+      name: Install native build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y nasm
+    # </Trauma>
+
     - &restore
       name: Install dependencies
       run: dotnet restore
@@ -73,6 +81,7 @@ jobs:
     - *submodule
     - *submodule_pull
     - *submodule_update
+    - *native_dependencies # Trauma - required by the Hidden Operative native runtime.
     - *restore
     - name: Build Project
       run: dotnet build --configuration Release --no-restore /m

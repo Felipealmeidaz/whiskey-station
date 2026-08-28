@@ -15,7 +15,7 @@ jobs:
 
     steps:
     - name: Install dependencies
-      run: sudo apt-get install -y python3-paramiko python3-lxml
+      run: sudo apt-get install -y python3-paramiko python3-lxml nasm # Trauma - build the Hidden Operative native runtime.
 
     - uses: actions/checkout@v7
       with:
