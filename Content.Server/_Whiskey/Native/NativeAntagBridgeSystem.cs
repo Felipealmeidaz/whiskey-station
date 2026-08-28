@@ -729,7 +729,7 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
                     return false;
                 var addedTypes = bundle.Components.Values
                     .Select(entry => entry.Component.GetType())
-                    .Where(type => !EntityManager.HasComponent(target, type))
+                    .Where(type => !HasComp(target, type))
                     .ToArray();
                 var applied = ApplyComponentBundle(owner.Comp, target, command.Token, add: true);
                 if (applied && rollbacks != null)
@@ -737,7 +737,7 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
                     rollbacks.Push(() =>
                     {
                         foreach (var type in addedTypes)
-                            EntityManager.RemoveComponent(target, type);
+                            RemComp(target, type);
                     });
                 }
                 return applied;
