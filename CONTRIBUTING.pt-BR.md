@@ -2,7 +2,7 @@
 
 Este documento vale para a Whiskey. O [`CONTRIBUTING.md`](CONTRIBUTING.md) em inglês veio do Trauma e continua servindo como referência técnica detalhada, mas quando os dois discordarem, vale este.
 
-Se você é Maintainer, leia também o Regulamento de Maintainers, que trata de responsabilidade, revisão e uso de permissão.
+Se você é Maintainer, leia também o [Regulamento de Maintainers](REGULAMENTO-MAINTAINERS.md), que trata de responsabilidade, revisão e uso de permissão.
 
 ## O básico
 
