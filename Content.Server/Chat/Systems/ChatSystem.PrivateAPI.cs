@@ -249,7 +249,9 @@ public sealed partial class ChatSystem
         bool hideLog = false,
         bool checkEmote = true,
         bool ignoreActionBlocker = false,
-        NetUserId? author = null
+        NetUserId? author = null,
+        string? speechBubbleMessage = null, // Whiskey - CMSS runechat
+        string? speechStyleClass = null // Whiskey - CMSS runechat
         )
     {
         if (!_actionBlocker.CanEmote(source) && !ignoreActionBlocker)
@@ -269,8 +271,19 @@ public sealed partial class ChatSystem
             !TryEmoteChatInput(source, action))
             return;
 
-        // Trauma - add name, empty obfuscation strings and checkLOS
-        SendInVoiceRange(ChatChannel.Emotes, name, action, wrappedMessage, "", "", source, range, author, checkLOS: EmoteRespectsLOS);
+        // Whiskey - CMSS runechat metadata; Trauma - name, obfuscation strings and checkLOS
+        SendInVoiceRange(
+            ChatChannel.Emotes,
+            name,
+            speechBubbleMessage ?? action,
+            wrappedMessage,
+            "",
+            "",
+            source,
+            range,
+            author,
+            checkLOS: EmoteRespectsLOS,
+            speechStyleClass: speechStyleClass);
         if (!hideLog)
             if (name != Name(source))
                 _adminLogger.Add(LogType.Chat, LogImpact.Low, $"Emote from {source} as {name}: {action}");

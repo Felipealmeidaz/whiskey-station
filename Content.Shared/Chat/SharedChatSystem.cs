@@ -358,7 +358,9 @@ public abstract partial class SharedChatSystem : EntitySystem
         bool hideLog = false,
         bool checkEmote = true,
         bool ignoreActionBlocker = false,
-        NetUserId? author = null
+        NetUserId? author = null,
+        string? speechBubbleMessage = null, // Whiskey - CMSS runechat
+        string? speechStyleClass = null // Whiskey - CMSS runechat
         )
     { }
 

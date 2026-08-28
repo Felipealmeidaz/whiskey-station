@@ -19,6 +19,7 @@ using Content.Client.Stylesheets;
 using Content.Client.UserInterface.Screens;
 using Content.Client.UserInterface.Systems.Chat.Widgets;
 using Content.Client.UserInterface.Systems.Gameplay;
+using Content.Shared._Whiskey.Chat; // Whiskey - CMSS runechat
 using Content.Shared.Administration;
 using Content.Shared.CCVar;
 using Content.Shared.Chat;
@@ -127,6 +128,7 @@ public sealed partial class ChatUIController : UIController
     private const int SpeechBubbleCap = 4;
 
     private LayoutContainer _speechBubbleRoot = default!;
+    private bool _useSs14SpeechBubbles; // Whiskey - CMSS runechat
 
     /// <summary>
     ///     Speech bubbles that are currently visible on screen.
@@ -200,8 +202,14 @@ public sealed partial class ChatUIController : UIController
         SubscribeNetworkEvent<DamageForceSayEvent>(OnDamageForceSay);
         _config.OnValueChanged(CCVars.ChatEnableColorName, (value) => { _chatNameColorsEnabled = value; });
         _chatNameColorsEnabled = _config.GetCVar(CCVars.ChatEnableColorName);
+        _config.OnValueChanged(CCVars.ChatUseSs14SpeechBubbles, value => _useSs14SpeechBubbles = value, true); // Whiskey - CMSS runechat
 
-        _speechBubbleRoot = new LayoutContainer();
+        // <Whiskey> - CMSS runechat
+        _speechBubbleRoot = new LayoutContainer
+        {
+            MouseFilter = Control.MouseFilterMode.Ignore,
+        };
+        // </Whiskey>
 
         UpdateChannelPermissions();
 
@@ -467,7 +475,7 @@ public sealed partial class ChatUIController : UIController
     private void CreateSpeechBubble(EntityUid entity, SpeechBubbleData speechData)
     {
         var bubble =
-            SpeechBubble.CreateSpeechBubble(speechData.Type, speechData.Message, entity);
+            SpeechBubble.CreateSpeechBubble(speechData.Type, speechData.Message, entity, _useSs14SpeechBubbles); // Whiskey - CMSS runechat
 
         bubble.OnDied += SpeechBubbleDied;
 
@@ -508,6 +516,16 @@ public sealed partial class ChatUIController : UIController
         if (EntityManager.GetComponent<TransformComponent>(entity).MapID != _eye.CurrentEye.Position.MapId)
             return;
 
+        // <Whiskey> - CMSS runechat
+        if (!_useSs14SpeechBubbles &&
+            RunechatStyles.IsInterrupting(message.SpeechStyleClass))
+        {
+            ClearSpeechBubbles(entity);
+            CreateSpeechBubble(entity, new SpeechBubbleData(message, speechType));
+            return;
+        }
+        // </Whiskey>
+
         if (!_queuedSpeechBubbles.TryGetValue(entity, out var queueData))
         {
             queueData = new SpeechBubbleQueueData();
@@ -516,6 +534,21 @@ public sealed partial class ChatUIController : UIController
 
         queueData.MessageQueue.Enqueue(new SpeechBubbleData(message, speechType));
     }
+
+    // <Whiskey> - CMSS runechat
+    private void ClearSpeechBubbles(EntityUid entity)
+    {
+        _queuedSpeechBubbles.Remove(entity);
+
+        if (!_activeSpeechBubbles.TryGetValue(entity, out var active))
+            return;
+
+        foreach (var bubble in active.ToArray())
+        {
+            RemoveSpeechBubble(entity, bubble);
+        }
+    }
+    // </Whiskey>
 
     public void RemoveSpeechBubble(EntityUid entityUid, SpeechBubble bubble)
     {

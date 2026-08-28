@@ -54,6 +54,20 @@ public sealed partial class CCVars
             CVar.CLIENTONLY | CVar.ARCHIVE,
             "Toggles displaying a background under the speaking character's name.");
 
+    // <Whiskey> - CMSS runechat. New bubbles are intentionally the Whiskey default.
+    public static readonly CVarDef<bool> ChatUseSs14SpeechBubbles =
+        CVarDef.Create("chat.use_ss14_speech_bubbles",
+            false,
+            CVar.CLIENTONLY | CVar.ARCHIVE,
+            "Uses the original SS14 speech bubbles instead of CMSS-style runechat bubbles.");
+
+    public static readonly CVarDef<float> ChatRunechatBubbleScale =
+        CVarDef.Create("chat.runechat_bubble_scale",
+            1f,
+            CVar.CLIENTONLY | CVar.ARCHIVE,
+            "Scales CMSS-style runechat speech bubbles relative to the default size.");
+    // </Whiskey>
+
     /// <summary>
     ///     A message broadcast to each player that joins the lobby.
     ///     May be changed by admins ingame through use of the "set-motd" command.

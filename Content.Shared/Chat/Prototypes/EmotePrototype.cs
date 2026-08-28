@@ -61,6 +61,20 @@ public sealed partial class EmotePrototype : IPrototype
     [DataField]
     public List<LocId> ChatMessages = new(); // Trauma - use LocId
 
+    // <Whiskey> - CMSS runechat
+    /// <summary>
+    ///     Optional visual style used by the overhead runechat bubble.
+    /// </summary>
+    [DataField]
+    public string? RunechatStyle;
+
+    /// <summary>
+    ///     Optional localized messages shown in the overhead runechat bubble.
+    /// </summary>
+    [DataField]
+    public List<LocId> RunechatMessages = new();
+    // </Whiskey>
+
     /// <summary>
     ///     Trigger words for emote. Case independent.
     ///     When typed into players chat they will activate emote event.

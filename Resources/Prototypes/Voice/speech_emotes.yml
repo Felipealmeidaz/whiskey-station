@@ -8,6 +8,17 @@
     components:
     - Vocal
   chatMessages: ["chat-emote-msg-scream"]
+  # Whiskey - CMSS runechat
+  runechatStyle: runechatScream
+  runechatMessages:
+    - runechat-scream-1
+    - runechat-scream-2
+    - runechat-scream-3
+    - runechat-scream-4
+    - runechat-scream-5
+    - runechat-scream-6
+    - runechat-scream-7
+    - runechat-scream-8
   chatTriggers:
     - scream
     - screams

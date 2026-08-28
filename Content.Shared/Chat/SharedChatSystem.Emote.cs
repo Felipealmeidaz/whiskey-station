@@ -106,11 +106,34 @@ public abstract partial class SharedChatSystem
             // not all emotes are loc'd, but for the ones that are we pass in entity
             var action = Loc.GetString(_random.Pick(emote.ChatMessages), ("entity", source));
             var language = _language.GetLanguage(source); // Einstein Engines - Language
-            SendEntityEmote(source, action, range, nameOverride, language, hideLog: hideLog, checkEmote: false, ignoreActionBlocker: ignoreActionBlocker); // Einstein Engines - Language
+            // <Whiskey> - CMSS runechat
+            var bubbleMessage = GetRunechatEmoteMessage(emote, out var speechStyleClass);
+            SendEntityEmote(
+                source,
+                action,
+                range,
+                nameOverride,
+                language,
+                hideLog: hideLog,
+                checkEmote: false,
+                ignoreActionBlocker: ignoreActionBlocker,
+                speechBubbleMessage: bubbleMessage,
+                speechStyleClass: speechStyleClass); // Einstein Engines - Language
+            // </Whiskey>
         }
 
         return didEmote;
     }
+
+    // <Whiskey> - CMSS runechat
+    private string? GetRunechatEmoteMessage(EmotePrototype emote, out string? speechStyleClass)
+    {
+        speechStyleClass = emote.RunechatStyle;
+        return speechStyleClass == null || emote.RunechatMessages.Count == 0
+            ? null
+            : Loc.GetString(_random.Pick(emote.RunechatMessages));
+    }
+    // </Whiskey>
 
     /// <summary>
     /// Makes the selected entity emote using the given <see cref="EmotePrototype"/> without sending any messages to chat.
