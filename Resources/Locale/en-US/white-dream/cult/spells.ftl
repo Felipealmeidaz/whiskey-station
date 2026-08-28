@@ -10,6 +10,7 @@ cult-spell-chant-twisted-construction = Ethra p'ni dedol!
 cult-spell-chant-summon-equipment = Wur d'dai leev'mai k'sagan!
 cult-spell-chant-summon-dagger = Wur d'dai leev'mai k'sagan!
 cult-spell-chant-blood-rites = Fel'th Dol Ab'orod!
+cult-spell-chant-blood-barrage = Nar'Sie, kal'ith vera!
 cult-spell-chant-cult-floor = Khari'd! Eske'te tannin!
 cult-spell-chant-cult-wall = Ethra p'ni dedol!
 cult-spell-chant-cult-door = Khari'd! Eske'te tannin!

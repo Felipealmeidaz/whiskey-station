@@ -129,3 +129,115 @@
     key: enum.BloodRitesUiKey.Key
     inHandsOnly: true
     requireActiveHand: false
+
+- type: entity
+  parent: ArcaneBarrage
+  id: BloodBoltBarrage
+  name: blood bolt barrage
+  description: A temporary invocation that unleashes twenty-five bolts of crystallized blood.
+  components:
+  - type: Sprite
+    sprite: WhiteDream/BloodCult/Entities/Items/arcane_barrage.rsi
+    state: icon
+  - type: Item
+    size: Ginormous
+    sprite: WhiteDream/BloodCult/Entities/Items/arcane_barrage.rsi
+  - type: BasicEntityAmmoProvider
+    proto: ProjectileBloodBoltBarrage
+    capacity: 25
+  - type: PointLight
+    enabled: true
+    radius: 2
+    energy: 1
+    color: "#b51d1d"
+  - type: BloodRiteChant
+  - type: CultItem
+
+- type: entity
+  parent: BaseItem
+  id: BloodBeamAura
+  name: blood beam
+  description: A devastating rite that channels a fan of blood beams after a long invocation.
+  components:
+  - type: Sprite
+    sprite: WhiteDream/BloodCult/Entities/Items/rites.rsi
+    state: icon
+    color: "#ff3030"
+  - type: Item
+    size: Ginormous
+    sprite: WhiteDream/BloodCult/Entities/Items/rites.rsi
+  - type: MeleeWeapon
+    damage:
+      types:
+        Blunt: 0
+    heavyStaminaCost: 0
+  - type: BloodBeam
+  - type: DeleteOnDropAttempt
+  - type: CultItem
+
+- type: entity
+  parent: ProjectileArcaneBarrage
+  id: ProjectileBloodBoltBarrage
+  name: blood bolt
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: WhiteDream/BloodCult/Entities/Items/arcane_barrage.rsi
+    layers:
+    - state: bullet
+      shader: unshaded
+  - type: Projectile
+    damage:
+      types:
+        Slash: 20
+  - type: Trail
+    color: "#b51d1d88"
+    scale: 0.08
+    frequency: 0.02
+    lifetime: 0.3
+    lerpTime: 0.0001
+    alphaLerpAmount: 0.2
+    scaleLerpAmount: 0.08
+    shader: unshaded
+  - type: Ammo
+    muzzleFlash: null
+  - type: PointLight
+    enabled: true
+    radius: 1.5
+    energy: 1
+    color: "#b51d1d"
+
+- type: entity
+  parent: ProjectileArcaneBarrage
+  id: ProjectileBloodBeam
+  name: blood beam
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: WhiteDream/BloodCult/Entities/Items/arcane_barrage.rsi
+    layers:
+    - state: bullet
+      shader: unshaded
+  - type: Projectile
+    deleteOnCollide: false
+    penetrate: true
+    damage:
+      types:
+        Slash: 45
+  - type: BloodBeamProjectile
+  - type: TimedDespawn
+    lifetime: 1.5
+  - type: Trail
+    color: "#ff0000bb"
+    scale: 0.16
+    frequency: 0.01
+    lifetime: 0.45
+    lerpTime: 0.0001
+    alphaLerpAmount: 0.2
+    scaleLerpAmount: 0.05
+    shader: unshaded
+  - type: PointLight
+    enabled: true
+    radius: 2
+    energy: 2
+    color: "#ff2020"

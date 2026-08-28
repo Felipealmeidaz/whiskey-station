@@ -8,6 +8,7 @@ using Content.Shared.DoAfter;
 using Content.Shared.Magic;
 using Content.Shared.StatusEffect;
 using Robust.Shared.Audio;
+using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
 
@@ -235,3 +236,9 @@ public sealed partial class TeleportActionDoAfterEvent : SimpleDoAfterEvent
 
 [Serializable, NetSerializable]
 public sealed partial class BloodRitesExtractDoAfterEvent : SimpleDoAfterEvent;
+
+[Serializable, NetSerializable]
+public sealed partial class BloodBeamChargeDoAfterEvent : SimpleDoAfterEvent
+{
+    public NetCoordinates AimCoordinates;
+}

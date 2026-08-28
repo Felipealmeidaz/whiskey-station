@@ -240,6 +240,16 @@ public sealed partial class BloodRitesSystem : EntitySystem
 
     private void OnRitesMessage(Entity<BloodRitesAuraComponent> rites, ref BloodRitesMessage args)
     {
+        // The selected prototype comes from the client. Validate both the choice and its cost
+        // before consuming the aura so a forged UI message cannot create arbitrary entities.
+        if (!HasComp<BloodCultistComponent>(args.Actor) ||
+            !rites.Comp.Crafts.TryGetValue(args.SelectedProto, out var cost) ||
+            FixedPoint2.New(cost) > rites.Comp.StoredBlood)
+        {
+            _popup.PopupEntity(Loc.GetString("blood-rites-not-enough-blood"), rites, args.Actor);
+            return;
+        }
+
         Del(rites);
 
         var ent = Spawn(args.SelectedProto, _transform.GetMapCoordinates(args.Actor));
