@@ -1,35 +1,49 @@
-<!-- Guidelines: https://github.com/Trauma-Station/Trauma-Station/blob/master/CONTRIBUTING.md -->
-<!-- NOTE: All code submitted to this repository is ALWAYS licensed under the AGPL-3.0-or-later license.  -->
-## About the PR
-<!-- What did you change? -->
+<!-- Diretrizes: https://github.com/Whiskey-Station/Whiskey-Station-14/blob/master/CONTRIBUTING.md -->
+<!-- ATENÇÃO: todo código enviado para este repositório é licenciado como AGPL-3.0-or-later. -->
 
-## Why / Balance
-<!-- Discuss how this would affect game balance or explain why it was changed. Link any relevant discussions or issues. -->
+## Sobre a PR
+<!-- O que você mudou? -->
 
-## Test plan
-<!--
-Describe how you tested the pull request, and how someone reviewing this PR can test it themselves.
--->
+## Motivo e balanceamento
+<!-- Por que a mudança existe, e como ela afeta o jogo.
+Se mexe em antagonista, combate, economia, ciência ou progressão, explique o
+contrajogo: o que a tripulação pode fazer contra isso. -->
 
-## Media
-<!-- Attach media if the PR makes in-game changes (clothing, items, features, etc).
-Small fixes/refactors are exempt. -->
+## Plano de teste
+<!-- Como você testou, e como outra pessoa reproduz o teste.
+"Compila" não é teste. Diga o que você fez no jogo e o que aconteceu. -->
 
-## Requirements
-<!-- Confirm the following by placing an X in the brackets without spaces inside (for example: [X] ): -->
-- [ ] I have read and am following the [Contributing Guidelines](https://github.com/Trauma-Station/Trauma-Station/blob/master/CONTRIBUTING.md).
-- [ ] I have tested this pull request and written instructions on how to test it
-- [ ] I have added media to this PR or it does not require an in-game showcase.
-<!-- You should understand that not following the above may get your PR closed at a maintainer's discretion -->
+## Mídia
+<!-- Anexe imagem ou vídeo se a PR muda algo visível no jogo.
+Correção pequena e refatoração estão dispensadas. -->
+
+## Requisitos
+<!-- Marque com X dentro dos colchetes, sem espaço: [X] -->
+- [ ] Li e estou seguindo as [diretrizes de contribuição](https://github.com/Whiskey-Station/Whiskey-Station-14/blob/master/CONTRIBUTING.md)
+- [ ] Testei esta PR e escrevi como reproduzir o teste
+- [ ] Anexei mídia, ou a mudança não precisa de demonstração no jogo
+
+### Se a PR tem código ou conteúdo novo
+- [ ] Arquivos novos estão em pasta própria (`_Whiskey`, `_Trauma`), não em caminho herdado
+- [ ] Arquivos novos têm cabeçalho `SPDX-License-Identifier`
+- [ ] Alterações em arquivo herdado estão marcadas com `// Trauma` ou `<Trauma>`
+- [ ] Não usei `frameTime` para lógica de jogo, usei `IGameTiming.CurTime`
+- [ ] Componente novo em `Shared` está networkado, ou há razão registrada para não estar
+
+### Se a PR é um port de outro fork
+- [ ] Verifiquei a licença da origem e ela é compatível
+- [ ] Os arquivos portados mantêm a atribuição original
+- [ ] Conferi que a funcionalidade não depende de sistema que este fork não tem
+
+<!-- Não seguir os itens acima pode fazer a PR ser devolvida. -->
 
 ## Changelog
-<!-- Add a Changelog entry to make players aware of new features or changes that could affect gameplay.
-Make sure to read the guidelines and take this Changelog template out of the comment block in order for it to show up.
-Changelog must have a :cl: symbol, so the bot recognizes the changes and adds them to the game's changelog. -->
+<!-- Toda mudança que o jogador percebe precisa de changelog.
+Tire o bloco abaixo do comentário para ele valer. O :cl: é obrigatório. -->
 <!--
 :cl:
-- add: Added fun!
-- remove: Removed fun!
-- tweak: Changed fun!
-- fix: Fixed fun!
+- add: Adiciona algo novo
+- remove: Remove algo
+- tweak: Ajusta algo existente
+- fix: Corrige um problema
 -->
