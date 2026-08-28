@@ -68,7 +68,12 @@ public sealed partial class ConstructSystem : EntitySystem
         construct.Comp.Transforming = true;
         var cultistRule = EntityQueryEnumerator<BloodCultRuleComponent>();
         while (cultistRule.MoveNext(out _, out var rule))
+        {
             rule.Constructs.Add(construct);
+            // Whiskey - the round end summary counts every construct ever raised, and the live list
+            // is emptied when Nar'Sie arrives.
+            rule.TotalConstructs++;
+        }
     }
 
     /// <summary>

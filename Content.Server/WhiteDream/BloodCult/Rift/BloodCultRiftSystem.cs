@@ -3,6 +3,7 @@
 
 // Ported from funky-station (BloodCultRiftSystem) and adapted to our gamerule.
 using Content.Server.Audio;
+using Content.Server.Lightning; // Whiskey
 using Content.Server.Popups;
 using Content.Trauma.Common.Language.Systems;
 using Content.Server.Mind;
@@ -11,6 +12,7 @@ using Content.Server.WhiteDream.BloodCult.Gamerule;
 using Content.Server.WhiteDream.BloodCult.Runes;
 using Content.Shared.Anomaly;
 using Content.Shared.Audio;
+using Content.Shared.Camera; // Whiskey
 using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.FixedPoint;
 using Content.Shared.Gibbing;
@@ -18,6 +20,7 @@ using Content.Shared.Popups;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.WhiteDream.BloodCult.BloodCultist;
 using Robust.Server.GameObjects;
+using Robust.Shared.Audio.Systems; // Whiskey
 using Robust.Shared.Random;
 
 namespace Content.Server.WhiteDream.BloodCult.Rift;
@@ -38,6 +41,11 @@ public sealed partial class BloodCultRiftSystem : EntitySystem
     [Dependency] private MobStateSystem _mobState = default!;
     [Dependency] private PopupSystem _popup = default!;
     [Dependency] private ServerGlobalSoundSystem _sound = default!;
+    // <Whiskey>
+    [Dependency] private LightningSystem _lightning = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedCameraRecoilSystem _recoil = default!;
+    // </Whiskey>
     [Dependency] private SharedSolutionContainerSystem _solution = default!;
     [Dependency] private TransformSystem _transform = default!;
 
@@ -93,14 +101,18 @@ public sealed partial class BloodCultRiftSystem : EntitySystem
     #region Guardians
 
     /// <summary>
-    ///     Something crawls out of the wound. The rate and the cap both go up once the final chant
-    ///     starts, so the crew can't simply wait the rift out and then stroll in.
+    ///     Something crawls out of the wound. Whiskey - it comes out once and only once. The rift
+    ///     used to patch its own guard, which turned the fight into a queue: the crew killed a
+    ///     hellspawn, caught their breath, and the next one was already crawling out.
     /// </summary>
     private void TrySpawnGuardian(EntityUid riftUid, BloodCultRiftComponent rift)
     {
         rift.TimeUntilNextGuardian = rift.RitualInProgress
             ? rift.RitualGuardianInterval
             : rift.GuardianInterval;
+
+        if (rift.GuardiansSpawned >= rift.TotalGuardians)
+            return;
 
         rift.Guardians.RemoveAll(guardian => TerminatingOrDeleted(guardian) || _mobState.IsDead(guardian));
 
@@ -112,6 +124,7 @@ public sealed partial class BloodCultRiftSystem : EntitySystem
             .Offset(_random.NextVector2(rift.GuardianSpawnRange));
 
         rift.Guardians.Add(Spawn(rift.GuardianProto, coordinates));
+        rift.GuardiansSpawned++;
     }
 
     #endregion
@@ -155,6 +168,7 @@ public sealed partial class BloodCultRiftSystem : EntitySystem
         }
 
         rift.RitualInProgress = true;
+        rift.RitualStartingRequiredCultists = rift.RequiredCultists;
         rift.ChantsInCycle = 0;
         rift.SacrificesDone = 0;
         rift.PendingSacrifice = null;
@@ -200,7 +214,7 @@ public sealed partial class BloodCultRiftSystem : EntitySystem
         }
 
         // The cycle finished, so the veil takes the one who was chanting.
-        if (!TakeSacrifice(rift))
+        if (!TakeSacrifice(riftUid, rift))
         {
             // Couldn't take them, start the cycle over rather than stalling.
             rift.PendingSacrifice = null;
@@ -215,6 +229,11 @@ public sealed partial class BloodCultRiftSystem : EntitySystem
         rift.ChantsInCycle = 0;
         rift.TimeUntilNextChant = 1f;
 
+        // Whiskey - the first one she takes is the moment Central Command notices, so the station
+        // gets its octarine before the other two are eaten.
+        if (rift.SacrificesDone == 1)
+            _cultRule.ForceAlertLevel(rift.FirstSacrificeAlertLevel);
+
         _cultRule.NotifyCultists(Loc.GetString("cult-final-ritual-sacrifice",
             ("done", rift.SacrificesDone),
             ("required", rift.RequiredSacrifices)));
@@ -227,6 +246,13 @@ public sealed partial class BloodCultRiftSystem : EntitySystem
     {
         rift.RitualInProgress = false;
         rift.ChantsInCycle = 0;
+        // Each completed sacrifice lowers the live requirement. Restore the exact value from the
+        // beginning of the attempt: adding SacrificesDone is wrong once the requirement hits its
+        // lower bound of one.
+        if (rift.RitualStartingRequiredCultists is { } startingRequirement)
+            rift.RequiredCultists = startingRequirement;
+
+        rift.RitualStartingRequiredCultists = null;
         rift.SacrificesDone = 0;
         rift.PendingSacrifice = null;
         rift.TimeUntilNextChant = 0f;
@@ -242,12 +268,16 @@ public sealed partial class BloodCultRiftSystem : EntitySystem
     ///     Nar'Sie takes the one who was chanting and gives them back as a herald. Being offered on
     ///     the rift is a promotion, not a soulstone - only the mindless end up as shards.
     /// </summary>
-    private bool TakeSacrifice(BloodCultRiftComponent rift)
+    private bool TakeSacrifice(EntityUid riftUid, BloodCultRiftComponent rift)
     {
         if (rift.PendingSacrifice is not { } victim || TerminatingOrDeleted(victim))
             return false;
 
         var coordinates = Transform(victim).Coordinates;
+
+        // Whiskey - she reaches down for the one she is taking. triggerLightningEvents is false
+        // on purpose: this is spectacle, it must not hurt the cultists standing around the runes.
+        _lightning.ShootLightning(riftUid, victim, rift.SacrificeLightningProto, false);
 
         if (!_mind.TryGetMind(victim, out var mindId, out _))
         {
@@ -262,14 +292,40 @@ public sealed partial class BloodCultRiftSystem : EntitySystem
         }
 
         _gibbing.Gib(victim);
+
+        // Whiskey - the station shakes and the lights go with it.
+        _cultRule.FlickerStationLights(rift.SacrificeFlickerTime);
+        ShakeScreens(riftUid, rift);
+
         return true;
+    }
+
+    /// <summary>
+    ///     Whiskey - a kick to everyone chanting, plus the rift itself so anyone watching from
+    ///     nearby feels it too.
+    /// </summary>
+    private void ShakeScreens(EntityUid riftUid, BloodCultRiftComponent rift)
+    {
+        foreach (var cultist in GetParticipants(rift))
+        {
+            if (!TerminatingOrDeleted(cultist))
+                _recoil.KickCamera(cultist, _random.NextVector2(0.5f, 1.5f));
+        }
+
+        if (!TerminatingOrDeleted(riftUid))
+            _recoil.KickCamera(riftUid, _random.NextVector2(0.5f, 1.5f));
     }
 
     private void SummonNarsie(EntityUid riftUid, BloodCultRiftComponent rift)
     {
         rift.RitualInProgress = false;
+        rift.RitualStartingRequiredCultists = null;
         rift.TimeUntilNextChant = 0f;
         StopMusic(riftUid, rift);
+
+        // Whiskey - she is heard before she is seen. The announcement itself comes from Nar'Sie's
+        // own AnnounceOnSpawn a moment later; saying it here as well gave the station two.
+        _sound.PlayGlobalOnStation(riftUid, _audio.ResolveSound(rift.SummonSound));
 
         RaiseLocalEvent(new BloodCultNarsieSummoned());
         Spawn(rift.NarsiePrototype, _transform.GetMapCoordinates(riftUid));

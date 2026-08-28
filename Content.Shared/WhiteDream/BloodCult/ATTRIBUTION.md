@@ -55,3 +55,19 @@ Sounds and sprites under `Resources/Audio/WhiteDream/` and `Resources/Textures/W
 same White Dream port. Sprites added later from
 [funky-station PR #2426](https://github.com/funky-station/funky-station/pull/2426) are noted in the
 `meta.json` of the `.rsi` folders they belong to.
+
+The cult leader aura in `Resources/Textures/WhiteDream/BloodCult/Effects/leader_aura.rsi` is a red
+recolor of tgstation's heretic aura, imported through Goobstation. Its CC-BY-SA-3.0 attribution and
+source commit are recorded in that folder's `meta.json`.
+
+The cult pylon replacement and cult crossbow assets under `Resources/Textures/_Whiskey/BloodCult/`
+were imported from [Monolith](https://github.com/Monolith-Station/Monolith). Their CC-BY-SA-3.0
+authorship and upstream sprite sources are preserved in each RSI's `meta.json`. The crossbow weapon
+and bolt prototypes are adapted from Monolith commits `31b5cd10d86b8c0cdde1e654dbcba4230ddb0640`
+and `8aac82c006cb84f2ac608ab4aa6e990b11829eec` to this codebase's bow and damage APIs.
+
+The Blood Bolt Barrage and Blood Beam greater rites are adapted from
+[BeeStation/BeeStation-Hornet](https://github.com/BeeStation/BeeStation-Hornet), including the
+25-shot barrage and the charged 12-beam fan behavior. The SS13 implementation is AGPL-3.0 and was
+consulted at commit `16ce653a625569c1633b2a33f03aab791e99f177`; this port uses the existing SS14 projectile,
+damage, do-after and tile systems instead of copying BYOND-specific code.

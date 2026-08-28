@@ -9,7 +9,6 @@ using Content.Shared.WhiteDream.BloodCult.UI;
 using JetBrains.Annotations;
 using Robust.Client.GameObjects;
 using Robust.Client.Graphics;
-using Robust.Client.Input;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Prototypes;
@@ -19,8 +18,6 @@ namespace Content.Client.WhiteDream.BloodCult.UI;
 [UsedImplicitly]
 public sealed partial class BloodRitesUi : BoundUserInterface
 {
-    [Dependency] private IClyde _displayManager = default!;
-    [Dependency] private IInputManager _inputManager = default!;
     [Dependency] private IEntityManager _entManager = default!;
     [Dependency] private IPrototypeManager _protoManager = default!;
 
@@ -48,7 +45,8 @@ public sealed partial class BloodRitesUi : BoundUserInterface
             CloseButtonStyleClass = "RadialMenuCloseButton"
         };
 
-        _menu.OpenCenteredAt(_inputManager.MouseScreenPosition.Position / _displayManager.ScreenSize);
+        // Whiskey - it used to be born glued to the pointer, sometimes half off-screen.
+        _menu.OpenCentered();
         _menu.OnClose += Close;
     }
 

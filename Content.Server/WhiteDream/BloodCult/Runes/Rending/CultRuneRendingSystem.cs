@@ -3,9 +3,7 @@
 
 // The 40 second solo do-after was replaced by funky-station's collective chant ritual.
 using System.Linq;
-using Content.Shared.AlertLevel;
 using Content.Server.Chat.Systems;
-using Content.Server.Station.Systems;
 using Content.Server.Pinpointer;
 using Content.Server.Popups;
 using Content.Server.WhiteDream.BloodCult.Commune;
@@ -25,9 +23,7 @@ public sealed partial class CultRuneRendingSystem : EntitySystem
 {
     [Dependency] private AppearanceSystem _appearance = default!;
     [Dependency] private AudioSystem _audio = default!;
-    [Dependency] private AlertLevelSystem _alertLevel = default!;
     [Dependency] private ChatSystem _chat = default!;
-    [Dependency] private StationSystem _station = default!;
     [Dependency] private BloodCultCommuneSystem _commune = default!;
     [Dependency] private BloodCultRuleSystem _cultRule = default!;
     [Dependency] private NavMapSystem _navMap = default!;
@@ -159,10 +155,9 @@ public sealed partial class CultRuneRendingSystem : EntitySystem
 
         _cultRule.NotifyCultists(Loc.GetString("cult-veil-ritual-started", ("required", required)));
 
-        // WhiteDream - the crew gets a warning shot before the veil actually gives.
-        if (_station.GetOwningStation(rune.Owner) is { } station)
-            _alertLevel.SetLevel(station, "Gamma", true, true, true);
-
+        // Whiskey - no alert level here. The announcement above already names the place, and the
+        // veil tearing raises the station's own delta a moment later. Gamma on top of that was two
+        // codes for one event, and it locked the console out before the cult had done anything.
         SetRunesActive(true);
         _ritualAudio ??= _audio.PlayGlobal(rune.Comp.SummonAudio,
             Filter.Broadcast(),

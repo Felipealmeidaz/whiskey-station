@@ -71,7 +71,9 @@ public sealed partial class BloodRitesAuraComponent : Component
     [DataField]
     public Dictionary<EntProtoId, float> Crafts = new()
     {
-        ["BloodSpear"] = 300
+        ["BloodSpear"] = 150,
+        ["BloodBoltBarrage"] = 300,
+        ["BloodBeamAura"] = 500
     };
 
     public DoAfterId? ExtractDoAfterId;

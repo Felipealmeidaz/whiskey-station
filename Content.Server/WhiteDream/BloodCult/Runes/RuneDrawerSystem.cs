@@ -2,18 +2,19 @@
 // Blood Cult: ported from WWhiteDreamProject/wwdpublic. See Content.Shared/WhiteDream/BloodCult/ATTRIBUTION.md
 
 using System.Linq;
-using Content.Trauma.Common.RadialSelector;
+using Content.Server.WhiteDream.BloodCult.Gamerule;
 using Content.Shared.UserInterface;
-using Content.Shared.WhiteDream.BloodCult.BloodCultist;
-using Content.Shared.WhiteDream.BloodCult.Constructs;
 using Content.Shared.WhiteDream.BloodCult.Runes;
-using Robust.Shared.GameObjects;
 using Robust.Shared.Prototypes;
 
-namespace Content.Shared.WhiteDream.BloodCult.Runes;
+namespace Content.Server.WhiteDream.BloodCult.Runes;
 
-public sealed partial class SharedRuneDrawerSystem : EntitySystem
+/// <summary>
+///     Builds the rune menu on the server, using the gamerule's authoritative cultist count.
+/// </summary>
+public sealed partial class RuneDrawerSystem : EntitySystem
 {
+    [Dependency] private BloodCultRuleSystem _cultRule = default!;
     [Dependency] private IPrototypeManager _protoManager = default!;
     [Dependency] private SharedUserInterfaceSystem _ui = default!;
 
@@ -26,37 +27,17 @@ public sealed partial class SharedRuneDrawerSystem : EntitySystem
 
     private void OnBeforeUiOpen(Entity<RuneDrawerComponent> ent, ref BeforeActivatableUIOpenEvent args)
     {
-        UpdateUi(ent);
-    }
-
-    public void UpdateUi(EntityUid uid)
-    {
         var availableRunes = new List<ProtoId<RuneSelectorPrototype>>();
-        var totalCultists = CountCultists();
+        var totalCultists = _cultRule.GetTotalCultists();
 
         foreach (var runeSelector in _protoManager.EnumeratePrototypes<RuneSelectorPrototype>().OrderBy(r => r.ID))
         {
-            if (runeSelector.RequiredTotalCultists > totalCultists)
+            if (_cultRule.GetRequiredCultists(runeSelector) > totalCultists)
                 continue;
 
             availableRunes.Add(runeSelector.ID);
         }
 
-        _ui.SetUiState(uid, RuneDrawerBuiKey.Key, new RuneDrawerMenuState(availableRunes));
-    }
-
-    private int CountCultists()
-    {
-        var count = 0;
-
-        var cultistQuery = EntityQueryEnumerator<BloodCultistComponent>();
-        while (cultistQuery.MoveNext(out _, out _))
-            count++;
-
-        var constructQuery = EntityQueryEnumerator<ConstructComponent>();
-        while (constructQuery.MoveNext(out _, out _))
-            count++;
-
-        return count;
+        _ui.SetUiState(ent.Owner, RuneDrawerBuiKey.Key, new RuneDrawerMenuState(availableRunes));
     }
 }

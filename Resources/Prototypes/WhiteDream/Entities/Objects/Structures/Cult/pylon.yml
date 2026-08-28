@@ -19,9 +19,11 @@
         - TabletopMachineLayer
   - type: Sprite
     noRot: true
-    sprite: WhiteDream/BloodCult/Entities/Structures/pylon.rsi
+    sprite: _Whiskey/BloodCult/Structures/bloodcollector.rsi
     layers:
-    - state: icon
+    - state: blood_collector
+    - state: unshaded
+      shader: unshaded
       map: [ "enum.PylonVisuals.Layer" ]
   - type: InteractionOutline
   - type: Damageable
@@ -75,8 +77,8 @@
     visuals:
       enum.PylonVisuals.Activated:
         enum.PylonVisuals.Layer:
-          True: { state: "icon" }
-          False: { state: "icon_off" }
+          True: { visible: true }
+          False: { visible: false }
   - type: Construction
     graph: CultPylon
     node: pylon

@@ -83,12 +83,22 @@ public sealed partial class BloodCultRuleSystem
 
         // WhiteDream - alert level ids are capitalised prototype ids; "delta" silently resolved to
         // nothing, which is why the level never actually changed.
+        ForceAlertLevel(VeilAlertLevel);
+
         var stations = EntityQueryEnumerator<StationDataComponent, AlertLevelComponent>();
-        while (stations.MoveNext(out var station, out var stationData, out var alert))
-        {
-            _alertLevel.SetLevel((station, alert), VeilAlertLevel, true, true, true);
+        while (stations.MoveNext(out var station, out var stationData, out _))
             StainTheSky((station, stationData));
-        }
+    }
+
+    /// <summary>
+    ///     Whiskey - forces an alert level on every station. Used by the veil tear and again by the
+    ///     final chant, which is why it takes the level instead of reading a field.
+    /// </summary>
+    public void ForceAlertLevel(ProtoId<AlertLevelPrototype> level)
+    {
+        var stations = EntityQueryEnumerator<StationDataComponent, AlertLevelComponent>();
+        while (stations.MoveNext(out var station, out _, out var alert))
+            _alertLevel.SetLevel((station, alert), level, true, true, true, true);
     }
 
     /// <summary>

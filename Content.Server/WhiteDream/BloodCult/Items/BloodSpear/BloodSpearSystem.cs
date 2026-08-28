@@ -3,6 +3,7 @@
 
 using Content.Server.Actions;
 using Content.Server.Hands.Systems;
+using Content.Server.Projectiles;
 using Content.Shared.Stunnable;
 using Content.Shared.Humanoid;
 using Content.Shared.Item;
@@ -18,6 +19,7 @@ public sealed partial class BloodSpearSystem : EntitySystem
     [Dependency] private ActionsSystem _actions = default!;
     [Dependency] private AudioSystem _audio = default!;
     [Dependency] private HandsSystem _hands = default!;
+    [Dependency] private ProjectileSystem _projectiles = default!;
     [Dependency] private SharedStunSystem _stun = default!;
 
     public override void Initialize()
@@ -44,7 +46,6 @@ public sealed partial class BloodSpearSystem : EntitySystem
             return;
 
         _stun.TryAddParalyzeDuration(args.Embedded, spear.Comp.ParalyzeTime);
-        QueueDel(spear);
     }
 
     private void OnPickedUp(Entity<BloodSpearComponent> spear, ref GettingPickedUpAttemptEvent args)
@@ -69,7 +70,14 @@ public sealed partial class BloodSpearSystem : EntitySystem
         if (!spearUid.HasValue || !TryComp(spearUid, out BloodSpearComponent? spear))
             return;
 
-        _hands.TryForcePickupAnyHand(cultist, spearUid.Value);
+        // A thrown halberd remains embedded in its victim. Detach it through the projectile system
+        // before moving it into the master's hand so the embedded-container bookkeeping is cleared.
+        if (TryComp(spearUid, out EmbeddableProjectileComponent? embeddable))
+            _projectiles.EmbedDetach(spearUid.Value, embeddable, cultist);
+
+        if (!_hands.TryForcePickupAnyHand(cultist, spearUid.Value))
+            return;
+
         _audio.PlayPvs(spear.RecallAudio, spearUid.Value);
         args.Handled = true;
     }

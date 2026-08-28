@@ -1,4 +1,4 @@
-﻿- type: runeSelector
+- type: runeSelector
   id: CultRuneOffering
   prototype: CultRuneOffering
 
@@ -42,7 +42,11 @@
   id: CultRuneDimensionalRending
   prototype: CultRuneDimensionalRending
   requireTargetDead: true
-  requiredTotalCultists: 8
+  # Whiskey - tearing the veil is the final stage of the cult's growth and now matches the
+  # unavoidable pentagram threshold. 60 players = 12 cultists, 30 = 6, 15 = 3.
+  # The sacrifice objective still gates it as well.
+  requireLeader: true
+  requiredCultistsPercent: 0.2
   drawTime: 40
   drawDamage:
     types:

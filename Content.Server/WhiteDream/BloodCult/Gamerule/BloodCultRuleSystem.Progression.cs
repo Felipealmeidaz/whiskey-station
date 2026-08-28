@@ -3,6 +3,8 @@
 
 // WhiteDream - objective bookkeeping, the pentagram grace period and the victory wind-down.
 using System.Linq;
+using Content.Server.WhiteDream.BloodCult.Objectives;
+using Content.Shared.Bed.Cryostorage;
 using Content.Shared.Mobs.Components;
 using Content.Shared.WhiteDream.BloodCult.BloodCultist;
 using Content.Shared.WhiteDream.BloodCult.Components;
@@ -33,9 +35,17 @@ public sealed partial class BloodCultRuleSystem
         if (now >= rule.NextObjectiveCheck)
         {
             rule.NextObjectiveCheck = now + ObjectiveCheckInterval;
+            UpdateCultStage(rule);
             EnsureOfferingTarget(rule);
             EnsureObjectives(rule);
             CheckRendingUnlocked(rule);
+            ReconcileLeader(rule); // Whiskey - keeps the rule and the world agreeing on the leader.
+        }
+
+        if (rule.RedEyesTime is { } redEyesTime && now >= redEyesTime)
+        {
+            rule.RedEyesTime = null;
+            ApplyRedEyes(rule);
         }
 
         if (rule.PentagramTime is { } pentagramTime && now >= pentagramTime)
@@ -61,25 +71,72 @@ public sealed partial class BloodCultRuleSystem
     /// </summary>
     private void EnsureOfferingTarget(BloodCultRuleComponent rule)
     {
-        // Nar'Sie names one offering per round. Once she has named them, that's it - dead, gibbed or
-        // spaced, the objective stands.
+        // She has been given. Nar'Sie does not ask twice.
+        if (rule.OfferingSacrificed)
+            return;
+
         if (rule.OfferingTarget is { } target)
         {
-            // The only re-roll: they joined us, so they can't be given to her.
-            if (!TerminatingOrDeleted(target) && !HasComp<BloodCultistComponent>(target))
-                return;
+            // Whiskey - the offering only counts on the rune now, so a body that no longer exists
+            // can never be given and would lock the cult out of the rending rune for the rest of
+            // the round. Name someone else instead. A corpse still on the station stays named:
+            // being dead is not the same as being gone.
+            if (IsAvailableOfferingTarget(target))
+            {
+                if (rule.ObjectivesOfferingTarget != target)
+                {
+                    RefreshOfferingObjectives(rule);
+                    rule.ObjectivesOfferingTarget = target;
+                }
 
-            if (TerminatingOrDeleted(target) || _mobState.IsDead(target))
                 return;
+            }
         }
 
         var previous = rule.OfferingTarget;
         SetRandomCultTarget(rule);
 
-        if (rule.OfferingTarget is not { } picked || picked == previous)
+        if (rule.OfferingTarget == previous)
             return;
 
-        NotifyCultists(Loc.GetString("cult-offering-target-chosen", ("name", Name(picked))));
+        RefreshOfferingObjectives(rule);
+        rule.ObjectivesOfferingTarget = rule.OfferingTarget;
+
+        if (rule.OfferingTarget is { } picked)
+            NotifyCultists(Loc.GetString("cult-offering-target-chosen", ("name", Name(picked))));
+    }
+
+    /// <summary>
+    ///     A sacrifice has to remain physically obtainable. Entering cryostorage makes the old body
+    ///     unavailable even though the entity still exists on the paused cryo map.
+    /// </summary>
+    private bool IsAvailableOfferingTarget(EntityUid target) =>
+        !TerminatingOrDeleted(target) &&
+        !HasComp<BloodCultistComponent>(target) &&
+        !HasComp<CryostorageContainedComponent>(target);
+
+    /// <summary>
+    ///     Existing cultists already own an objective entity naming the previous offering. Replace
+    ///     that objective so their character panel follows the rule's newly selected target.
+    /// </summary>
+    private void RefreshOfferingObjectives(BloodCultRuleComponent rule)
+    {
+        foreach (var cultist in rule.Cultists)
+        {
+            if (!cultist.Comp.ObjectivesGranted ||
+                TerminatingOrDeleted(cultist.Owner) ||
+                !_mind.TryGetMind(cultist.Owner, out var mindId, out var mind))
+                continue;
+
+            for (var i = mind.Objectives.Count - 1; i >= 0; i--)
+            {
+                if (HasComp<KillTargetCultComponent>(mind.Objectives[i]))
+                    _mind.TryRemoveObjective(mindId, mind, i);
+            }
+
+            if (rule.OfferingTarget is not null && rule.OfferingTarget != cultist.Owner)
+                _mind.TryAddObjective(mindId, mind, SacrificeObjective);
+        }
     }
 
     /// <summary>
@@ -99,8 +156,9 @@ public sealed partial class BloodCultRuleSystem
             if (!_mind.TryGetMind(cultist.Owner, out var mindId, out var mind))
                 continue;
 
-            // The sacrifice target can't be one of us.
-            if (rule.OfferingTarget != cultist.Owner)
+            // The sacrifice target can't be one of us, and there is nothing to offer once she has
+            // already been given.
+            if (rule.OfferingTarget != cultist.Owner && !rule.OfferingSacrificed)
                 _mind.TryAddObjective(mindId, mind, SacrificeObjective);
 
             _mind.TryAddObjective(mindId, mind, SummonObjective);
@@ -114,7 +172,18 @@ public sealed partial class BloodCultRuleSystem
     /// </summary>
     public int GetRendingCultistsRequired()
     {
-        return _proto.TryIndex(RendingSelector, out var selector) ? selector.RequiredTotalCultists : 0;
+        return _proto.TryIndex(RendingSelector, out var selector) ? GetRequiredCultists(selector) : 0;
+    }
+
+    /// <summary>
+    ///     Whiskey - a rune can ask for a share of the crew instead of a flat count.
+    /// </summary>
+    public int GetRequiredCultists(RuneSelectorPrototype selector)
+    {
+        if (selector.RequiredCultistsPercent <= 0f)
+            return selector.RequiredTotalCultists;
+
+        return (int) MathF.Ceiling(GetProgressionCrewCount() * selector.RequiredCultistsPercent);
     }
 
     public bool CanRendingBeDrawn(BloodCultRuleComponent rule)
@@ -151,6 +220,39 @@ public sealed partial class BloodCultRuleSystem
     /// <summary>
     ///     The cult hit the pentagram threshold. Warn them first, brand them later.
     /// </summary>
+    /// <summary>
+    ///     Whiskey - the veil thins as the cult grows, and the cult is told before it shows.
+    /// </summary>
+    private void BeginRedEyes(BloodCultRuleComponent rule)
+    {
+        if (rule.RedEyesApplied || rule.RedEyesTime is not null)
+            return;
+
+        rule.RedEyesTime = _timing.CurTime + rule.RedEyesWarningDelay;
+
+        NotifyCultists(Loc.GetString("cult-red-eyes-warning",
+            ("minutes", (int) Math.Round(rule.RedEyesWarningDelay.TotalMinutes))));
+
+        FlickerStationLights(TimeSpan.FromSeconds(3));
+    }
+
+    private void ApplyRedEyes(BloodCultRuleComponent rule)
+    {
+        rule.RedEyesApplied = true;
+
+        foreach (var cultist in rule.Cultists)
+        {
+            if (TerminatingOrDeleted(cultist.Owner))
+                continue;
+
+            // Trauma - eye colour is stored on the eye organ now
+            cultist.Comp.OriginalEyeColor ??= _humanoid.GetEyeColor(_humanoid.GetOrgansData(cultist));
+            _humanoid.SetEyeColor(cultist, rule.EyeColor);
+        }
+
+        NotifyCultists(Loc.GetString("cult-red-eyes-marked"));
+    }
+
     private void BeginAscension(BloodCultRuleComponent rule)
     {
         if (rule.PentagramApplied || rule.PentagramTime is not null)

@@ -1,1 +1,1 @@
-guide-entry-blood-cult-cult = Nar'Si Blood Cult
+guide-entry-blood-cult-cult = Nar'Sie Blood Cult

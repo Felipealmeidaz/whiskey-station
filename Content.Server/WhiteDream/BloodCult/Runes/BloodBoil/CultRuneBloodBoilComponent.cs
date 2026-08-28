@@ -19,7 +19,7 @@ public sealed partial class CultRuneBloodBoilComponent : Component
     public float TargetsLookupRange = 15f;
 
     [DataField]
-    public float ProjectileCount = 3;
+    public int ProjectileCount = 3;
 
     [DataField]
     public float FireStacksPerProjectile = 1;

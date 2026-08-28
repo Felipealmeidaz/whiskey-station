@@ -3,6 +3,7 @@
 
 using Content.Shared.Blocking;
 using Content.Shared.Blocking.Components;
+using Content.Shared.Damage;
 using Content.Shared.Ghost;
 using Content.Shared.Ghost.Components;
 using Content.Shared.Hands.EntitySystems;
@@ -14,7 +15,11 @@ using Content.Shared.Projectiles;
 using Content.Shared.Stunnable;
 using Content.Shared.Throwing;
 using Content.Shared.Weapons.Melee.Events;
+using Content.Shared.UserInterface;
 using Content.Shared.WhiteDream.BloodCult.BloodCultist;
+using Robust.Shared.Network;
+using Robust.Shared.Physics.Systems;
+using Content.Shared.Damage.Systems;
 
 namespace Content.Shared.WhiteDream.BloodCult.Items;
 
@@ -23,6 +28,12 @@ public sealed partial class CultItemSystem : EntitySystem
     [Dependency] private SharedHandsSystem _hands = default!;
     [Dependency] private SharedPopupSystem _popup = default!;
     [Dependency] private SharedStunSystem _stun = default!;
+    // <Whiskey>
+    [Dependency] private INetManager _net = default!;
+    [Dependency] private DamageableSystem _damageable = default!;
+    [Dependency] private SharedPhysicsSystem _physics = default!;
+    [Dependency] private SharedTransformSystem _transform = default!;
+    // </Whiskey>
 
     public override void Initialize()
     {
@@ -32,6 +43,8 @@ public sealed partial class CultItemSystem : EntitySystem
         SubscribeLocalEvent<CultItemComponent, BeingEquippedAttemptEvent>(OnEquipAttempt);
         SubscribeLocalEvent<CultItemComponent, AttemptMeleeEvent>(OnMeleeAttempt);
         SubscribeLocalEvent<CultItemComponent, BeforeBlockingEvent>(OnBeforeBlocking);
+        // Whiskey - the verb menu was letting non-cultists open the rune drawer
+        SubscribeLocalEvent<CultItemComponent, ActivatableUIOpenAttemptEvent>(OnUiOpenAttempt);
     }
 
     private void OnActivate(Entity<CultItemComponent> item, ref ActivateInWorldEvent args)
@@ -90,6 +103,17 @@ public sealed partial class CultItemSystem : EntitySystem
         KnockdownAndDropItem(item, args.User, Loc.GetString("cult-item-component-block-fail"));
     }
 
+    // Whiskey - the rune drawer also opens through the interaction verb, which skipped every
+    // check above. The rune never came out, but the menu did.
+    private void OnUiOpenAttempt(Entity<CultItemComponent> item, ref ActivatableUIOpenAttemptEvent args)
+    {
+        if (args.Cancelled || CanUse(args.User))
+            return;
+
+        args.Cancel();
+        KnockdownAndDropItem(item, args.User, Loc.GetString("cult-item-component-generic"));
+    }
+
     // serverOnly is a very rough hack to make sure OnBeforeGettingThrown (that is only run server-side) can
     // show the popup while not causing several popups to show up with PopupEntity.
     private void KnockdownAndDropItem(Entity<CultItemComponent> item, EntityUid user, string message, bool serverOnly = false)
@@ -99,7 +123,23 @@ public sealed partial class CultItemSystem : EntitySystem
         else
             _popup.PopupPredicted(message, item, user);
         _stun.TryKnockdown(user, item.Comp.KnockdownDuration, true);
+        _stun.TryAddStunDuration(user, item.Comp.StunDuration); // Whiskey
         _hands.TryDrop(user);
+
+        Backlash(item, user); // Whiskey
+    }
+
+    /// <summary>
+    ///     Whiskey - it throws them off and cuts them. The shove is predicted like any other,
+    ///     the damage is server-side so it does not get applied twice.
+    /// </summary>
+    private void Backlash(Entity<CultItemComponent> item, EntityUid user)
+    {
+        var direction = -_transform.GetWorldRotation(user).ToWorldVec();
+        _physics.ApplyLinearImpulse(user, direction * item.Comp.BacklashForce);
+
+        if (_net.IsServer)
+            _damageable.TryChangeDamage(user, item.Comp.BacklashDamage, true, origin: item.Owner);
     }
 
     private bool CanUse(EntityUid? uid) => HasComp<BloodCultistComponent>(uid) || HasComp<GhostComponent>(uid);

@@ -94,7 +94,12 @@
       speech: "Fuu ma'jin!"
   - type: LimitedCharges
     maxCharges: 1
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-stun
+  # Whiskey - has to get past the mindshield gate so OnStun can run and apply the halved
+  # duration itself. Without this, OnCultTargetEvent marks it handled and the spell just fizzles.
   - type: BaseCultSpell
+    bypassProtection: true
 
 - type: entity
   parent: BaseAction
@@ -122,6 +127,8 @@
       speech: "Sas'so c'arta forbici"
   - type: LimitedCharges
     maxCharges: 1
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-teleport
   - type: BaseCultSpell
 
 - type: entity
@@ -143,6 +150,8 @@
       speech: "Ta'gh fara'qha fel d'amar det!"
   - type: LimitedCharges
     maxCharges: 1
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-emp
   - type: BaseCultSpell
 
 - type: entity
@@ -172,13 +181,16 @@
       speech: "In'totum Lig'abis!"
   - type: LimitedCharges
     maxCharges: 4
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-shadow-shackles
   - type: BaseCultSpell
 
 - type: entity
   parent: BaseAction
   id: ActionBloodCultTwistedConstruction
   name: Twisted Construction
-  description: Empowers your hand to corrupt certain metallic objects.
+  # Whiskey - name the material, otherwise it is guesswork which stack works.
+  description: Empowers your hand to turn a stack of plasteel into runed metal on contact.
   categories: [ HideSpawnMenu ]
   components:
   - type: Sprite
@@ -201,6 +213,8 @@
       speech: "Ethra p'ni dedol!"
   - type: LimitedCharges
     maxCharges: 1
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-twisted-construction
   - type: BaseCultSpell
 
 - type: entity
@@ -228,6 +242,8 @@
         hand2: CultBola
   - type: LimitedCharges
     maxCharges: 1
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-summon-equipment
   - type: BaseCultSpell
 
 - type: entity
@@ -251,6 +267,8 @@
         hand: RitualDagger
   - type: LimitedCharges
     maxCharges: 1
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-summon-dagger
   - type: BaseCultSpell
 
 - type: entity
@@ -275,6 +293,8 @@
         hand1: BloodRitesAura
   - type: LimitedCharges
     maxCharges: 1
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-blood-rites
   - type: BaseCultSpell
 
 - type: entity
@@ -299,6 +319,8 @@
       tileId: CultFloor
       audio: !type:SoundPathSpecifier
         path: /Audio/WhiteDream/BloodCult/curse.ogg
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-cult-floor
   - type: BaseCultSpell
 
 - type: entity
@@ -323,6 +345,8 @@
       entity: WallCult
       audio: !type:SoundPathSpecifier
         path: /Audio/WhiteDream/BloodCult/curse.ogg
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-cult-wall
   - type: BaseCultSpell
 
 - type: entity
@@ -347,6 +371,8 @@
       entity: CultDoor
       audio: !type:SoundPathSpecifier
         path: /Audio/WhiteDream/BloodCult/curse.ogg
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-cult-door
   - type: BaseCultSpell
 
 - type: entity
@@ -371,6 +397,8 @@
       entity: SoulShardGhost
       audio: !type:SoundPathSpecifier
         path: /Audio/WhiteDream/BloodCult/curse.ogg
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-soul-shard
   - type: BaseCultSpell
 
 - type: entity
@@ -395,6 +423,8 @@
       entity: SoulShardHolyGhost
       audio: !type:SoundPathSpecifier
         path: /Audio/WhiteDream/BloodCult/curse.ogg
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-holy-soul-shard
   - type: BaseCultSpell
 
 - type: entity
@@ -417,6 +447,8 @@
     event: !type:InstantSpawnSpellEvent
       prototype: WallForceCult
       posData: !type:TargetInFront
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-force-wall
   - type: BaseCultSpell
 
 - type: entity
@@ -435,6 +467,8 @@
     itemIconStyle: BigAction
   - type: InstantAction
     event: !type:PhaseShiftEvent
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-phase-shift
   - type: BaseCultSpell
 
 - type: entity
@@ -461,4 +495,6 @@
     event: !type:ProjectileSpellEvent
       prototype: ProjectileGauntlet
       projectileSpeed: 5
+  - type: SpeakOnAction
+    sentence: cult-spell-chant-gauntlet-echo
   - type: BaseCultSpell

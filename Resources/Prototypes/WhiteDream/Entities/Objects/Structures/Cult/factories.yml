@@ -89,6 +89,11 @@
     - prototype: EldritchLongsword
     - prototype: ClothingOuterCultArmor
     - prototype: ClothingOuterRobesCultTrue
+    - prototype: CrossbowBloodCult
+    - prototype: CrossbowBoltCult
+      amount: 10
+    - prototype: CrossbowBoltBloodDrinker
+      amount: 5
   - type: Construction
     graph: CultFactoryForge
     node: forge

@@ -1,4 +1,4 @@
-﻿blood-cult-title = The Blood Cult
+blood-cult-title = The Blood Cult
 blood-cult-description = The oldest and strongest emotion of mankind is fear, and the oldest and strongest kind of fear is fear of the unknown.
 
 roles-antag-blood-cultist-name = Blood cultist
@@ -16,11 +16,11 @@ blood-cult-role-briefing-rending-site = The veil is thin { $location }.
 blood-cult-role-briefing-emergency-rending = We can draw {$amount} more rending or apocalypse runes!
 
 objective-issuer-blood-cult = [color=red]The Geometer of Blood[/color]
-blood-cult-condition-win = The Geometer of Blood has successfully summoned their Eldritch Goddess!
+blood-cult-condition-win = The Blood Cult has successfully summoned their Eldritch Goddess!
 blood-cult-condition-draw = Both parties were destroyed.
 blood-cult-condition-failure = The crew have managed to stop the rending of reality!
 
-blood-cultists-list-start = Members of Geometer of Blood were:
+blood-cultists-list-start = Members of the Blood Cult were:
 blood-cultists-list-name = [color=White]{ $name }[/color] ([color=gray]{ $user }[/color])
 
 blood-cult-ui-roundstart-title = Nar'Si Blood Cult
@@ -41,6 +41,13 @@ blood-cult-stage-pentagram = pentagram
 
 # WhiteDream - ascension + objectives
 cult-offering-target-chosen = Nar'Sie has chosen an offering: [color=#d43a3a]{ $name }[/color].
+cult-offering-accepted = [color=#d43a3a]{ $name }[/color] has been given upon the rune. Nar'Sie is satisfied.
 cult-ascension-warning = The end draws near. In { $minutes } minutes her mark will show upon us all - gather, and be ready for the ascension of our Mother.
 cult-ascension-rending-unlocked = We are strong enough to tear the veil. The rune of dimensional rending is ours to draw.
 cult-ascension-marked = Her mark is upon us. There is no hiding now.
+
+# Whiskey - the red eyes now get the same warning the halo already had, and the marks are
+# permanent once they land.
+cult-red-eyes-warning = The veil grows thin. In { $minutes } minutes her sight will burn in our eyes, cover them, or let them see.
+cult-red-eyes-marked = Our eyes have filled with blood. The uninitiated will notice, cover them with any eyewear, or keep your distance from their gaze.
+cult-eyes-examine = [color=#d43a3a]There is a red glow in those eyes that has no business being there.[/color]

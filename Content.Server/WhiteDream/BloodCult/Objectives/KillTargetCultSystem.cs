@@ -2,6 +2,7 @@
 // Blood Cult: ported from WWhiteDreamProject/wwdpublic. See Content.Shared/WhiteDream/BloodCult/ATTRIBUTION.md
 
 using System.Linq;
+using Content.Server.Mind;
 using Content.Server.Roles.Jobs;
 using Content.Server.WhiteDream.BloodCult.Gamerule;
 using Content.Shared.WhiteDream.BloodCult.BloodCultist;
@@ -15,6 +16,7 @@ public sealed partial class KillTargetCultSystem : EntitySystem
 {
     [Dependency] private BloodCultRuleSystem _cultRule = default!;
     [Dependency] private JobSystem _job = default!;
+    [Dependency] private MindSystem _mind = default!;
     [Dependency] private MetaDataSystem _metaData = default!;
     [Dependency] private MobStateSystem _mobState = default!;
 
@@ -43,7 +45,16 @@ public sealed partial class KillTargetCultSystem : EntitySystem
         if (assignee != null && cultistRule.OfferingTarget == assignee)
             cultistRule.OfferingTarget = null;
 
-        ent.Comp.Target = cultistRule.OfferingTarget;
+        // Whiskey - the marked one stays named after they are given, so the uid on the rule can point
+        // at a body that no longer exists. Naming the objective off it read MetaData on a deleted
+        // entity and threw. Nobody left to offer means no objective.
+        if (cultistRule.OfferingTarget is not { } target || TerminatingOrDeleted(target))
+        {
+            args.Cancelled = true;
+            return;
+        }
+
+        ent.Comp.Target = target;
     }
 
     private void OnAfterAssign(Entity<KillTargetCultComponent> ent, ref ObjectiveAfterAssignEvent args)
@@ -54,6 +65,10 @@ public sealed partial class KillTargetCultSystem : EntitySystem
         _metaData.SetEntityName(ent, GetTitle(ent.Comp.Target.Value, ent.Comp.Title), args.Meta);
     }
 
+    /// <summary>
+    ///     Whiskey - the objective is to offer them, not to kill them. Half credit while the body is
+    ///     down and still to be carried to a rune, full credit once it has been given.
+    /// </summary>
     private void OnGetProgress(Entity<KillTargetCultComponent> ent, ref ObjectiveGetProgressEvent args)
     {
         var target = ent.Comp.Target;
@@ -63,15 +78,34 @@ public sealed partial class KillTargetCultSystem : EntitySystem
             return;
         }
 
+        // Nar'Sie named someone else since this objective was written, so it is no longer this
+        // cultist's to finish.
+        if (_cultRule.GetTarget() is not { } current || current != target.Value)
+        {
+            args.Progress = 1f;
+            return;
+        }
+
+        if (_cultRule.IsObjectiveFinished())
+        {
+            args.Progress = 1f;
+            return;
+        }
+
         args.Progress = !HasComp<MobStateComponent>(target) || _mobState.IsDead(target.Value)
-            ? 1f
+            ? 0.5f
             : 0f;
     }
 
     private string GetTitle(EntityUid target, string title)
     {
         var targetName = MetaData(target).EntityName;
-        var jobName = _job.MindTryGetJobName(target);
+        // MindTryGetJobName expects the mind entity, not the target's body. Passing the body UID
+        // always fell back to the generic "Unknown" title even though the target had a valid job.
+        var jobName = _mind.TryGetMind(target, out var mindId, out _)
+            ? _job.MindTryGetJobName(mindId)
+            : Loc.GetString("generic-unknown-title");
+
         return Loc.GetString(title, ("targetName", targetName), ("job", jobName));
     }
 }

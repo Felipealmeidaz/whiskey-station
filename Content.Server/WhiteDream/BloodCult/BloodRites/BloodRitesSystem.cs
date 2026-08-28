@@ -21,7 +21,6 @@ using Content.Shared.Mobs.Components;
 using Content.Shared.UserInterface;
 using Content.Shared.Weapons.Melee.Events;
 using Content.Shared.WhiteDream.BloodCult.BloodCultist;
-using Content.Shared.WhiteDream.BloodCult.Constructs;
 using Content.Shared.WhiteDream.BloodCult.Spells;
 using Content.Shared.WhiteDream.BloodCult.UI;
 using Robust.Server.Audio;
@@ -77,7 +76,7 @@ public sealed partial class BloodRitesSystem : EntitySystem
         if (!args.Target.HasValue || args.Handled || args.Target == args.User)
             return;
 
-        if (HasComp<BloodCultistComponent>(args.Target) || HasComp<ConstructComponent>(args.Target))
+        if (HasComp<BloodCultistComponent>(args.Target))
         {
             if (TryHealCultist(rites, args.User, args.Target.Value))
             {
@@ -151,7 +150,7 @@ public sealed partial class BloodRitesSystem : EntitySystem
             if (target == args.User)
                 continue;
 
-            if (HasComp<BloodCultistComponent>(target) || HasComp<ConstructComponent>(target))
+            if (HasComp<BloodCultistComponent>(target))
             {
                 if (TryHealCultist(rites, args.User, target))
                     playSound = true;
@@ -241,6 +240,16 @@ public sealed partial class BloodRitesSystem : EntitySystem
 
     private void OnRitesMessage(Entity<BloodRitesAuraComponent> rites, ref BloodRitesMessage args)
     {
+        // The selected prototype comes from the client. Validate both the choice and its cost
+        // before consuming the aura so a forged UI message cannot create arbitrary entities.
+        if (!HasComp<BloodCultistComponent>(args.Actor) ||
+            !rites.Comp.Crafts.TryGetValue(args.SelectedProto, out var cost) ||
+            FixedPoint2.New(cost) > rites.Comp.StoredBlood)
+        {
+            _popup.PopupEntity(Loc.GetString("blood-rites-not-enough-blood"), rites, args.Actor);
+            return;
+        }
+
         Del(rites);
 
         var ent = Spawn(args.SelectedProto, _transform.GetMapCoordinates(args.Actor));
@@ -303,7 +312,7 @@ public sealed partial class BloodRitesSystem : EntitySystem
         if (target.Owner == user)
             bloodCost *= rites.Comp.SelfHealRatio;
 
-        if (bloodCost >= rites.Comp.StoredBlood)
+        if (bloodCost > rites.Comp.StoredBlood)
         {
             _popup.PopupEntity(Loc.GetString("blood-rites-not-enough-blood"), rites, user);
             return false;
@@ -341,7 +350,6 @@ public sealed partial class BloodRitesSystem : EntitySystem
         if (target.Comp.BloodSolution is null)
             return false;
 
-        _bloodstream.FlushChemicals(target.AsNullable(), FixedPoint2.New(10));
         var missingBlood = target.Comp.BloodSolution.Value.Comp.Solution.AvailableVolume;
         if (missingBlood == 0)
             return false;
@@ -352,9 +360,12 @@ public sealed partial class BloodRitesSystem : EntitySystem
 
         if (bloodCost > rites.Comp.StoredBlood)
         {
-            _popup.PopupEntity("blood-rites-no-blood-left", rites, user);
+            _popup.PopupEntity(Loc.GetString("blood-rites-no-blood-left"), rites, user);
             bloodCost = rites.Comp.StoredBlood;
         }
+
+        if (bloodCost <= FixedPoint2.Zero)
+            return false;
 
         _bloodstream.TryModifyBleedAmount(target.AsNullable(), -3);
         _bloodstream.TryModifyBloodLevel(target.AsNullable(), bloodCost / rites.Comp.BloodRegenerationRatio);

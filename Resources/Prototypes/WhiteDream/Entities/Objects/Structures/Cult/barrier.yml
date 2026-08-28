@@ -1,6 +1,6 @@
 - type: entity
   name: cult barrier
-  description: Blocks the way for a short while. Shots pass straight through it; only a ritual dagger removes it.
+  description: Blocks the way for a short while. Shots pass straight through it, but the barrier can be broken.
   id: BloodCultBarrier
   parent: BaseStructure
   components:
@@ -30,8 +30,19 @@
         - MidImpassable
         - LowImpassable
         - InteractImpassable
-  # WhiteDream - the barrier is meant to be a wall you wait out, not one you shoot down. Shots pass
-  # through it (see the fixture layers), it only answers to the ritual dagger, and it fades on its own.
+  # WhiteDream - shots still pass through it (see the fixture layers), but melee and other damage
+  # sources can now break the field after 100 total damage. It also fades on its own as before.
+  - type: Damageable
+  - type: Injurable
+    damageContainer: StructuralInorganic
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 100
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
   - type: TimedDespawn
     lifetime: 20
   - type: PointLight

@@ -1,254 +1,73 @@
 <Document>
   # Culto de Sangue
 
-  Mesmo num futuro distante, algumas coisas nunca são compreendidas por completo. Na escuridão do espaço se escondem entidades de poder antigo, dispostas a levar a ruína ao universo e refazê-lo à sua própria imagem.
-  Elas se esticam a partir do vazio e dobram a mente de homens e mulheres mortais para o seu lado, na esperança de que um dia sejam deixadas entrar neste mundo de novo.
+  Mesmo num futuro distante, algumas coisas nunca são compreendidas por completo. Na escuridão do espaço se escondem entidades antigas, dispostas a levar a ruína ao universo e refazê-lo à própria imagem.
 
-  A Geômetra de Sangue, Nar'Sie, enviou vários de seus seguidores à Estação Espacial 14. Como cultista, você tem à disposição uma abundância de magias do culto, algo para toda situação.
-  Junto de seus irmãos de fé, você deve invocar o avatar de sua deusa eldritch!
+  A Geômetra de Sangue, Nar'Sie, enviou seus seguidores à Estação Espacial 14. Como cultista, você deve trabalhar com seus irmãos, ampliar o culto, entregar a oferenda marcada e rasgar o véu para trazer sua deusa a esta realidade.
 
-  ## A progressão do culto
-
-  O culto avança em estágios conforme cresce. Cada estágio é anunciado no canal do culto.
-
-  - [color=#d43a3a]Estágio inicial[/color] — vocês são poucos e ninguém desconfia. Convertam.
-  - [color=#d43a3a]Olhos vermelhos[/color] — com [bold]5[/bold] cultistas, os olhos de todos passam a arder em vermelho. É a primeira coisa que a segurança nota.
-  - [color=#d43a3a]Pentagrama[/color] — com [bold]8[/bold] cultistas, a marca de Nar'Sie aparece flutuando sobre a cabeça de vocês. O culto recebe [bold]2 minutos de aviso[/bold] antes disso acontecer, então reúnam-se e saiam de perto da tripulação. A Central também percebe: as luzes da estação piscam e um comunicado fala de distúrbios no espaço-tempo.
-
-  Use a ação [bold]Estudar o véu[/bold] a qualquer momento para ver o estado exato do culto: quantos somos, quem é o líder, o que falta para o próximo estágio, quem é a oferenda e onde o véu está fino.
+  <Box Orientation="Vertical">
+    [textlink="Runas, magias e estruturas" link="BloodCultArsenal"]
+    [textlink="Arsenal do culto" link="BloodCultEquipment"]
+    [textlink="O líder do culto e o ritual final" link="BloodCultLeader"]
+    [textlink="Desconversão e como impedir conversões" link="BloodCultDeconversion"]
+  </Box>
 
   ## Objetivos
 
-  Vocês têm dois, e ambos aparecem no menu de personagem:
+  O culto compartilha dois objetivos:
 
-  - [bold]Sacrificar a oferenda marcada.[/bold] Nar'Sie nomeia [bold]um[/bold] tripulante por rodada. Ele precisa morrer e ser oferecido sobre uma runa de oferenda.
-  - [bold]Invocar Nar'Sie.[/bold] Rasgar o véu e arrastar a Geômetra para esta realidade.
+  - [bold]Sacrificar a oferenda marcada.[/bold] Nar'Sie escolhe um integrante da Segurança ou do Comando. Se não houver ninguém elegível, ela escolhe outro tripulante. Matar o alvo não basta: o corpo precisa ser entregue sobre uma runa de oferenda.
+  - [bold]Invocar Nar'Sie.[/bold] O líder deve desenhar a runa de rasgo dimensional, o culto deve rasgar o véu e, depois, completar o ritual na fenda da realidade.
 
-  Ordem geral das coisas:
+  ## A progressão do culto
 
-  - 1. De um lugar escondido, fale com seus aliados pela ação [bold]Comunhão[/bold], que alcança todo o culto em qualquer distância.
-  - 2. Encontrem uma base: acessível ao culto, escondida da segurança.
-  - 2.5. Aos cinco minutos, [bold]votem no líder[/bold] quando Nar'Sie perguntar. Sem líder não há runa do apocalipse.
-  - 3. Desenhem uma runa de teleporte para que todos cheguem lá.
-  - 4. Desenhem uma runa de fortalecimento e preparem até 4 magias de sangue.
-  - 5. Convertam ou sacrifiquem sobre a runa de oferenda. Combinem fragmentos de alma cheios com cascas de constructo para criar constructos poderosos!
-  - 6. Matem a oferenda marcada e coloquem o corpo sobre uma runa de oferenda.
-  - 7. Com [bold]8 cultistas[/bold] e a oferenda feita, a runa de rasgo dimensional se torna desenhável. O culto é avisado no chat, junto dos locais.
-  - 8. Reúnam-se sobre as runas de rasgo e [bold]cantem juntos[/bold] até o véu ceder.
-  - 9. Esperem a fenda nascer e completem o ritual final sobre ela.
+  O culto avança conforme sua parcela da tripulação viva aumenta. Uma marca já aplicada não desaparece apenas porque o número de cultistas diminuiu.
 
-  ## Comunhão e o véu
+  - [color=#d43a3a]Estágio inicial[/color] — o culto ainda pode agir sem marcas visíveis. Converta discretamente e prepare uma base.
+  - [color=#d43a3a]Olhos vermelhos[/color] — ao alcançar [bold]10% da tripulação viva[/bold], todos os cultistas recebem um aviso de 1 minuto. Depois disso, seus olhos ficam vermelhos e o detalhe aparece ao examiná-los. Óculos e vendas escondem essa pista.
+  - [color=#d43a3a]Pentagrama[/color] — ao alcançar [bold]20% da tripulação viva[/bold], o culto recebe um aviso de 2 minutos. Em seguida, um pentagrama impossível de esconder aparece sobre cada cultista, as luzes piscam e a Central anuncia distúrbios no espaço-tempo.
+
+  No estágio do pentagrama, o líder também passa a ter uma [color=#d43a3a]aura vermelha aos pés[/color], visível para todos.
+
+  ## Comunicação e informações
 
   <Box>
     <GuideEntityEmbed Entity="ActionBloodCultCommune" Caption="Comunhão"/>
     <GuideEntityEmbed Entity="ActionBloodCultStudyVeil" Caption="Estudar o véu"/>
   </Box>
 
-  A [bold]Comunhão[/bold] manda uma mensagem para todos os cultistas e constructos, sem limite de distância. O preço é que seu personagem sussurra um encantamento em voz alta — quem estiver do lado vê.
+  A [bold]Comunhão[/bold] envia uma mensagem a todos os cultistas e constructos, sem limite de distância. Seu personagem sussurra um encantamento ao usá-la, portanto pessoas próximas podem perceber.
 
-  O [bold]Estudar o véu[/bold] é o seu painel: mostra quantos somos, quem é o líder, o que falta para o próximo estágio, quem é a oferenda marcada e onde o véu está fino. Consulte antes de qualquer decisão grande.
+  [bold]Estudar o véu[/bold] mostra o tamanho do culto, o estágio atual, o líder, a oferenda, as condições restantes para o rasgo e os locais onde a realidade está fina. Consulte essa ação antes de decisões importantes.
 
-  ## O líder do culto
+  ## Primeiros passos
 
-  [color=#d43a3a]Nar'Sie escolhe uma voz entre vocês, e quem escolhe por ela são vocês mesmos.[/color]
+  1. Use a Comunhão para localizar seus aliados sem revelar uma base.
+  2. Escolha um esconderijo e conecte-o com runas de teleporte.
+  3. Prepare magias e produza metal rúnico, equipamentos e constructos.
+  4. Participe da votação do líder, iniciada cerca de cinco minutos após o começo da rodada.
+  5. Converta novos membros e capture a oferenda marcada.
+  6. Entregue a oferenda na runa e reúna pelo menos 20% da tripulação no culto.
+  7. Proteja o líder enquanto ele desenha uma runa de rasgo dimensional em um dos locais indicados pelo véu.
+  8. Mantenha três cultistas sobre as runas de rasgo durante o cântico coletivo.
+  9. Localize a fenda que aparecerá dois minutos depois e conclua o ritual final.
 
-  [bold]Cinco minutos[/bold] depois do início da rodada, ela abre uma [bold]votação[/bold] com todos os cultistas vivos como candidatos. A votação dura 45 segundos e [bold]apenas cultistas podem votar[/bold] — a tripulação nem vê que ela aconteceu. Havendo empate, ela decide entre os empatados. Se por acaso houver um único cultista, ele é coroado sem votação.
+  ## A oferenda
 
-  O escolhido vira o [bold]líder do culto[/bold] e ganha:
+  A oferenda marcada continua sendo o alvo se morrer enquanto o corpo ainda estiver disponível na estação. Se entrar na criogenia ou deixar de existir, Nar'Sie escolhe outra pessoa e atualiza o objetivo de todos os cultistas.
 
-  - Um [bold]ícone próprio[/bold] no HUD do culto, para os irmãos saberem a quem seguir.
-  - O direito exclusivo de desenhar a [bold]runa do apocalipse[/bold]. Ninguém mais consegue — ela nem aparece no menu da adaga dos outros.
-  - O nome dele aparece no [bold]Estudar o véu[/bold] como "a voz dela entre nós".
+  Na runa de oferenda:
 
-  Se o líder morrer, o culto é avisado no chat e [bold]Nar'Sie convoca uma nova votação[/bold] cerca de 45 segundos depois. Ou seja: proteger o líder importa, e caçar o líder também — a tripulação que descobrir quem é atrasa o apocalipse.
+  - Um cultista sacrifica um cadáver comum.
+  - Dois cultistas convertem uma pessoa viva e desprotegida.
+  - Três cultistas sacrificam uma pessoa viva, um alvo protegido contra conversão ou a oferenda marcada, viva ou morta.
 
-  ## Adaga ritual
+  Cada conversão ou sacrifício concede uma carga compartilhada à runa de rejuvenescimento.
 
-  <Box>
-    <GuideEntityEmbed Entity="RitualDagger" Caption="Adaga ritual"/>
-  </Box>
+  ## Dicas rápidas
 
-  A adaga é sua ferramenta principal:
-
-  - Com ela você desenha runas.
-  - Golpear um não-cultista causa 15 de dano perfurante.
-  - Usar sobre uma runa a apaga.
-  - Usar sobre uma barreira do culto a remove.
-
-  ## Runas menores
-
-  Podem ser desenhadas em qualquer lugar da estação.
-
-  <Box Orientation="Vertical" HorizontalAlignment="Center">
-    <Box>
-      <GuideEntityEmbed Entity="CultRuneOffering" Caption="Runa de oferenda"/>
-    </Box>
-    Converte ou sacrifica quem estiver sobre ela. [bold]Um[/bold] cultista para sacrificar um corpo morto, [bold]dois[/bold] para converter um vivo, [bold]três[/bold] para sacrificar um vivo ou o alvo marcado. Se não houver gente o bastante, a runa te diz quantos faltam.
-
-    [bold]Cada sacrifício aumenta o contador do culto, que é gasto em ressurreições instantâneas pela runa de rejuvenescimento.[/bold]
-
-    <Box>
-      <GuideEntityEmbed Entity="CultRuneEmpower" Caption="Runa de fortalecimento"/>
-    </Box>
-    Concede o fortalecimento: enquanto durar, o limite de magias sobe de 1 para 4, desenhar runas leva menos tempo e custa menos sangue.
-
-    <Box>
-      <GuideEntityEmbed Entity="CultRuneTeleport" Caption="Runa de teleporte"/>
-    </Box>
-    Transporta tudo que estiver sobre ela até outra runa de teleporte. Você dá um nome a ela ao criá-la.
-
-    A magia de [bold]Teleporte[/bold] também leva a estas runas: fortaleça sua mão e toque em si mesmo ou em outro cultista para mandá-lo direto a uma delas. É a forma mais rápida de tirar alguém de apuros.
-
-    <Box>
-      <GuideEntityEmbed Entity="CultRuneRevive" Caption="Runa de rejuvenescimento"/>
-    </Box>
-    Coloque o corpo de um cultista sobre a runa e invoque — ele volta à vida, curado. Gasta uma carga, e as cargas vêm dos sacrifícios. Use com cabeça.
-
-    <Box>
-      <GuideEntityEmbed Entity="CultRuneBarrier" Caption="Runa de barreira"/>
-    </Box>
-    Ao ser invocada, cria uma barreira que bloqueia a passagem. Ela dura [bold]45 segundos[/bold] e depois se desfaz sozinha. Aguenta cerca de 70 de dano antes de quebrar, e a adaga ritual a remove na hora.
-
-    <Box>
-      <GuideEntityEmbed Entity="CultRuneSummoning" Caption="Runa de invocação"/>
-    </Box>
-    Traz um cultista vivo até a runa e some em seguida. Não funciona em cultistas algemados ou sendo arrastados.
-
-    <Box>
-      <GuideEntityEmbed Entity="CultRuneBloodBoil" Caption="Runa de sangue fervente"/>
-    </Box>
-    Tira vida de quem a invoca e manda três pulsos devastadores em todos que conseguem ver a runa, pegando fogo neles.
-  </Box>
-
-  ## Runas maiores
-
-  Estas exigem condições, e só podem ser desenhadas em [bold]três locais da estação[/bold] escolhidos no início da rodada. Os locais aparecem no seu briefing e no relatório do véu. Cada rasgo gasta um local.
-
-  <Box>
-    <GuideEntityEmbed Entity="CultRuneDimensionalRending" Caption="Runa de rasgo dimensional"/>
-  </Box>
-
-  Precisa de [bold]8 cultistas[/bold] no culto e da [bold]oferenda já sacrificada[/bold]. Terminar de desenhá-la avisa a estação inteira do local e faz as luzes piscarem.
-
-  Invocá-la não é coisa de uma pessoa só: começa um [bold]cântico coletivo[/bold]. É preciso que [bold]12,5% da tripulação viva[/bold] (no mínimo 2) esteja em pé sobre runas de rasgo — e vale dividir o culto entre as três. São 6 cânticos, um a cada 5 segundos, e as luzes da estação piscam sem parar durante todo o processo. Se o número cair no meio, o cântico se quebra e vocês recomeçam.
-
-  Dando certo: alerta [color=#d43a3a]Delta[/color], o comunicado do Vaticano da Central, e o [bold]espaço fica vermelho[/bold].
-
-  <Box>
-    <GuideEntityEmbed Entity="CultRuneApocalypse" Caption="Runa do apocalipse"/>
-  </Box>
-
-  Arauto do fim dos tempos. [color=#d43a3a]Só o líder do culto pode desenhá-la, e só depois que o véu for rasgado.[/color] Precisa de 3 cultistas sobre ela para ser ativada. Efeitos: um EMP potente, escuridão total, uma explosão solar e, se o culto estiver em desvantagem, eventos aleatórios. Se os cultistas forem menos de 15% dos jogadores, ativar a runa pode disparar um evento aleatório:
-  - Haste imóvel ×3
-  - Migração de ratos ×2
-  - Chuva de meteoros ×2
-  - Grilos nas ventilações ×3
-  - Quatro anomalias aleatórias
-  - Crescimento de kudzu ×2
-  - Máquinas de venda mímicas ×2
-
-  ## A fenda e a invocação final
-
-  <Box>
-    <GuideEntityEmbed Entity="BloodCultRift" Caption="Fenda da realidade"/>
-    <GuideEntityEmbed Entity="CultRuneFinalSummoning" Caption="Runa de invocação final"/>
-  </Box>
-
-  Dois minutos depois do véu ser rasgado, uma [bold]fenda da realidade[/bold] abre em algum lugar da estação — o local é anunciado no chat do culto. Ela nasce sobre piso reforçado, cercada por quatro runas de invocação final, e sangra [bold]perniculado sanguíneo[/bold] sem parar, formando um oceano crescente.
-
-  <Box>
-    <GuideEntityEmbed Entity="MobHellspawnCult" Caption="Hellspawn"/>
-  </Box>
-
-  A fenda não fica indefesa: ela [bold]vomita um hellspawn[/bold] para guardá-la — uma besta de 450 de vida que reflete tiros de energia e ateia fogo no que toca. Ele atende a Nar'Sie, então não ataca o culto: caça a tripulação. É sempre [bold]um de cada vez[/bold]. Se matarem o guardião, a fenda leva cerca de um minuto para arrastar outro — e, [bold]depois que o cântico final começa, apenas 25 segundos[/bold]. Fantasmas podem assumir o controle dele.
-
-  Invoque uma das quatro runas com [bold]3 cultistas[/bold] em cima delas para começar o ritual final. O cântico [bold]acelera[/bold]: começa espaçado e vai apertando até virar frenesi, acompanhando a música.
-
-  Em cada ciclo, um de vocês é sorteado para falar o cântico longo enquanto os outros só respondem. [color=#d43a3a]Quem fala o cântico longo é o próximo a ser levado.[/color] Ao final do ciclo, Nar'Sie o toma — e o devolve como um [bold]ceifador[/bold]. São necessárias [bold]três oferendas[/bold]. A cada uma, o número de cultistas exigido cai em um.
-
-  Se o cântico se quebrar, o processo reinicia do começo e a música para.
-
-  Quando a terceira oferenda é tomada, [bold]Nar'Sie chega[/bold] — e todo cultista vivo na estação se torna um ceifador.
-
-  ## Magias de sangue
-
-  São magias descartáveis de uso único, que somem depois de usadas — seu pão de cada dia contra a tripulação. Prepare-as pelo menu de ações. Preparar uma magia [bold]custa sangue e dói[/bold]: você crava a lâmina em si mesmo. Sem a runa de fortalecimento você fica limitado a uma magia por vez.
-
-  Bom conselho: mantenha o atordoamento e o teleporte para escapar de situações ruins. Sobram mais dois espaços — escolha conforme a tarefa.
-
-  ## Equipamento
-
-  <Box>
-    <GuideEntityEmbed Entity="ClothingOuterArmorCultSummoned" Caption="Mantos do zelote"/>
-    <GuideEntityEmbed Entity="ClothingHeadHelmetCultSummoned" Caption="Capuz do zelote"/>
-    <GuideEntityEmbed Entity="ClothingShoesCultSummoned" Caption="Botas do zelote"/>
-  </Box>
-
-  A magia [bold]Invocar Equipamento de Combate[/bold] traz o conjunto do zelote (40% de resistência geral e 25% de estamina), uma lâmina eldritch e uma bola do culto. As botas seguram firme no chão, como coturnos.
-
-  <Box>
-    <GuideEntityEmbed Entity="ClothingEyeCultBlindfold" Caption="Venda do zelote"/>
-  </Box>
-
-  A venda do zelote, feita nos arquivos, dá [bold]visão noturna[/bold], imunidade a flashes e mostra barras de vida. Nar'Sie guia através da escuridão.
-
-  As três estruturas do culto fabricam com tempo de recarga, e cada uma tem seu próprio som ao produzir:
-
-  <Box>
-    <GuideEntityEmbed Entity="CultFactoryAltar" Caption="Altar"/>
-    <GuideEntityEmbed Entity="CultFactoryForge" Caption="Forja demoníaca"/>
-    <GuideEntityEmbed Entity="CultFactoryArchives" Caption="Arquivos"/>
-  </Box>
-
-  ## Como fazer constructos
-
-  Constructos nascem da união de duas peças:
-
-  <Box>
-    <GuideEntityEmbed Entity="SoulShard" Caption="Fragmento de alma"/>
-    <GuideEntityEmbed Entity="ConstructShell" Caption="Casca de constructo"/>
-  </Box>
-
-  - 1. Consiga um [bold]fragmento de alma[/bold]. Ele vem de todo sacrifício feito na runa de oferenda: a alma da vítima fica presa no fragmento. Também dá para invocar um vazio com a magia [bold]Invocar Fragmento de Alma[/bold].
-  - 2. Consiga uma [bold]casca de constructo[/bold]. O [bold]altar[/bold] produz uma a cada recarga, e o artífice também sabe fazê-las.
-  - 3. Use o fragmento na casca. Um menu radial abre e o ocupante escolhe a forma: [bold]artífice[/bold], [bold]espectro[/bold] ou [bold]juggernaut[/bold].
-
-  Um fragmento sem alma não vira nada, e um fragmento vazio pode ser oferecido como cargo fantasma para alguém entrar. Uma sombra dentro do fragmento pode ser solta e recapturada à vontade — cure-a assim.
-
-  ## Constructos
-
-  Sombras e constructos obedecem à vontade do mestre e cumprem ordens a qualquer custo. Eles entendem intenções, ao contrário de sintéticos. Constructos do culto são cultistas: enxergam os aliados e contam para os objetivos.
-
-  <Box>
-    <GuideEntityEmbed Entity="ShadeCult" Caption="Sombra"/>
-  </Box>
-  Sombras são frágeis, mas voltar para o fragmento de alma as cura. Útil quando você precisa de um segundo corpo às pressas para ativar uma runa.
-
-  <Box>
-    <GuideEntityEmbed Entity="ConstructArtificer" Caption="Artífice"/>
-  </Box>
-  O "drone" do culto: constrói pisos, paredes e paredes reforçadas, desmonta a estação e cria material para novos constructos. Também produz fragmentos de alma e cascas com tempo de recarga.
-
-  <Box>
-    <GuideEntityEmbed Entity="ConstructWraith" Caption="Espectro"/>
-  </Box>
-  Um pouco mais frágil que um humano, mas com ataque corpo a corpo forte. Fica invisível e atravessa portas fechadas e paredes com a mudança de fase.
-
-  <Box>
-    <GuideEntityEmbed Entity="ConstructJuggernaut" Caption="Juggernaut"/>
-  </Box>
-  Forte, lento, com muita vida. Derruba paredes com um soco e bate mais forte que o espectro. Não pode ser empurrado nem agarrado, e tem uma parede de força.
-
-  <Box>
-    <GuideEntityEmbed Entity="ConstructHarvester" Caption="Ceifador"/>
-  </Box>
-  O arauto da ascensão. É no que os oferecidos no ritual final se tornam, e no que todo o culto se torna quando Nar'Sie chega.
-
-  ## Dicas
-  - Só cultistas veem o nome e o efeito de uma runa ao examiná-la.
-  - Esteja pronto para invocar um cultista em apuros — algemado não dá.
-  - Uma sombra dentro de um fragmento permite usar sozinho runas que precisam de dois: solte e recapture a sombra.
-  - Medibots costumam ser úteis ao culto: um bot com limiar baixo e pacotes de trauma, ou pilares, mantêm os combatentes de pé.
-  - A magia de EMP e a runa do apocalipse abrem quase qualquer porta — mas leve um pé de cabra do mesmo jeito.
-  - Use [bold]Estudar o véu[/bold] antes de qualquer decisão grande. Ele te diz exatamente o que falta.
+  - Apenas cultistas, constructos e fantasmas conseguem identificar e examinar runas normalmente.
+  - Um cultista algemado ou sendo arrastado não pode ser trazido pela runa de invocação.
+  - A adaga ritual apaga runas comuns e remove barreiras do culto.
+  - Use [bold]Estudar o véu[/bold] para evitar tentar o ritual antes de cumprir alguma condição.
 </Document>

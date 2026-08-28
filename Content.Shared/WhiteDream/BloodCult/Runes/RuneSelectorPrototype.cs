@@ -25,6 +25,13 @@ public sealed partial class RuneSelectorPrototype : IPrototype
     public int RequiredTotalCultists = 1;
 
     /// <summary>
+    ///     Whiskey - when above zero the requirement is this share of the crew currently
+    ///     playing, and <see cref="RequiredTotalCultists"/> is ignored.
+    /// </summary>
+    [DataField]
+    public float RequiredCultistsPercent;
+
+    /// <summary>
     ///     WhiteDream - only the cult leader may draw this rune.
     /// </summary>
     [DataField]
