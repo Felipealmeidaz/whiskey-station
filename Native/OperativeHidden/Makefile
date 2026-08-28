@@ -12,9 +12,9 @@ OBJECT := $(BUILD_DIR)/main.o
 NASMFLAGS := -f elf64 -Wall -Werror -I.
 LDFLAGS := -shared -nostdlib -Wl,--no-undefined -Wl,-z,defs -Wl,-z,relro -Wl,-z,now
 
-# This warning category exists only in newer NASM releases. Assemble an empty
-# input so NASM actually parses the warning flag before we enable it.
-ifeq ($(shell $(NASM) -f elf64 -Werror -w-reloc-rel-dword -o /dev/stdout /dev/null >/dev/null 2>&1 && echo yes),yes)
+# This warning category was introduced in NASM 3. Keep compatibility with the
+# NASM 2 package currently shipped by GitHub's Ubuntu runners.
+ifeq ($(shell $(NASM) -v 2>/dev/null | awk '{ split($$3, version, "."); if (version[1] >= 3) print "yes" }'),yes)
 NASMFLAGS += -w-reloc-rel-dword
 endif
 
