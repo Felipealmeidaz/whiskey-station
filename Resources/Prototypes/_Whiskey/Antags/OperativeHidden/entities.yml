@@ -63,7 +63,7 @@
       1: Syndicate
     sounds:
       1:
-        path: /Audio/Whiskey/OperativeHidden/operative_hidden_position.ogg
+        path: /Audio/_Whiskey/OperativeHidden/operative_hidden_position.ogg
         params:
           volume: -7
           maxDistance: 5

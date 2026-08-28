@@ -68,6 +68,10 @@ EVENT_ROUND_ENDED = 16
 EVENT_OBJECTIVE_QUERY = 17
 EVENT_PLAYER_ATTACHED = 18
 EVENT_SPOKE = 19
+EVENT_TOUCH_COMMITTED = 20
+EVENT_SELF_HEAL_COMMITTED = 21
+EVENT_PATIENT_HEAL_COMMITTED = 22
+EVENT_PATIENT_KILL_COMMITTED = 23
 
 TARGET_VALID = 1 << 0
 TARGET_ALIVE = 1 << 1
@@ -80,6 +84,12 @@ TARGET_OWN_PATIENT = 1 << 16
 TARGET_HAS_SESSION = 1 << 19
 SELF_HAS_SESSION = 1 << 20
 TARGET_CAN_DIE = 1 << 21
+TARGET_PREVIOUSLY_CONVERTED = 1 << 22
+COUNTER_ACCEPTED = 1 << 23
+
+COMMAND_REQUIRE_PREVIOUS_SUCCESS = 1 << 0
+COMMAND_ATOMIC = 1 << 2
+DISPATCH_ERROR_COMMAND_OVERFLOW = 1 << 31
 
 CMD_ADD_ACTION = 1
 CMD_SET_ACTION_COOLDOWN = 2
@@ -203,6 +213,23 @@ class NativeRuntimeTests(unittest.TestCase):
         self.assertNotEqual(replacement, stale)
         self.assertEqual(self.dispatch(EVENT_SPAWN, handle=stale), [])
 
+    def test_command_overflow_is_observable_and_rolls_back_native_state(self) -> None:
+        event = NativeEvent(
+            type=EVENT_SPAWN,
+            flags=0,
+            handle=self.handle,
+            self_entity=self.self_entity,
+        )
+        undersized = (NativeCommand * 1)()
+        status = self.lib.operative_hidden_dispatch(event, undersized, 1)
+        self.assertEqual(status, DISPATCH_ERROR_COMMAND_OVERFLOW)
+
+        # Spawn mutates STATE_INITIALIZING -> STATE_ACTIVE. Receiving the full
+        # five-command spawn again proves the saturated dispatch restored the
+        # entire pre-dispatch state rather than merely reporting an error.
+        commands = self.spawn()
+        self.assertEqual([command.type for command in commands], [CMD_ADD_ACTION] * 5)
+
     def test_positional_audio_cadence_speech_and_death_cleanup(self) -> None:
         commands = self.spawn(random_bits=0, flags=SELF_HAS_SESSION)
         self.assertEqual([command.type for command in commands[:5]], [CMD_ADD_ACTION] * 5)
@@ -251,11 +278,19 @@ class NativeRuntimeTests(unittest.TestCase):
         self.spawn()
         valid = TARGET_VALID | TARGET_ALIVE | TARGET_HUMANOID | TARGET_IN_RANGE | TARGET_CAN_DIE
         commands = self.dispatch(EVENT_TOUCH, target=2002, flags=valid, tick=1000)
-        self.assertEqual([command.type for command in commands], [CMD_SET_MOB_STATE, CMD_SET_ACTION_COOLDOWN])
+        self.assertEqual([command.type for command in commands], [CMD_SET_MOB_STATE, CMD_NOTIFY_EVENT])
         self.assertEqual(commands[0].value0, 4)
-        self.assertEqual(commands[1].value0, 180000)
+        self.assertEqual(commands[1].token, EVENT_TOUCH_COMMITTED)
 
-        cooldown = self.dispatch(EVENT_TOUCH, target=2002, flags=valid, tick=1001)
+        # No native cooldown is committed until the managed executor confirms
+        # that SET_MOB_STATE succeeded.
+        uncommitted = self.dispatch(EVENT_TOUCH, target=2002, flags=valid, tick=1001)
+        self.assertEqual([command.type for command in uncommitted], [CMD_SET_MOB_STATE, CMD_NOTIFY_EVENT])
+        committed = self.dispatch(EVENT_TOUCH_COMMITTED, target=2002, tick=1001)
+        self.assertEqual([(command.type, command.value0) for command in committed],
+                         [(CMD_SET_ACTION_COOLDOWN, 180000)])
+
+        cooldown = self.dispatch(EVENT_TOUCH, target=2002, flags=valid, tick=1002)
         self.assertEqual([(command.type, command.token) for command in cooldown], [(CMD_POPUP, 2)])
         invalid = self.dispatch(EVENT_TOUCH, target=self.self_entity, flags=valid, tick=181001)
         self.assertEqual([(command.type, command.token) for command in invalid], [(CMD_POPUP, 1)])
@@ -267,11 +302,12 @@ class NativeRuntimeTests(unittest.TestCase):
         self.spawn()
         flags = TARGET_VALID | TARGET_ALIVE | TARGET_HUMANOID | TARGET_IN_RANGE | REQUIRED_TOOL_HELD
         for tool in range(1, 6):
+            start_tick = tool * 5000
             started = self.dispatch(
                 EVENT_PROCEDURE,
                 target=2002,
                 flags=flags,
-                tick=tool * 1000,
+                tick=start_tick,
                 input_value=self.tool_mask(tool),
                 active_item=3000 + tool,
             )
@@ -280,9 +316,9 @@ class NativeRuntimeTests(unittest.TestCase):
                 EVENT_UPDATE,
                 target=2002,
                 flags=flags,
-                tick=tool * 1000 + 3500,
+                tick=start_tick + 3500,
                 input_value=self.tool_mask(tool),
-                value0=3.5,
+                value0=9999.0,
                 active_item=3000 + tool,
             )
             self.assertEqual([(command.type, command.token) for command in advanced], [(CMD_POPUP, 10 + tool)])
@@ -291,7 +327,7 @@ class NativeRuntimeTests(unittest.TestCase):
             EVENT_PROCEDURE,
             target=2002,
             flags=flags,
-            tick=6000,
+            tick=30000,
             input_value=self.tool_mask(6),
             active_item=3006,
         )
@@ -300,39 +336,41 @@ class NativeRuntimeTests(unittest.TestCase):
             EVENT_UPDATE,
             target=2002,
             flags=flags,
-            tick=9500,
+            tick=33500,
             input_value=self.tool_mask(6),
-            value0=3.5,
+            value0=9999.0,
             active_item=3006,
         )
         self.assertEqual(
             [command.type for command in completed],
             [
                 CMD_ADD_COMPONENT_BUNDLE,
-                CMD_ZOMBIFY,
                 CMD_ADD_COMPONENT_BUNDLE,
+                CMD_ZOMBIFY,
                 CMD_REMOVE_COMPONENT_BUNDLE,
-                CMD_REJUVENATE,
                 CMD_SET_FACTION,
                 CMD_SET_NATIVE_OWNER,
+                CMD_REJUVENATE,
                 CMD_NOTIFY_EVENT,
-                CMD_SET_ACTION_COOLDOWN,
-                CMD_CLEAR_ROUTED_TARGET,
-                CMD_POPUP,
             ],
         )
         self.assertEqual(completed[0].token, 1)
-        self.assertEqual(completed[2].token, 3)
+        self.assertEqual(completed[1].token, 3)
+        self.assertEqual(completed[2].token, 1)
         self.assertEqual(completed[3].token, 4)
+        self.assertTrue(all(command.flags & COMMAND_ATOMIC for command in completed))
+        self.assertTrue(completed[1].flags & COMMAND_REQUIRE_PREVIOUS_SUCCESS)
 
         self.assertEqual((completed[7].token, completed[7].target), (EVENT_PATIENT_CREATED, 2002))
         uncommitted = self.dispatch(EVENT_OBJECTIVE_QUERY, input_value=1)
         self.assertEqual([(command.type, command.token, command.value0) for command in uncommitted], [(CMD_REPORT_COUNTER, 1, 0)])
-        self.dispatch(EVENT_PATIENT_CREATED, target=2002)
+        committed = self.dispatch(EVENT_PATIENT_CREATED, target=2002, flags=COUNTER_ACCEPTED, tick=33500)
+        self.assertEqual([command.type for command in committed],
+                         [CMD_SET_ACTION_COOLDOWN, CMD_CLEAR_ROUTED_TARGET, CMD_POPUP])
         counter = self.dispatch(EVENT_OBJECTIVE_QUERY, input_value=1)
         self.assertEqual([(command.type, command.token, command.value0) for command in counter], [(CMD_REPORT_COUNTER, 1, 1)])
 
-        blocked = self.dispatch(EVENT_PROCEDURE, target=2003, flags=flags, tick=30000, input_value=self.tool_mask(1))
+        blocked = self.dispatch(EVENT_PROCEDURE, target=2003, flags=flags, tick=40000, input_value=self.tool_mask(1))
         self.assertEqual([(command.type, command.token) for command in blocked], [(CMD_POPUP, 2)])
 
     def test_procedure_with_session_avoids_ghost_role(self) -> None:
@@ -347,11 +385,12 @@ class NativeRuntimeTests(unittest.TestCase):
         )
         commands = []
         for tool in range(1, 7):
+            start_tick = tool * 5000
             self.dispatch(
                 EVENT_PROCEDURE,
                 target=2002,
                 flags=flags,
-                tick=tool * 1000,
+                tick=start_tick,
                 input_value=self.tool_mask(tool),
                 active_item=3000 + tool,
             )
@@ -359,9 +398,9 @@ class NativeRuntimeTests(unittest.TestCase):
                 EVENT_UPDATE,
                 target=2002,
                 flags=flags,
-                tick=tool * 1000 + 3500,
+                tick=start_tick + 3500,
                 input_value=self.tool_mask(tool),
-                value0=3.5,
+                value0=9999.0,
                 active_item=3000 + tool,
             )
         self.assertNotIn(3, [command.token for command in commands if command.type == CMD_ADD_COMPONENT_BUNDLE])
@@ -375,6 +414,11 @@ class NativeRuntimeTests(unittest.TestCase):
             [(command.type, command.token) for command in interrupted],
             [(CMD_CLEAR_ROUTED_TARGET, 0), (CMD_POPUP, 4)],
         )
+        while_interrupted = self.dispatch(EVENT_SELF_HEAL, tick=2001)
+        self.assertEqual([(command.type, command.token) for command in while_interrupted], [(CMD_POPUP, 1)])
+        self.assertEqual(self.dispatch(EVENT_UPDATE, tick=2002, flags=SELF_HAS_SESSION), [])
+        restored = self.dispatch(EVENT_SELF_HEAL, tick=2003)
+        self.assertEqual([command.type for command in restored], [CMD_REJUVENATE, CMD_NOTIFY_EVENT])
         self.assertEqual(
             self.dispatch(EVENT_UPDATE, target=2002, flags=flags, tick=25000, input_value=self.tool_mask(1), value0=30.0),
             [],
@@ -428,6 +472,38 @@ class NativeRuntimeTests(unittest.TestCase):
         )
         self.assertEqual([(command.type, command.token) for command in advanced], [(CMD_POPUP, 11)])
 
+    def test_procedure_uses_monotonic_deadline_not_frame_time(self) -> None:
+        self.spawn()
+        flags = TARGET_VALID | TARGET_DEAD | TARGET_HUMANOID | TARGET_IN_RANGE | REQUIRED_TOOL_HELD
+        self.dispatch(
+            EVENT_PROCEDURE,
+            target=2002,
+            flags=flags,
+            tick=1000,
+            input_value=self.tool_mask(1),
+            active_item=3001,
+        )
+        before_deadline = self.dispatch(
+            EVENT_UPDATE,
+            target=2002,
+            flags=flags,
+            tick=4499,
+            input_value=self.tool_mask(1),
+            value0=1_000_000.0,
+            active_item=3001,
+        )
+        self.assertEqual(before_deadline, [])
+        at_deadline = self.dispatch(
+            EVENT_UPDATE,
+            target=2002,
+            flags=flags,
+            tick=4500,
+            input_value=self.tool_mask(1),
+            value0=0.0,
+            active_item=3001,
+        )
+        self.assertEqual([(command.type, command.token) for command in at_deadline], [(CMD_POPUP, 11)])
+
     def test_real_movement_still_interrupts_procedure(self) -> None:
         self.spawn()
         flags = TARGET_VALID | TARGET_DEAD | TARGET_HUMANOID | TARGET_IN_RANGE | REQUIRED_TOOL_HELD
@@ -461,6 +537,14 @@ class NativeRuntimeTests(unittest.TestCase):
         self.assertEqual([(command.type, command.token) for command in wrong], [(CMD_POPUP, 10)])
         converted = self.dispatch(EVENT_PROCEDURE, target=2002, flags=base | TARGET_CONVERTED, tick=1000, input_value=self.tool_mask(1))
         self.assertEqual([(command.type, command.token) for command in converted], [(CMD_POPUP, 1)])
+        historical = self.dispatch(
+            EVENT_PROCEDURE,
+            target=2002,
+            flags=base | TARGET_PREVIOUSLY_CONVERTED,
+            tick=1000,
+            input_value=self.tool_mask(1),
+        )
+        self.assertEqual([(command.type, command.token) for command in historical], [(CMD_POPUP, 1)])
 
     def test_missing_required_tool_fails_closed(self) -> None:
         self.spawn()
@@ -487,17 +571,28 @@ class NativeRuntimeTests(unittest.TestCase):
         self.spawn()
         patient = TARGET_VALID | TARGET_CONVERTED | TARGET_OWN_PATIENT
         healed = self.dispatch(EVENT_PATIENT_HEAL, target=2002, flags=patient, tick=1000)
-        self.assertEqual([command.type for command in healed], [CMD_REJUVENATE, CMD_SET_ACTION_COOLDOWN])
+        self.assertEqual([command.type for command in healed], [CMD_REJUVENATE, CMD_NOTIFY_EVENT])
+        self.assertEqual(healed[1].token, EVENT_PATIENT_HEAL_COMMITTED)
+        patient_heal_commit = self.dispatch(EVENT_PATIENT_HEAL_COMMITTED, target=2002, tick=1000)
+        self.assertEqual([command.type for command in patient_heal_commit], [CMD_SET_ACTION_COOLDOWN])
         self_healed = self.dispatch(EVENT_SELF_HEAL, tick=1001)
-        self.assertEqual([command.type for command in self_healed], [CMD_REJUVENATE, CMD_SET_ACTION_COOLDOWN])
+        self.assertEqual([command.type for command in self_healed], [CMD_REJUVENATE, CMD_NOTIFY_EVENT])
+        self.assertEqual(self_healed[1].token, EVENT_SELF_HEAL_COMMITTED)
+        self.dispatch(EVENT_SELF_HEAL_COMMITTED, target=self.self_entity, tick=1001)
         patient_cooldown = self.dispatch(EVENT_PATIENT_HEAL, target=2002, flags=patient, tick=1002)
         self.assertEqual([(command.type, command.token) for command in patient_cooldown], [(CMD_POPUP, 2)])
 
         killed = self.dispatch(EVENT_PATIENT_KILL, target=2002, flags=patient, tick=2000)
         self.assertEqual(
             [command.type for command in killed],
-            [CMD_UNZOMBIFY, CMD_REMOVE_COMPONENT_BUNDLE, CMD_ADD_COMPONENT_BUNDLE, CMD_SET_MOB_STATE],
+            [CMD_UNZOMBIFY, CMD_REMOVE_COMPONENT_BUNDLE, CMD_ADD_COMPONENT_BUNDLE, CMD_SET_MOB_STATE, CMD_NOTIFY_EVENT],
         )
+        self.assertTrue(all(command.flags & COMMAND_ATOMIC for command in killed))
+        kill_commit = self.dispatch(EVENT_PATIENT_KILL_COMMITTED, target=2002, tick=2000)
+        self.assertEqual([(command.type, command.value0) for command in kill_commit],
+                         [(CMD_SET_ACTION_COOLDOWN, 60000)])
+        kill_cooldown = self.dispatch(EVENT_PATIENT_KILL, target=2002, flags=patient, tick=2001)
+        self.assertEqual([(command.type, command.token) for command in kill_cooldown], [(CMD_POPUP, 2)])
         invalid = self.dispatch(EVENT_PATIENT_HEAL, target=2003, flags=TARGET_VALID | TARGET_CONVERTED, tick=400000)
         self.assertEqual([(command.type, command.token) for command in invalid], [(CMD_POPUP, 1)])
 
@@ -513,7 +608,8 @@ class NativeRuntimeTests(unittest.TestCase):
         attached = self.dispatch(EVENT_PLAYER_ATTACHED, flags=SELF_HAS_SESSION)
         self.assertEqual([(command.type, command.token) for command in attached], [(CMD_PLAY_SOUND, 1)])
         restored = self.dispatch(EVENT_SELF_HEAL, tick=400000)
-        self.assertEqual([command.type for command in restored], [CMD_REJUVENATE, CMD_SET_ACTION_COOLDOWN])
+        self.assertEqual([command.type for command in restored], [CMD_REJUVENATE, CMD_NOTIFY_EVENT])
+        self.dispatch(EVENT_SELF_HEAL_COMMITTED, target=self.self_entity, tick=400000)
         died = self.dispatch(EVENT_DIED)
         self.assertEqual([(command.type, command.token) for command in died], [(CMD_STOP_SOUND, 0)])
         rejected = self.dispatch(EVENT_SELF_HEAL, tick=800000)

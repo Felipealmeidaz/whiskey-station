@@ -46,6 +46,9 @@ using Robust.Client.GameObjects;
 using Robust.Shared.Audio.Components;
 using Robust.Shared.Containers;
 using Robust.Shared.Localization;
+using Robust.Shared.Map;
+using Robust.Shared.Player;
+using Robust.Shared.Timing;
 using Robust.UnitTesting;
 
 namespace Content.IntegrationTests.Tests.Whiskey;
@@ -339,20 +342,50 @@ public sealed class OperativeHiddenTest : GameTest
         var pair = Pair;
         var server = pair.Server;
         var map = await pair.CreateTestMap();
+        EntityUid operative = default;
+        EntityUid victim = default;
+        EntityUid conversionObjective = default;
+        Entity<MindComponent> operativeMind = default;
+        string originalName = string.Empty;
+        string activeHand = string.Empty;
+        var ticksPerStage = 0;
 
         await server.WaitAssertion(() =>
         {
-            var bridge = server.System<NativeAntagBridgeSystem>();
-            var factions = server.System<NpcFactionSystem>();
+            // Move the connected harness client before creating any scenario
+            // entity, ensuring none of the deliberately server-only direct
+            // event mutations ever enter that session's PVS history.
+            var mindSystem = server.System<MindSystem>();
+            var observer = server.EntMan.SpawnEntity(
+                "MobHuman",
+                new MapCoordinates(new Vector2(10_000f, 10_000f), map.MapId));
+            var observerMind = mindSystem.GetOrCreateMind(pair.Player!.UserId);
+            mindSystem.TransferTo(observerMind, observer, ghostCheckOverride: true, mind: observerMind.Comp);
+        });
+        await server.WaitRunTicks(2);
+
+        await server.WaitAssertion(() =>
+        {
             var hands = server.System<SharedHandsSystem>();
             var mobState = server.System<MobStateSystem>();
-            var transform = server.System<SharedTransformSystem>();
-            var operative = server.EntMan.SpawnEntity(OperativeBody, map.GridCoords);
-            var victim = server.EntMan.SpawnEntity("MobHuman", map.GridCoords);
-            var originalName = server.EntMan.GetComponent<MetaDataComponent>(victim).EntityName;
+            operative = server.EntMan.SpawnEntity(OperativeBody, map.GridCoords);
+            victim = server.EntMan.SpawnEntity("MobHuman", map.GridCoords);
+            originalName = server.EntMan.GetComponent<MetaDataComponent>(victim).EntityName;
             mobState.ChangeMobState(victim, MobState.Dead);
+            ticksPerStage = (int) Math.Ceiling(server.ResolveDependency<IGameTiming>().TickRate * 3.6);
 
-            var activeHand = server.EntMan.GetComponent<HandsComponent>(operative).ActiveHandId!;
+            var mindSystem = server.System<MindSystem>();
+            // The procedure itself is a server-authoritative state-machine test;
+            // use a sessionless mind so advancing real ticks cannot introduce
+            // unrelated client PVS/component-state traffic into the transaction.
+            operativeMind = mindSystem.CreateMind(null);
+            mindSystem.TransferTo(operativeMind, operative, ghostCheckOverride: true, mind: operativeMind.Comp);
+            conversionObjective = server.EntMan.SpawnEntity(
+                "OperativeHiddenConvertObjective",
+                MapCoordinates.Nullspace);
+            operativeMind.Comp.Objectives.Add(conversionObjective);
+
+            activeHand = server.EntMan.GetComponent<HandsComponent>(operative).ActiveHandId!;
             foreach (var invalidTool in new[] { "OmnimedToolSyndie", "Saw" })
             {
                 var held = server.EntMan.SpawnEntity(invalidTool, map.GridCoords);
@@ -364,7 +397,6 @@ public sealed class OperativeHiddenTest : GameTest
                     Target = victim,
                 };
                 server.EntMan.EventBus.RaiseLocalEvent(operative, rejectedAction);
-                bridge.Update(4f);
 
                 Assert.That(server.EntMan.HasComponent<ZombieComponent>(victim), Is.False,
                     $"{invalidTool} must not start or skip the first cautery stage");
@@ -372,10 +404,17 @@ public sealed class OperativeHiddenTest : GameTest
                 server.EntMan.DeleteEntity(held);
             }
 
-            var toolOrder = new[] { "Cautery", "Drill", "Scalpel", "Retractor", "Hemostat", "Saw" };
-            foreach (var tool in toolOrder)
+        });
+
+        var toolOrder = new[] { "Cautery", "Drill", "Scalpel", "Retractor", "Hemostat", "Saw" };
+        foreach (var tool in toolOrder)
+        {
+            EntityUid held = default;
+            await server.WaitAssertion(() =>
             {
-                var held = server.EntMan.SpawnEntity(tool, map.GridCoords);
+                var hands = server.System<SharedHandsSystem>();
+                var transform = server.System<SharedTransformSystem>();
+                held = server.EntMan.SpawnEntity(tool, map.GridCoords);
                 Assert.That(hands.TryPickup(operative, held, activeHand), Is.True);
 
                 var action = new NativeAntagTargetActionEvent
@@ -398,21 +437,31 @@ public sealed class OperativeHiddenTest : GameTest
                     transform.SetCoordinates(operative, map.GridCoords.Offset(new Vector2(0.1f, 0.1f)));
                     transform.SetCoordinates(victim, map.GridCoords.Offset(new Vector2(-0.1f, -0.1f)));
                 }
+            });
 
-                bridge.Update(3.5f);
+            await server.WaitRunTicks(ticksPerStage);
 
+            await server.WaitAssertion(() =>
+            {
                 if (tool != toolOrder[^1])
                     Assert.That(server.EntMan.HasComponent<ZombieComponent>(victim), Is.False,
                         $"the procedure must not convert before completing the {tool} stage");
 
+                var hands = server.System<SharedHandsSystem>();
                 Assert.That(hands.TryDrop(operative, held, checkActionBlocker: false), Is.True);
                 server.EntMan.DeleteEntity(held);
-            }
+            });
+        }
 
+        await server.WaitAssertion(() =>
+        {
+            var factions = server.System<NpcFactionSystem>();
+            var mobState = server.System<MobStateSystem>();
             Assert.That(server.EntMan.HasComponent<ZombieComponent>(victim), Is.True,
                 "the ordered six-instrument procedure must convert the patient");
             var patient = server.EntMan.GetComponent<NativeAntagPatientComponent>(victim);
             var patientZombie = server.EntMan.GetComponent<ZombieComponent>(victim);
+            var condition = server.EntMan.GetComponent<NativeCounterConditionComponent>(conversionObjective);
             var localization = server.ResolveDependency<ILocalizationManager>();
             var expectedName = localization.GetString(
                 "operative-hidden-patient-name-prefix",
@@ -434,6 +483,9 @@ public sealed class OperativeHiddenTest : GameTest
                     "zombification must apply the configured lobotomy replacement accent");
                 Assert.That(server.EntMan.HasComponent<NativeAntagComponent>(victim), Is.False,
                     "patients must not inherit the operative's continuous disclosure radio");
+                Assert.That(condition.Current, Is.EqualTo(1),
+                    "the mind-owned objective mirror must advance only after the atomic conversion commits");
+                Assert.That(condition.DistinctTargets, Does.Contain(victim));
             });
 
             var accentSource = localization.GetString("operative-hidden-lobotomy-word-1");
@@ -453,27 +505,91 @@ public sealed class OperativeHiddenTest : GameTest
             Assert.Multiple(() =>
             {
                 Assert.That(patientAudio.FileName,
-                    Does.StartWith("/Audio/Whiskey/OperativeHidden/operative_hidden_speech"));
+                    Does.StartWith("/Audio/_Whiskey/OperativeHidden/operative_hidden_speech"));
                 Assert.That(patientAudio.FileName,
-                    Is.Not.EqualTo("/Audio/Whiskey/OperativeHidden/operative_hidden_position.ogg"));
+                    Is.Not.EqualTo("/Audio/_Whiskey/OperativeHidden/operative_hidden_position.ogg"));
                 Assert.That(patientAudio.Params.MaxDistance, Is.EqualTo(5f));
                 Assert.That(patientAudio.Flags.HasFlag(AudioFlags.NoOcclusion), Is.False);
             });
+        });
 
+        await server.WaitAssertion(() =>
+        {
+            var kill = new NativeAntagTargetActionEvent
+            {
+                EventType = (uint) NativeAntagEventType.PatientKillAction,
+                Target = victim,
+            };
+            server.EntMan.EventBus.RaiseLocalEvent(operative, kill);
+
+            var native = server.EntMan.GetComponent<NativeAntagComponent>(operative);
+            Assert.Multiple(() =>
+            {
+                Assert.That(server.EntMan.HasComponent<NativeAntagPatientComponent>(victim), Is.False);
+                Assert.That(server.EntMan.HasComponent<ZombieComponent>(victim), Is.False);
+                Assert.That(native.CountedTargets[1], Does.Contain(victim),
+                    "the durable per-body identity set must survive patient termination");
+                Assert.That(native.PatientSpeechStreams.ContainsKey(victim), Is.False,
+                    "terminating a patient must stop and forget its short speech stream");
+            });
+
+            var hands = server.System<SharedHandsSystem>();
+            var cautery = server.EntMan.SpawnEntity("Cautery", map.GridCoords);
+            Assert.That(hands.TryPickup(operative, cautery, activeHand), Is.True);
+            var reconversion = new NativeAntagTargetActionEvent
+            {
+                EventType = (uint) NativeAntagEventType.ProcedureAction,
+                Target = victim,
+            };
+            server.EntMan.EventBus.RaiseLocalEvent(operative, reconversion);
+            Assert.That(hands.TryDrop(operative, cautery, checkActionBlocker: false), Is.True);
+            server.EntMan.DeleteEntity(cautery);
+        });
+
+        await server.WaitRunTicks(ticksPerStage);
+        await server.WaitAssertion(() =>
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(server.EntMan.HasComponent<NativeAntagPatientComponent>(victim), Is.False,
+                    "a terminated patient must never be accepted as a fresh conversion target");
+                Assert.That(server.EntMan.HasComponent<ZombieComponent>(victim), Is.False,
+                    "reconversion of the same corpse must fail before the first surgical stage");
+            });
+
+            // Exercise the reviewer's exact terminal state: a completed 3/3
+            // counter, mind transferred to a ghost, and the native body deleted.
+            var condition = server.EntMan.GetComponent<NativeCounterConditionComponent>(conversionObjective);
+            condition.Current = 3;
+            var ghost = server.EntMan.SpawnEntity("MobObserver", map.GridCoords);
+            server.System<MindSystem>().TransferTo(
+                operativeMind,
+                ghost,
+                ghostCheckOverride: true,
+                mind: operativeMind.Comp);
+            server.EntMan.DeleteEntity(operative);
+            var progress = server.System<ObjectivesSystem>()
+                .GetInfo(conversionObjective, operativeMind.Owner, operativeMind.Comp)?.Progress;
+            Assert.That(progress, Is.EqualTo(1f),
+                "3/3 progress must survive ghosting and destruction of the native scenario handle");
+
+            Assert.That(operativeMind.Comp.Objectives.Remove(conversionObjective), Is.True);
+            server.EntMan.Dirty(operativeMind);
+            server.EntMan.DeleteEntity(conversionObjective);
             server.EntMan.DeleteEntity(victim);
-            Assert.That(native.PatientSpeechStreams.ContainsKey(victim), Is.False,
-                "deleting a patient must stop and forget its short speech stream");
-
             server.System<SharedMapSystem>().DeleteMap(map.MapId);
         });
     }
 
     [Test]
-    public async Task SpawnerPreservesMindAndIgnoresOriginalSpecies()
+    public async Task TwentyPlayerScenarioSelectsOneOperativeAndPreservesMind()
     {
         var pair = Pair;
         var server = pair.Server;
         var map = await pair.CreateTestMap();
+        var population = new List<ICommonSession> { pair.Player! };
+        for (var i = 1; i < 20; i++)
+            population.Add(await server.AddDummySession($"operative_population_{i:D2}"));
 
         await server.WaitAssertion(() =>
         {
@@ -487,6 +603,15 @@ public sealed class OperativeHiddenTest : GameTest
             var mind = mindSystem.GetOrCreateMind(session.UserId);
             mindSystem.TransferTo(mind, originalBody, ghostCheckOverride: true, mind: mind.Comp);
             Assert.That(session.AttachedEntity, Is.EqualTo(originalBody));
+
+            foreach (var crewSession in population.Skip(1))
+            {
+                var crewBody = server.EntMan.SpawnEntity("MobHuman", map.GridCoords);
+                var crewMind = mindSystem.GetOrCreateMind(crewSession.UserId);
+                mindSystem.TransferTo(crewMind, crewBody, ghostCheckOverride: true, mind: crewMind.Comp);
+            }
+            Assert.That(server.PlayerMan.PlayerCount, Is.EqualTo(20),
+                "the selection scenario must run at the dynamic rule's exact minimum population");
 
             var rule = server.EntMan.SpawnEntity(OperativeRule, map.GridCoords);
             var selection = server.EntMan.GetComponent<AntagSelectionComponent>(rule);
@@ -521,11 +646,16 @@ public sealed class OperativeHiddenTest : GameTest
                 Assert.That(objectiveInfo.All(info => info is not null), Is.True,
                     "both objectives must provide title, description, icon, and progress to the character UI");
                 Assert.That(server.EntMan.GetComponent<MetaDataComponent>(operative).EntityName, Is.Not.Empty);
+                Assert.That(server.EntMan.EntityQuery<NativeAntagComponent>().Count(), Is.EqualTo(1),
+                    "the fixed antag count must produce exactly one native scenario owner at 20 players");
             });
 
             server.EntMan.DeleteEntity(rule);
             server.System<SharedMapSystem>().DeleteMap(map.MapId);
         });
+
+        foreach (var dummy in population.Skip(1))
+            await server.RemoveDummySession(dummy, removeUser: true);
     }
 
     [Test]

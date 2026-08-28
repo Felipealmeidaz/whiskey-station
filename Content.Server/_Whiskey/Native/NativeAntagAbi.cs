@@ -8,6 +8,8 @@ public static class NativeAntagAbi
     public const int EventSize = 72;
     public const int CommandSize = 48;
     public const int CommandCapacity = 16;
+    public const uint DispatchErrorCommandOverflow = 1u << 31;
+    public const uint DispatchCommandCountMask = ~DispatchErrorCommandOverflow;
 }
 
 [StructLayout(LayoutKind.Explicit, Pack = 1, Size = NativeAntagAbi.EventSize)]
@@ -63,6 +65,10 @@ public enum NativeAntagEventType : uint
     ObjectiveQuery = 17,
     PlayerAttached = 18,
     Spoke = 19,
+    TouchCommitted = 20,
+    SelfHealCommitted = 21,
+    PatientHealCommitted = 22,
+    PatientKillCommitted = 23,
 }
 
 [Flags]
@@ -81,6 +87,8 @@ public enum NativeAntagFlags : uint
     TargetHasSession = 1 << 19,
     SelfHasSession = 1 << 20,
     TargetCanDie = 1 << 21,
+    TargetPreviouslyConverted = 1 << 22,
+    CounterAccepted = 1 << 23,
 }
 
 public enum NativeAntagCommandType : uint
@@ -110,4 +118,5 @@ public enum NativeAntagCommandFlags : uint
     None = 0,
     RequirePreviousSuccess = 1 << 0,
     PreserveVisualSkin = 1 << 1,
+    Atomic = 1 << 2,
 }

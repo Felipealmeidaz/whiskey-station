@@ -14,7 +14,7 @@ event_disconnected:
     ; abandoned operative. Death and round cleanup remain terminal.
     mov dword [r15 + ST_STATE], STATE_INTERRUPTED
     mov qword [r15 + ST_PROCEDURE_TARGET], 0
-    mov dword [r15 + ST_PROCEDURE_REMAINING], 0
+    mov qword [r15 + ST_PROCEDURE_DEADLINE], 0
     mov dword [r15 + ST_PROCEDURE_TOOL], 0
     mov dword [r15 + ST_REQUIRED_TOOL], 1
     ret
@@ -23,16 +23,16 @@ event_died:
     INTERNAL_CALL operative_audio_stop_all
     mov dword [r15 + ST_STATE], STATE_DEAD
     mov qword [r15 + ST_PROCEDURE_TARGET], 0
-    mov dword [r15 + ST_PROCEDURE_REMAINING], 0
+    mov qword [r15 + ST_PROCEDURE_DEADLINE], 0
     mov dword [r15 + ST_PROCEDURE_TOOL], 0
     mov dword [r15 + ST_REQUIRED_TOOL], 1
     ret
 
 event_round_ended:
     INTERNAL_CALL operative_audio_stop_all
-    mov dword [r15 + ST_STATE], STATE_INTERRUPTED
+    mov dword [r15 + ST_STATE], STATE_TERMINATED
     mov qword [r15 + ST_PROCEDURE_TARGET], 0
-    mov dword [r15 + ST_PROCEDURE_REMAINING], 0
+    mov qword [r15 + ST_PROCEDURE_DEADLINE], 0
     mov dword [r15 + ST_PROCEDURE_TOOL], 0
     mov dword [r15 + ST_REQUIRED_TOOL], 1
     ret

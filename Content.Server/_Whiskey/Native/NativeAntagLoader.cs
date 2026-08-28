@@ -115,6 +115,9 @@ public sealed class NativeAntagLoader : IDisposable
             throw new ArgumentOutOfRangeException(nameof(capacity));
 
         var count = _dispatch!(ref nativeEvent, commands, (uint) capacity);
+        if ((count & NativeAntagAbi.DispatchErrorCommandOverflow) != 0)
+            throw new NativeAntagCommandBufferOverflowException(nativeEvent.Type, capacity);
+        count &= NativeAntagAbi.DispatchCommandCountMask;
         if (count > capacity)
             throw new InvalidOperationException($"Native command count {count} exceeds buffer capacity {capacity}");
         return (int) count;
@@ -141,4 +144,11 @@ public sealed class NativeAntagLoader : IDisposable
         NativeLibrary.Free(_library);
         _library = 0;
     }
+}
+
+public sealed class NativeAntagCommandBufferOverflowException(uint eventType, int capacity)
+    : InvalidOperationException($"Native event {eventType} exceeded the {capacity}-command ABI buffer; state was rolled back")
+{
+    public uint EventType { get; } = eventType;
+    public int Capacity { get; } = capacity;
 }

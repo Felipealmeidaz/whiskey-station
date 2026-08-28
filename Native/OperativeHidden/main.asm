@@ -11,8 +11,6 @@ operative_states: resb OPERATIVE_MAX_INSTANCES * ST_SIZE
 
 section .rodata
 align 4
-float_zero:              dd 0.0
-procedure_step_seconds:  dd 3.5
 procedure_move_tolerance_squared: dd 0.0625
 
 section .text

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Numerics;
 using Content.Medical.Common.Damage;
 using Content.Medical.Common.Targeting;
+using Content.Server.Mind;
 using Content.Server.Zombies;
 using Content.Shared.Actions;
 using Content.Shared.Administration.Systems;
@@ -17,6 +18,7 @@ using Content.Shared.Humanoid;
 using Content.Shared.Mobs;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Mobs.Systems;
+using Content.Shared.NPC.Components;
 using Content.Shared.NPC.Systems;
 using Content.Shared.Popups;
 using Content.Shared.Whiskey.Native;
@@ -50,6 +52,7 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
     [Dependency] private HumanoidProfileSystem _humanoidProfile = default!;
     [Dependency] private MobStateSystem _mobState = default!;
     [Dependency] private MobThresholdSystem _mobThresholds = default!;
+    [Dependency] private MindSystem _minds = default!;
     [Dependency] private NpcFactionSystem _factions = default!;
     [Dependency] private RejuvenateSystem _rejuvenate = default!;
     [Dependency] private SharedPopupSystem _popup = default!;
@@ -58,7 +61,7 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
 
     private NativeAntagLoader? _native;
     private ISawmill _log = default!;
-    private readonly Queue<(EntityUid Owner, NativeAntagEventType Type, EntityUid? Target)> _deferredEvents = new();
+    private readonly Queue<(EntityUid Owner, NativeAntagEventType Type, EntityUid? Target, uint Input)> _deferredEvents = new();
     private int _commandExecutionDepth;
 
     public bool NativeAvailable => _native?.Available == true;
@@ -165,7 +168,7 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
             }
 
             var target = Valid(component.RoutedTarget) ? component.RoutedTarget : null;
-            Dispatch((uid, component), NativeAntagEventType.Update, target, value0: frameTime);
+            Dispatch((uid, component), NativeAntagEventType.Update, target);
         }
     }
 
@@ -242,7 +245,7 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
 
         if (_commandExecutionDepth > 0)
         {
-            _deferredEvents.Enqueue((ent.Comp.Master, NativeAntagEventType.PatientRemoved, ent.Owner));
+            _deferredEvents.Enqueue((ent.Comp.Master, NativeAntagEventType.PatientRemoved, ent.Owner, 0));
             return;
         }
 
@@ -286,7 +289,7 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
         var nativeEvent = new NativeAntagEvent
         {
             Type = (uint) type,
-            Flags = (uint) (flags | BuildFlags(ent.Owner, target, toolMask)),
+            Flags = (uint) (flags | BuildFlags(ent, target, toolMask)),
             Handle = ent.Comp.Handle,
             ServerTick = (ulong) Math.Max(0, _timing.CurTime.TotalMilliseconds),
             Self = ToHandle(ent.Owner),
@@ -322,8 +325,31 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
         var commands = ArrayPool<NativeAntagCommand>.Shared.Rent(NativeAntagAbi.CommandCapacity);
         try
         {
-            var count = _native.Dispatch(ref nativeEvent, commands, NativeAntagAbi.CommandCapacity);
+            int count;
+            try
+            {
+                count = _native.Dispatch(ref nativeEvent, commands, NativeAntagAbi.CommandCapacity);
+            }
+            catch (NativeAntagCommandBufferOverflowException exception)
+            {
+                _log.Error($"{exception.Message}; owner={ToPrettyString(ent.Owner)} target=" +
+                           $"{(target is { } overflowTarget ? ToPrettyString(overflowTarget) : "<none>")}");
+                return 0;
+            }
+
+            if (!PreflightAtomicCommands(ent, commands, count, out var atomicFailure))
+            {
+                _log.Error($"Rejected native atomic command group before mutation: {atomicFailure}; " +
+                           $"owner={ToPrettyString(ent.Owner)}");
+                if (type == NativeAntagEventType.Update)
+                    _deferredEvents.Enqueue((ent.Owner, NativeAntagEventType.ProcedureInterrupted, target, 0));
+                DrainDeferredEvents();
+                return count;
+            }
+
             var previousSucceeded = true;
+            var transactionFailed = false;
+            Stack<Action>? rollbacks = null;
             _commandExecutionDepth++;
             try
             {
@@ -334,7 +360,25 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
                         !previousSucceeded)
                         continue;
 
-                    previousSucceeded = Execute(ent, command);
+                    var atomic = ((NativeAntagCommandFlags) command.Flags & NativeAntagCommandFlags.Atomic) != 0;
+                    if (atomic)
+                        rollbacks ??= new Stack<Action>();
+
+                    try
+                    {
+                        previousSucceeded = Execute(ent, command, atomic ? rollbacks : null);
+                    }
+                    catch (Exception exception)
+                    {
+                        _log.Error($"Native command type={command.Type} threw for {ToPrettyString(ent.Owner)}: {exception}");
+                        previousSucceeded = false;
+                    }
+
+                    if (atomic && !previousSucceeded)
+                    {
+                        transactionFailed = true;
+                        RollBack(rollbacks!);
+                    }
                     if ((NativeAntagCommandType) command.Type == NativeAntagCommandType.Popup &&
                         command.Token is >= 1 and <= 15 &&
                         type is NativeAntagEventType.ProcedureAction or
@@ -352,6 +396,9 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
                 _commandExecutionDepth--;
             }
 
+            if (transactionFailed && type == NativeAntagEventType.Update)
+                _deferredEvents.Enqueue((ent.Owner, NativeAntagEventType.ProcedureInterrupted, target, 0));
+
             DrainDeferredEvents();
             return count;
         }
@@ -368,14 +415,25 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
             if (!Valid(pending.Owner) || !TryComp<NativeAntagComponent>(pending.Owner, out var component))
                 continue;
 
-            Dispatch((pending.Owner, component), pending.Type, pending.Target);
+            if (pending.Type == NativeAntagEventType.PatientRemoved &&
+                pending.Target is { } restoredPatient &&
+                HasComp<NativeAntagPatientComponent>(restoredPatient))
+                continue;
+
+            var flags = NativeAntagFlags.None;
+            if (pending.Type == NativeAntagEventType.PatientCreated &&
+                pending.Target is { } converted &&
+                RecordCommittedCounter((pending.Owner, component), pending.Input, converted))
+                flags |= NativeAntagFlags.CounterAccepted;
+
+            Dispatch((pending.Owner, component), pending.Type, pending.Target, pending.Input, flags: flags);
         }
     }
 
-    private NativeAntagFlags BuildFlags(EntityUid self, EntityUid? target, uint toolMask)
+    private NativeAntagFlags BuildFlags(Entity<NativeAntagComponent> self, EntityUid? target, uint toolMask)
     {
         var flags = NativeAntagFlags.None;
-        if (HasComp<ActorComponent>(self))
+        if (HasComp<ActorComponent>(self.Owner))
             flags |= NativeAntagFlags.SelfHasSession;
         if (toolMask != 0)
             flags |= NativeAntagFlags.RequiredToolHeld;
@@ -391,7 +449,7 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
         if (TryComp<NativeAntagPatientComponent>(targetUid, out var patient))
         {
             flags |= NativeAntagFlags.TargetConverted;
-            if (patient.Master == self)
+            if (patient.Master == self.Owner)
                 flags |= NativeAntagFlags.TargetOwnPatient;
         }
         if (HasComp<ActorComponent>(targetUid))
@@ -404,10 +462,207 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
             if (_mobState.HasState(targetUid, MobState.Dead, mobState))
                 flags |= NativeAntagFlags.TargetCanDie;
         }
+        if (WasAlreadyCounted(self, targetUid))
+            flags |= NativeAntagFlags.TargetPreviouslyConverted;
         if (_transform.InRange(Transform(self).Coordinates, Transform(targetUid).Coordinates, MeleeRange))
             flags |= NativeAntagFlags.TargetInMeleeRange;
 
         return flags;
+    }
+
+    private bool RecordCommittedCounter(Entity<NativeAntagComponent> owner, uint token, EntityUid target)
+    {
+        if (token == 0)
+            return false;
+
+        if (!owner.Comp.CountedTargets.TryGetValue(token, out var bodyTargets))
+        {
+            bodyTargets = [];
+            owner.Comp.CountedTargets[token] = bodyTargets;
+        }
+
+        var bodyAccepted = bodyTargets.Add(target);
+        if (!_minds.TryGetMind(owner.Owner, out _, out var mind))
+            return bodyAccepted;
+
+        var foundDurableCounter = false;
+        var durableAccepted = false;
+        foreach (var objective in mind.Objectives)
+        {
+            if (!TryComp<NativeCounterConditionComponent>(objective, out var condition) || condition.Token != token)
+                continue;
+
+            foundDurableCounter = true;
+            if (condition.DistinctTargets.Add(target))
+            {
+                condition.Current++;
+                durableAccepted = true;
+            }
+        }
+
+        // Once an objective mirror exists it is the durable idempotency source;
+        // the native counter must not advance if a recreated body cache accepts
+        // an identity the mind already recorded.
+        return foundDurableCounter ? durableAccepted : bodyAccepted;
+    }
+
+    private bool WasAlreadyCounted(Entity<NativeAntagComponent> owner, EntityUid target)
+    {
+        foreach (var targets in owner.Comp.CountedTargets.Values)
+        {
+            if (targets.Contains(target))
+                return true;
+        }
+
+        if (!_minds.TryGetMind(owner.Owner, out _, out var mind))
+            return false;
+
+        foreach (var objective in mind.Objectives)
+        {
+            if (TryComp<NativeCounterConditionComponent>(objective, out var condition) &&
+                condition.DistinctTargets.Contains(target))
+                return true;
+        }
+
+        return false;
+    }
+
+    private void RollBack(Stack<Action> rollbacks)
+    {
+        while (rollbacks.TryPop(out var rollback))
+        {
+            try
+            {
+                rollback();
+            }
+            catch (Exception exception)
+            {
+                _log.Error($"Native ECS transaction rollback failed: {exception}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Validates the complete atomic group before its first ECS mutation. This
+    /// is especially important because upstream zombification is intentionally
+    /// destructive and cannot be reconstructed from <see cref="ZombieComponent"/>
+    /// alone. The native sequence places it after compensable bundle additions;
+    /// this pass proves every remaining token, target, enum and dependency first.
+    /// </summary>
+    private bool PreflightAtomicCommands(
+        Entity<NativeAntagComponent> owner,
+        NativeAntagCommand[] commands,
+        int count,
+        out string failure)
+    {
+        var patientComponentName = EntityManager.ComponentFactory
+            .GetComponentName<NativeAntagPatientComponent>();
+        var simulatedPatients = new Dictionary<EntityUid, bool>();
+
+        for (var i = 0; i < count; i++)
+        {
+            var command = commands[i];
+            if (((NativeAntagCommandFlags) command.Flags & NativeAntagCommandFlags.Atomic) == 0)
+                continue;
+
+            if (!TryEntity(command.Source, out var source) ||
+                !TryEntity(command.Target, out var target) ||
+                source != owner.Owner)
+            {
+                failure = $"command[{i}] type={command.Type} has an invalid source/target relation";
+                return false;
+            }
+
+            if (!simulatedPatients.TryGetValue(target, out var hasPatient))
+                hasPatient = HasComp<NativeAntagPatientComponent>(target);
+
+            switch ((NativeAntagCommandType) command.Type)
+            {
+                case NativeAntagCommandType.AddComponentBundle:
+                case NativeAntagCommandType.RemoveComponentBundle:
+                    if (!owner.Comp.ComponentBundles.TryGetValue(command.Token, out var bundleId) ||
+                        !_prototypes.TryIndex<EntityPrototype>(bundleId, out var bundle))
+                    {
+                        failure = $"command[{i}] references unknown component bundle token={command.Token}";
+                        return false;
+                    }
+
+                    if (bundle.Components.ContainsKey(patientComponentName))
+                    {
+                        hasPatient = (NativeAntagCommandType) command.Type ==
+                                     NativeAntagCommandType.AddComponentBundle;
+                        simulatedPatients[target] = hasPatient;
+                    }
+                    break;
+                case NativeAntagCommandType.ZombifyEntity:
+                    if (HasComp<ZombieComponent>(target) ||
+                        HasComp<ZombieImmuneComponent>(target) ||
+                        !HasComp<MobStateComponent>(target) ||
+                        !CanResolveZombieProfile(owner.Comp, command.Token))
+                    {
+                        failure = $"command[{i}] cannot zombify target={ToPrettyString(target)} " +
+                                  $"with profile token={command.Token}";
+                        return false;
+                    }
+                    break;
+                case NativeAntagCommandType.UnzombifyEntity:
+                    if (!HasComp<ZombieComponent>(target))
+                    {
+                        failure = $"command[{i}] cannot unzombify non-zombie target={ToPrettyString(target)}";
+                        return false;
+                    }
+                    break;
+                case NativeAntagCommandType.SetFaction:
+                    if (!owner.Comp.Factions.ContainsKey(command.Token))
+                    {
+                        failure = $"command[{i}] references unknown faction token={command.Token}";
+                        return false;
+                    }
+                    break;
+                case NativeAntagCommandType.SetNativeOwner:
+                    if (!hasPatient)
+                    {
+                        failure = $"command[{i}] requires a patient relation not produced by the group";
+                        return false;
+                    }
+                    break;
+                case NativeAntagCommandType.SetMobState:
+                    var desiredState = (MobState) command.Value0;
+                    if (!TryComp<MobStateComponent>(target, out var mobState) ||
+                        !_mobState.HasState(target, desiredState, mobState))
+                    {
+                        failure = $"command[{i}] target cannot enter mob state={command.Value0}";
+                        return false;
+                    }
+                    break;
+                case NativeAntagCommandType.RejuvenateEntity:
+                    break;
+                case NativeAntagCommandType.NotifyEvent:
+                    if (!Enum.IsDefined((NativeAntagEventType) command.Token))
+                    {
+                        failure = $"command[{i}] references unknown commit event={command.Token}";
+                        return false;
+                    }
+                    break;
+                default:
+                    failure = $"command[{i}] type={command.Type} has no atomic preflight contract";
+                    return false;
+            }
+        }
+
+        failure = string.Empty;
+        return true;
+    }
+
+    private bool CanResolveZombieProfile(NativeAntagComponent owner, uint profileToken)
+    {
+        if (profileToken == 0)
+            return true;
+
+        return owner.ZombieProfiles.TryGetValue(profileToken, out var profile) &&
+               _prototypes.TryIndex(profile, out var profilePrototype) &&
+               profilePrototype.Components.ContainsKey(
+                   EntityManager.ComponentFactory.GetComponentName<ZombieComponent>());
     }
 
     private uint GetActiveToolMask(EntityUid self, NativeAntagComponent component)
@@ -434,7 +689,10 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
         return tokens.Length == 0 ? 0 : _random.Pick(tokens);
     }
 
-    private bool Execute(Entity<NativeAntagComponent> owner, NativeAntagCommand command)
+    private bool Execute(
+        Entity<NativeAntagComponent> owner,
+        NativeAntagCommand command,
+        Stack<Action>? rollbacks = null)
     {
         if (!TryEntity(command.Source, out var source))
         {
@@ -466,31 +724,57 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
                     return false;
                 return SetMobState(source, target, desiredState, state);
             case NativeAntagCommandType.AddComponentBundle when Valid(target):
-                return ApplyComponentBundle(owner.Comp, target, command.Token, add: true);
-            case NativeAntagCommandType.RemoveComponentBundle when Valid(target):
-                return ApplyComponentBundle(owner.Comp, target, command.Token, add: false);
-            case NativeAntagCommandType.ZombifyEntity when Valid(target):
-                if (command.Token != 0)
+            {
+                if (!TryResolveComponentBundle(owner.Comp, command.Token, out var bundle))
+                    return false;
+                var addedTypes = bundle.Components.Values
+                    .Select(entry => entry.Component.GetType())
+                    .Where(type => !EntityManager.HasComponent(target, type))
+                    .ToArray();
+                var applied = ApplyComponentBundle(owner.Comp, target, command.Token, add: true);
+                if (applied && rollbacks != null)
                 {
-                    if (!owner.Comp.ZombieProfiles.TryGetValue(command.Token, out var profile) ||
-                        !_prototypes.TryIndex(profile, out var profilePrototype) ||
-                        !profilePrototype.Components.TryGetValue(
-                            EntityManager.ComponentFactory.GetComponentName<ZombieComponent>(),
-                            out var zombieEntry))
-                        return false;
-
-                    var zombie = (ZombieComponent) EntityManager.ComponentFactory.GetComponent(zombieEntry);
-                    if (((NativeAntagCommandFlags) command.Flags & NativeAntagCommandFlags.PreserveVisualSkin) != 0 &&
-                        _humanoidProfile.GetSkinColor(_humanoidProfile.GetOrgansData(target)) is { } skinColor)
-                        zombie.SkinColor = skinColor;
-                    _zombies.ZombifyEntity(target, zombieComponentOverride: zombie);
-                    return HasComp<ZombieComponent>(target);
+                    rollbacks.Push(() =>
+                    {
+                        foreach (var type in addedTypes)
+                            EntityManager.RemoveComponent(target, type);
+                    });
                 }
-
-                _zombies.ZombifyEntity(target);
+                return applied;
+            }
+            case NativeAntagCommandType.RemoveComponentBundle when Valid(target):
+            {
+                var formerMaster = TryComp<NativeAntagPatientComponent>(target, out var formerPatient)
+                    ? formerPatient.Master
+                    : EntityUid.Invalid;
+                var applied = ApplyComponentBundle(owner.Comp, target, command.Token, add: false);
+                if (applied && rollbacks != null)
+                {
+                    rollbacks.Push(() =>
+                    {
+                        ApplyComponentBundle(owner.Comp, target, command.Token, add: true);
+                        if (formerMaster.Valid && TryComp<NativeAntagPatientComponent>(target, out var restored))
+                            restored.Master = formerMaster;
+                    });
+                }
+                return applied;
+            }
+            case NativeAntagCommandType.ZombifyEntity when Valid(target):
+            {
+                if (!ZombifyEntity(owner.Comp, target, command.Token,
+                        ((NativeAntagCommandFlags) command.Flags & NativeAntagCommandFlags.PreserveVisualSkin) != 0))
+                    return false;
+                if (rollbacks != null)
+                    rollbacks.Push(() => UnzombifyEntity(target));
                 return true;
+            }
             case NativeAntagCommandType.UnzombifyEntity when Valid(target):
-                return _zombies.UnZombify(target, target, null);
+            {
+                var unzombified = UnzombifyEntity(target);
+                if (unzombified && rollbacks != null)
+                    rollbacks.Push(() => ZombifyEntity(owner.Comp, target, command.Token, preserveVisualSkin: true));
+                return unzombified;
+            }
             case NativeAntagCommandType.RejuvenateEntity when Valid(target):
                 _rejuvenate.PerformRejuvenate(target);
                 return true;
@@ -502,11 +786,36 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
                 }
                 return false;
             case NativeAntagCommandType.SetFaction when Valid(target):
-                return SetFaction(owner.Comp, target, command.Token);
+            {
+                var hadFactionComponent = TryComp<NpcFactionMemberComponent>(target, out var factionComponent);
+                var previousFactions = hadFactionComponent
+                    ? factionComponent!.Factions.ToArray()
+                    : [];
+                var applied = SetFaction(owner.Comp, target, command.Token);
+                if (applied && rollbacks != null)
+                {
+                    rollbacks.Push(() =>
+                    {
+                        _factions.ClearFactions(target, dirty: false);
+                        foreach (var faction in previousFactions)
+                            _factions.AddFaction(target, faction, dirty: false);
+                        if (!hadFactionComponent)
+                            RemComp<NpcFactionMemberComponent>(target);
+                    });
+                }
+                return applied;
+            }
             case NativeAntagCommandType.SetNativeOwner when Valid(target):
                 if (TryComp<NativeAntagPatientComponent>(target, out var relation))
                 {
+                    var formerMaster = relation.Master;
                     relation.Master = source;
+                    if (rollbacks != null)
+                        rollbacks.Push(() =>
+                        {
+                            if (TryComp<NativeAntagPatientComponent>(target, out var restored))
+                                restored.Master = formerMaster;
+                        });
                     return true;
                 }
                 return false;
@@ -522,7 +831,7 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
             case NativeAntagCommandType.NotifyEvent when Valid(target):
                 if (!Enum.IsDefined((NativeAntagEventType) command.Token))
                     return false;
-                _deferredEvents.Enqueue((owner.Owner, (NativeAntagEventType) command.Token, target));
+                _deferredEvents.Enqueue((owner.Owner, (NativeAntagEventType) command.Token, target, (uint) command.Value0));
                 return true;
         }
 
@@ -567,6 +876,51 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
             _mobState.ChangeMobState(target, MobState.Dead, state, source);
 
         return state.CurrentState == MobState.Dead;
+    }
+
+    private bool ZombifyEntity(
+        NativeAntagComponent owner,
+        EntityUid target,
+        uint profileToken,
+        bool preserveVisualSkin)
+    {
+        if (profileToken == 0)
+        {
+            _zombies.ZombifyEntity(target);
+            return HasComp<ZombieComponent>(target);
+        }
+
+        if (!owner.ZombieProfiles.TryGetValue(profileToken, out var profile) ||
+            !_prototypes.TryIndex(profile, out var profilePrototype) ||
+            !profilePrototype.Components.TryGetValue(
+                EntityManager.ComponentFactory.GetComponentName<ZombieComponent>(),
+                out var zombieEntry))
+            return false;
+
+        var zombie = (ZombieComponent) EntityManager.ComponentFactory.GetComponent(zombieEntry);
+        if (preserveVisualSkin &&
+            _humanoidProfile.GetSkinColor(_humanoidProfile.GetOrgansData(target)) is { } skinColor)
+            zombie.SkinColor = skinColor;
+        _zombies.ZombifyEntity(target, zombieComponentOverride: zombie);
+        return HasComp<ZombieComponent>(target);
+    }
+
+    /// <summary>
+    /// Restores the visual/blood snapshot owned by <see cref="ZombieComponent"/>
+    /// and then removes the marker itself. Upstream <see cref="ZombieSystem.UnZombify"/>
+    /// intentionally performs only the restorative half of that operation; leaving
+    /// the component installed would keep every zombie event subscription active.
+    /// </summary>
+    private bool UnzombifyEntity(EntityUid target)
+    {
+        if (!TryComp<ZombieComponent>(target, out var zombie) ||
+            !_zombies.UnZombify(target, target, zombie))
+        {
+            return false;
+        }
+
+        RemComp<ZombieComponent>(target);
+        return !HasComp<ZombieComponent>(target);
     }
 
     private bool PlayAudio(NativeAntagComponent component, EntityUid source, NativeAntagCommand command)
@@ -662,14 +1016,27 @@ public sealed partial class NativeAntagBridgeSystem : EntitySystem
 
     private bool ApplyComponentBundle(NativeAntagComponent owner, EntityUid target, uint token, bool add)
     {
-        if (!owner.ComponentBundles.TryGetValue(token, out var bundleId) ||
-            !_prototypes.TryIndex<EntityPrototype>(bundleId, out var bundle))
+        if (!TryResolveComponentBundle(owner, token, out var bundle))
             return false;
 
         if (add)
             EntityManager.AddComponents(target, bundle.Components);
         else
             EntityManager.RemoveComponents(target, bundle.Components);
+        return true;
+    }
+
+    private bool TryResolveComponentBundle(
+        NativeAntagComponent owner,
+        uint token,
+        out EntityPrototype bundle)
+    {
+        bundle = default!;
+        if (!owner.ComponentBundles.TryGetValue(token, out var bundleId) ||
+            !_prototypes.TryIndex(bundleId, out EntityPrototype? prototype))
+            return false;
+
+        bundle = prototype;
         return true;
     }
 

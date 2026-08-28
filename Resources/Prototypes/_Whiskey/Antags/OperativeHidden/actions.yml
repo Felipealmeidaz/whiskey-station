@@ -8,7 +8,7 @@
     itemIconStyle: NoItem
     priority: 12
   - type: Sprite
-    sprite: Whiskey/OperativeHidden/Actions/scp049.rsi
+    sprite: _Whiskey/OperativeHidden/Actions/scp049.rsi
     layers:
     - state: kill
   - type: TargetAction
@@ -31,7 +31,7 @@
     itemIconStyle: NoItem
     priority: 12
   - type: Sprite
-    sprite: Whiskey/OperativeHidden/Actions/scp049.rsi
+    sprite: _Whiskey/OperativeHidden/Actions/scp049.rsi
     layers:
     - state: resurrect
   - type: TargetAction
@@ -54,7 +54,7 @@
     itemIconStyle: NoItem
     priority: 12
   - type: Sprite
-    sprite: Whiskey/OperativeHidden/Actions/scp049.rsi
+    sprite: _Whiskey/OperativeHidden/Actions/scp049.rsi
     layers:
     - state: heal
   - type: InstantAction
@@ -71,7 +71,7 @@
     itemIconStyle: NoItem
     priority: 12
   - type: Sprite
-    sprite: Whiskey/OperativeHidden/Actions/scp049.rsi
+    sprite: _Whiskey/OperativeHidden/Actions/scp049.rsi
     layers:
     - state: heal
   - type: TargetAction
@@ -94,7 +94,7 @@
     itemIconStyle: NoItem
     priority: 12
   - type: Sprite
-    sprite: Whiskey/OperativeHidden/Actions/scp049.rsi
+    sprite: _Whiskey/OperativeHidden/Actions/scp049.rsi
     layers:
     - state: kill_minion
   - type: TargetAction

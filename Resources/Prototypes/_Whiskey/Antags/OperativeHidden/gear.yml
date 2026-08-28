@@ -79,9 +79,9 @@
   components:
   - type: Unremoveable
   - type: Sprite
-    sprite: Whiskey/OperativeHidden/Clothing/Head/black_cap.rsi
+    sprite: _Whiskey/OperativeHidden/Clothing/Head/black_cap.rsi
   - type: Clothing
-    sprite: Whiskey/OperativeHidden/Clothing/Head/black_cap.rsi
+    sprite: _Whiskey/OperativeHidden/Clothing/Head/black_cap.rsi
 
 - type: entity
   parent: [ AllowSuitStorageClothing, ClothingOuterStorageBase ]

@@ -1,16 +1,14 @@
-using Content.Shared.Actions;
 using Content.Shared.Damage;
-using Robust.Shared.Prototypes;
 using Content.Shared.NPC.Prototypes;
 using Robust.Shared.Audio;
-using Robust.Shared.GameStates;
+using Robust.Shared.Prototypes;
 
-namespace Content.Shared.Whiskey.Native;
+namespace Content.Server.Whiskey.Native;
 
 /// <summary>
-/// Connects an entity to a versioned native antagonist scenario. This component
-/// contains only ABI resources and ephemeral routing handles; gameplay state is
-/// owned by the native module.
+/// Connects a server entity to a versioned native antagonist scenario. No part
+/// of this component is replicated; clients receive only ordinary action and
+/// presentation state produced by the authoritative ECS systems.
 /// </summary>
 [RegisterComponent]
 public sealed partial class NativeAntagComponent : Component
@@ -71,6 +69,13 @@ public sealed partial class NativeAntagComponent : Component
     public Dictionary<EntityUid, EntityUid> PatientSpeechStreams = new();
 
     public uint[] RequiredToolTokenCache = [];
+
+    /// <summary>
+    /// Body-local idempotency cache used by the bridge even when no mind owns
+    /// this entity. Mind objectives keep the durable round-end copy.
+    /// </summary>
+    [ViewVariables]
+    public Dictionary<uint, HashSet<EntityUid>> CountedTargets = new();
 }
 
 /// <summary>
@@ -82,10 +87,6 @@ public sealed partial class NativeAntagPatientComponent : Component
     [DataField]
     public EntityUid Master;
 
-    /// <summary>
-    /// Sound token resolved from the owning scenario whenever this patient
-    /// speaks. Zero disables the patient speech cue.
-    /// </summary>
     [DataField]
     public uint SpeechSoundToken;
 
@@ -116,22 +117,6 @@ public sealed partial class NativeAntagPatientComponent : Component
     [ViewVariables]
     public List<EntityUid> ActionEntities = new();
 }
-
-public sealed partial class OperativeHiddenPatientJumpActionEvent : WorldTargetActionEvent;
-
-public sealed partial class OperativeHiddenPatientFlairActionEvent : InstantActionEvent;
-
-/// <summary>
-/// Network-visible marker used by data-driven faction icon prototypes.
-/// </summary>
-[RegisterComponent, NetworkedComponent]
-public sealed partial class NativeScenarioOwnerIconViewerComponent : Component;
-
-/// <summary>
-/// Network-visible marker used by data-driven faction icon prototypes.
-/// </summary>
-[RegisterComponent, NetworkedComponent]
-public sealed partial class NativeScenarioPatientIconViewerComponent : Component;
 
 /// <summary>
 /// Disables a game rule unless its exact native module and ABI are available.

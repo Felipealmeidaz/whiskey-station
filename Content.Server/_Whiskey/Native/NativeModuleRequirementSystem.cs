@@ -1,7 +1,6 @@
 using Content.Server.GameTicking.Rules;
 using Content.Server.GameTicking.Rules.Components;
 using Content.Shared.GameTicking.Components;
-using Content.Shared.Whiskey.Native;
 using Robust.Shared.Log;
 
 namespace Content.Server.Whiskey.Native;

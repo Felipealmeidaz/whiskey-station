@@ -34,14 +34,17 @@ event_procedure_action:
     jnz .invalid
     test dword [r12 + EV_FLAGS], FLAG_TARGET_PROTECTED
     jnz .invalid
+    test dword [r12 + EV_FLAGS], FLAG_TARGET_PREVIOUSLY_CONVERTED
+    jnz .invalid
     mov rax, [r12 + EV_SERVER_TICK]
     cmp rax, [r15 + ST_PROCEDURE_READY]
     jb .cooldown
     mov rax, [r12 + EV_TARGET]
     mov [r15 + ST_PROCEDURE_TARGET], rax
     mov [r15 + ST_TARGET], rax
-    mov eax, [procedure_step_seconds]
-    mov [r15 + ST_PROCEDURE_REMAINING], eax
+    mov rax, [r12 + EV_SERVER_TICK]
+    add rax, PROCEDURE_STEP_MS
+    mov [r15 + ST_PROCEDURE_DEADLINE], rax
     mov eax, [r12 + EV_SELF_X]
     mov [r15 + ST_PROCEDURE_SELF_X], eax
     mov eax, [r12 + EV_SELF_Y]
@@ -73,6 +76,13 @@ event_procedure_action:
 
 event_update:
     INTERNAL_CALL operative_audio_update
+    cmp dword [r15 + ST_STATE], STATE_INTERRUPTED
+    jne .check_operating
+    test dword [r12 + EV_FLAGS], FLAG_SELF_HAS_SESSION
+    jz .done
+    mov dword [r15 + ST_STATE], STATE_ACTIVE
+    ret
+.check_operating:
     cmp dword [r15 + ST_STATE], STATE_OPERATING
     jne .done
     mov eax, [r12 + EV_FLAGS]
@@ -97,6 +107,8 @@ event_update:
     jnz event_procedure_interrupted
     test dword [r12 + EV_FLAGS], FLAG_TARGET_PROTECTED
     jnz event_procedure_interrupted
+    test dword [r12 + EV_FLAGS], FLAG_TARGET_PREVIOUSLY_CONVERTED
+    jnz event_procedure_interrupted
     ; Physics settling and float integration can move an idle body by a tiny
     ; fraction of a tile. Treat that as stationary, but still interrupt a real
     ; step or any movement that takes either participant out of melee range.
@@ -118,16 +130,14 @@ event_update:
     addss xmm0, xmm1
     comiss xmm0, [procedure_move_tolerance_squared]
     ja event_procedure_interrupted
-    movss xmm0, [r15 + ST_PROCEDURE_REMAINING]
-    subss xmm0, [r12 + EV_VALUE0]
-    movss [r15 + ST_PROCEDURE_REMAINING], xmm0
-    comiss xmm0, [float_zero]
-    ja .done
+    mov rax, [r12 + EV_SERVER_TICK]
+    cmp rax, [r15 + ST_PROCEDURE_DEADLINE]
+    jb .done
     cmp dword [r15 + ST_REQUIRED_TOOL], PROCEDURE_TOOL_COUNT
     jae event_conversion_complete
     inc dword [r15 + ST_REQUIRED_TOOL]
     mov dword [r15 + ST_STATE], STATE_ACTIVE
-    mov dword [r15 + ST_PROCEDURE_REMAINING], 0
+    mov qword [r15 + ST_PROCEDURE_DEADLINE], 0
     mov dword [r15 + ST_PROCEDURE_TOOL], 0
     COMMAND_OPEN CMD_POPUP
     test rdi, rdi
@@ -148,11 +158,10 @@ event_procedure_interrupted:
 .interrupt:
     mov dword [r15 + ST_STATE], STATE_INTERRUPTED
     mov qword [r15 + ST_PROCEDURE_TARGET], 0
-    mov dword [r15 + ST_PROCEDURE_REMAINING], 0
+    mov qword [r15 + ST_PROCEDURE_DEADLINE], 0
     mov dword [r15 + ST_PROCEDURE_TOOL], 0
     mov dword [r15 + ST_REQUIRED_TOOL], 1
     COMMAND_OPEN CMD_CLEAR_ROUTED_TARGET
     EMIT_POPUP TOKEN_POPUP_INTERRUPTED
-    mov dword [r15 + ST_STATE], STATE_ACTIVE
 .done:
     ret

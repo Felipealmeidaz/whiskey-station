@@ -18,15 +18,24 @@ operative_hidden_dispatch:
     push r13
     push r14
     push r15
+    sub rsp, ST_SIZE
     mov r12, rdi
     mov r13, rsi
     mov r14d, edx
     xor ebx, ebx
+    xor r15d, r15d
     mov rdi, [r12 + EV_HANDLE]
     call state_resolve
     test rax, rax
-    jz .finish
+    jz .finish_success
     mov r15, rax
+    ; Every dispatch is transactional with respect to native state. This copy is
+    ; restored if COMMAND_OPEN detects insufficient capacity at any depth.
+    mov rsi, r15
+    mov rdi, rsp
+    mov ecx, ST_SIZE / 8
+    rep movsq
+    and dword [r15 + ST_FLAGS], ~STATE_FLAG_COMMAND_OVERFLOW
     mov eax, [r12 + EV_TYPE]
     cmp eax, EVENT_SPAWN
     je .spawn
@@ -62,6 +71,14 @@ operative_hidden_dispatch:
     je .player_attached
     cmp eax, EVENT_SPOKE
     je .spoke
+    cmp eax, EVENT_TOUCH_COMMITTED
+    je .touch_committed
+    cmp eax, EVENT_SELF_HEAL_COMMITTED
+    je .self_heal_committed
+    cmp eax, EVENT_PATIENT_HEAL_COMMITTED
+    je .patient_heal_committed
+    cmp eax, EVENT_PATIENT_KILL_COMMITTED
+    je .patient_kill_committed
     jmp .finish
 .spawn:          call event_spawn
                  jmp .finish
@@ -96,8 +113,27 @@ operative_hidden_dispatch:
 .player_attached: call event_player_attached
                   jmp .finish
 .spoke:          call event_spoke
-.finish:
+                 jmp .finish
+.touch_committed: call event_touch_committed
+                  jmp .finish
+.self_heal_committed: call event_self_heal_committed
+                      jmp .finish
+.patient_heal_committed: call event_patient_heal_committed
+                         jmp .finish
+.patient_kill_committed: call event_patient_kill_committed
+    .finish:
+    test dword [r15 + ST_FLAGS], STATE_FLAG_COMMAND_OVERFLOW
+    jz .finish_success
+    mov rsi, rsp
+    mov rdi, r15
+    mov ecx, ST_SIZE / 8
+    rep movsq
+    mov eax, DISPATCH_ERROR_COMMAND_OVERFLOW
+    jmp .restore
+.finish_success:
     mov eax, ebx
+.restore:
+    add rsp, ST_SIZE
     pop r15
     pop r14
     pop r13

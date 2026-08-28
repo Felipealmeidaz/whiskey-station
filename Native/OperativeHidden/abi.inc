@@ -61,6 +61,10 @@
 %define EVENT_OBJECTIVE_QUERY         17
 %define EVENT_PLAYER_ATTACHED         18
 %define EVENT_SPOKE                   19
+%define EVENT_TOUCH_COMMITTED         20
+%define EVENT_SELF_HEAL_COMMITTED     21
+%define EVENT_PATIENT_HEAL_COMMITTED  22
+%define EVENT_PATIENT_KILL_COMMITTED  23
 
 ; Snapshot flags. Managed code reports ECS facts; native code combines those
 ; facts into antagonist-specific decisions.
@@ -76,15 +80,25 @@
 %define FLAG_TARGET_HAS_SESSION        (1 << 19)
 %define FLAG_SELF_HAS_SESSION          (1 << 20)
 %define FLAG_TARGET_CAN_DIE            (1 << 21)
+%define FLAG_TARGET_PREVIOUSLY_CONVERTED (1 << 22)
+%define FLAG_COUNTER_ACCEPTED          (1 << 23)
 
 %define COMMAND_FLAG_REQUIRE_PREVIOUS_SUCCESS (1 << 0)
 %define COMMAND_FLAG_PRESERVE_VISUAL_SKIN      (1 << 1)
+%define COMMAND_FLAG_ATOMIC                    (1 << 2)
+
+; The high bit of operative_hidden_dispatch's return value is an error status,
+; never a command count. A saturated command buffer restores the complete
+; pre-dispatch native state snapshot and returns this value with count zero.
+%define DISPATCH_ERROR_COMMAND_OVERFLOW (1 << 31)
+%define STATE_FLAG_COMMAND_OVERFLOW      (1 << 0)
 
 %define STATE_INITIALIZING      0
 %define STATE_ACTIVE            1
 %define STATE_OPERATING         2
 %define STATE_INTERRUPTED       3
 %define STATE_DEAD              4
+%define STATE_TERMINATED        5
 
 ; Commands are generic ECS primitives. Tokens are resolved through prototype
 ; configuration in the managed bridge; command execution contains no 049 rules.
@@ -155,9 +169,10 @@
 %define ST_PROCEDURE_READY     48
 %define ST_SELF_HEAL_READY     56
 %define ST_PATIENT_HEAL_READY  64
-%define ST_PROCEDURE_REMAINING 72
+%define ST_PROCEDURE_DEADLINE  96
 %define ST_CONVERSIONS         76
 %define ST_PATIENTS            80
+%define ST_PATIENT_KILL_READY  88
 %define ST_REQUIRED_TOOL      112
 %define ST_PROCEDURE_SELF_X   116
 %define ST_PROCEDURE_SELF_Y   120
@@ -171,6 +186,8 @@
 %define TOUCH_COOLDOWN_MS      180000
 %define PROCEDURE_COOLDOWN_MS  120000
 %define HEAL_COOLDOWN_MS       300000
+%define PATIENT_KILL_COOLDOWN_MS 60000
+%define PROCEDURE_STEP_MS        3500
 
 %define AUDIO_DURATION_5_MS       5000
 %define AUDIO_DURATION_10_MS     10000
@@ -198,6 +215,7 @@
     inc ebx
     jmp %%done
 %%full:
+    or dword [r15 + ST_FLAGS], STATE_FLAG_COMMAND_OVERFLOW
     xor edi, edi
 %%done:
 %endmacro
