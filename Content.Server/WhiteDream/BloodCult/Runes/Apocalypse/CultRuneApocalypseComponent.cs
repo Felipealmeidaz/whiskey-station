@@ -15,7 +15,7 @@ public sealed partial class CultRuneApocalypseComponent : Component
     ///     Time between the verses chanted while the rune is being invoked.
     /// </summary>
     [DataField]
-    public float ChantInterval = 4;
+    public TimeSpan ChantInterval = TimeSpan.FromSeconds(4);
 
     /// <summary>
     ///     The opening invocation comes from CultRuneBase; these are the following verses.
@@ -33,7 +33,7 @@ public sealed partial class CultRuneApocalypseComponent : Component
     public bool Invoking;
 
     [ViewVariables]
-    public float TimeUntilNextChant;
+    public TimeSpan NextChantTime;
 
     [ViewVariables]
     public int ChantIndex;

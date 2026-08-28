@@ -31,6 +31,7 @@ public sealed partial class RadialSelectorEntry
     [DataField]
     public string? Prototype { get; set; }
 
+    // Whiskey - Blood Cult factories can create ammunition in batches.
     /// <summary>
     ///     How many copies the server should produce when this entry is selected. Menus that do
     ///     not support batches simply ignore it; factories use it for ammunition bundles.

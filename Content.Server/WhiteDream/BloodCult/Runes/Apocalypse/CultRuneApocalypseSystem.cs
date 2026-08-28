@@ -12,12 +12,14 @@ using Content.Shared.Chat;
 using Content.Shared.WhiteDream.BloodCult.Runes;
 using Robust.Server.GameObjects;
 using Robust.Shared.Random;
+using Robust.Shared.Timing;
 
 namespace Content.Server.WhiteDream.BloodCult.Runes.Apocalypse;
 
 public sealed partial class CultRuneApocalypseSystem : EntitySystem
 {
     [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private IGameTiming _timing = default!;
 
     [Dependency] private AppearanceSystem _appearance = default!;
     [Dependency] private BloodCultRuleSystem _cultRule = default!; // Whiskey
@@ -46,11 +48,10 @@ public sealed partial class CultRuneApocalypseSystem : EntitySystem
             if (!apocalypse.Invoking || apocalypse.ChantPhrases.Count == 0)
                 continue;
 
-            apocalypse.TimeUntilNextChant -= frameTime;
-            if (apocalypse.TimeUntilNextChant > 0)
+            if (_timing.CurTime < apocalypse.NextChantTime)
                 continue;
 
-            apocalypse.TimeUntilNextChant = apocalypse.ChantInterval;
+            apocalypse.NextChantTime = _timing.CurTime + apocalypse.ChantInterval;
             var phrase = apocalypse.ChantPhrases[apocalypse.ChantIndex % apocalypse.ChantPhrases.Count];
             apocalypse.ChantIndex++;
 
@@ -92,7 +93,7 @@ public sealed partial class CultRuneApocalypseSystem : EntitySystem
         }
 
         ent.Comp.Invoking = true;
-        ent.Comp.TimeUntilNextChant = ent.Comp.ChantInterval;
+        ent.Comp.NextChantTime = _timing.CurTime + ent.Comp.ChantInterval;
         ent.Comp.ChantIndex = 0;
         ent.Comp.Chanters.Clear();
         ent.Comp.Chanters.UnionWith(args.Invokers);
@@ -118,8 +119,8 @@ public sealed partial class CultRuneApocalypseSystem : EntitySystem
         foreach (var guaranteedEvent in ent.Comp.GuaranteedEvents)
             _gameTicker.StartGameRule(guaranteedEvent);
 
-        // Whiskey - PlayerCount counted the lobby and observers too
-        var requiredCultistsThreshold = MathF.Floor(_cultRule.GetActivePlayerCount() * ent.Comp.CultistsThreshold);
+        // Whiskey - use the same frozen round-start population as the rest of cult progression.
+        var requiredCultistsThreshold = MathF.Floor(_cultRule.GetProgressionCrewCount() * ent.Comp.CultistsThreshold);
         var totalCultists = cultRule.Cultists.Count + cultRule.Constructs.Count;
         if (totalCultists >= requiredCultistsThreshold)
             return;

@@ -35,6 +35,7 @@ public sealed partial class BloodCultRuleSystem
         if (now >= rule.NextObjectiveCheck)
         {
             rule.NextObjectiveCheck = now + ObjectiveCheckInterval;
+            UpdateCultStage(rule);
             EnsureOfferingTarget(rule);
             EnsureObjectives(rule);
             CheckRendingUnlocked(rule);
@@ -177,8 +178,13 @@ public sealed partial class BloodCultRuleSystem
     /// <summary>
     ///     Whiskey - a rune can ask for a share of the crew instead of a flat count.
     /// </summary>
-    public int GetRequiredCultists(RuneSelectorPrototype selector) =>
-        _cultPopulation.GetRequiredCultists(selector);
+    public int GetRequiredCultists(RuneSelectorPrototype selector)
+    {
+        if (selector.RequiredCultistsPercent <= 0f)
+            return selector.RequiredTotalCultists;
+
+        return (int) MathF.Ceiling(GetProgressionCrewCount() * selector.RequiredCultistsPercent);
+    }
 
     public bool CanRendingBeDrawn(BloodCultRuleComponent rule)
     {

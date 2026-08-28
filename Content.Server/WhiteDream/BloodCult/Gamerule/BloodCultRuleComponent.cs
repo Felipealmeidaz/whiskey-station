@@ -34,6 +34,13 @@ public sealed partial class BloodCultRuleComponent : Component
     public float PentagramThreshold = 0.2f;
 
     /// <summary>
+    ///     Whiskey - the crew count captured when the round starts. Percentage requirements use this
+    ///     frozen denominator so killing or removing crew cannot advance the cult by itself.
+    /// </summary>
+    [ViewVariables(VVAccess.ReadOnly)]
+    public int ProgressionCrewCount;
+
+    /// <summary>
     ///     Whiskey - the final reckoning is one per cult, not one per leader. Killing the leader
     ///     and electing another must not hand the spell back.
     /// </summary>

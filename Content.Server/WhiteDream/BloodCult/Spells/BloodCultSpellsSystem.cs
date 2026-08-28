@@ -246,7 +246,7 @@ public sealed partial class BloodCultSpellsSystem : EntitySystem
     /// </summary>
     private float GetCultDecay(float decayShare)
     {
-        var crew = _cultRule.GetActivePlayerCount();
+        var crew = _cultRule.GetProgressionCrewCount();
         if (crew <= 0 || decayShare <= 0f)
             return 0f;
 

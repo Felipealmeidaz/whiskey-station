@@ -54,6 +54,7 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
     [Dependency] private ActionsSystem _actions = default!;
     [Dependency] private AntagSelectionSystem _antagSelection = default!;
     [Dependency] private BloodSpearSystem _bloodSpear = default!;
+    [Dependency] private GameTicker _gameTicker = default!;
     [Dependency] private GibbingSystem _gibbing = default!;
     [Dependency] private HumanoidProfileSystem _humanoid = default!; // Trauma
     [Dependency] private ContainerSystem _container = default!;
@@ -64,7 +65,6 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
     [Dependency] private NpcFactionSystem _faction = default!;
     [Dependency] private MindSystem _mind = default!;
     [Dependency] private MobStateSystem _mobState = default!;
-    [Dependency] private BloodCultPopulationSystem _cultPopulation = default!; // Whiskey
     [Dependency] private JobSystem _job = default!;
     [Dependency] private RoleSystem _role = default!;
     [Dependency] private RoundEndSystem _roundEnd = default!;
@@ -97,6 +97,10 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
     {
         base.Started(uid, component, gameRule, args);
 
+        // Whiskey - freeze the denominator before any deaths can make percentage requirements easier.
+        component.ProgressionCrewCount = Math.Max(
+            _gameTicker.ReadyPlayerCount(),
+            _antagSelection.GetActivePlayerCount());
         GetRandomRunePlacements(component);
 
         // WhiteDream - give the cult a few minutes to find each other before they pick a leader.
@@ -352,18 +356,26 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
     }
 
     /// <summary>
-    ///     Whiskey - crew currently playing, ignoring the lobby, observers and the dead.
+    ///     Whiskey - returns the round-start population used by percentage-based cult mechanics.
+    ///     Deaths, cryo, disconnects and late joins do not change it.
     /// </summary>
-    public int GetActivePlayerCount() => _cultPopulation.GetActivePlayerCount();
+    public int GetProgressionCrewCount()
+    {
+        var query = QueryActiveRules();
+        while (query.MoveNext(out _, out var rule, out _))
+            return rule.ProgressionCrewCount;
+
+        return 0;
+    }
 
     public int GetRedEyesRequirement(BloodCultRuleComponent cultRule)
     {
-        return (int) MathF.Ceiling(GetActivePlayerCount() * cultRule.ReadEyeThreshold);
+        return (int) MathF.Ceiling(cultRule.ProgressionCrewCount * cultRule.ReadEyeThreshold);
     }
 
     public int GetPentagramRequirement(BloodCultRuleComponent cultRule)
     {
-        return (int) MathF.Ceiling(GetActivePlayerCount() * cultRule.PentagramThreshold);
+        return (int) MathF.Ceiling(cultRule.ProgressionCrewCount * cultRule.PentagramThreshold);
     }
 
     public int GetTotalCultists()
@@ -691,8 +703,8 @@ public sealed partial class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleCo
                 cultRule.PentagramTime = null;
                 break;
             case CultStage.Pentagram:
-                // A mass conversion, or the crew count dropping, can move the cult straight from Start
-                // to Pentagram without ever passing through RedEyes. Start both: BeginRedEyes no-ops if
+                // A mass conversion can move the cult straight from Start to Pentagram without ever
+                // passing through RedEyes. Start both: BeginRedEyes no-ops if
                 // it already ran, so nobody skips the eyes just by growing fast.
                 BeginRedEyes(cultRule);
 
