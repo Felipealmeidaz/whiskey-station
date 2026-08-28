@@ -1,4 +1,4 @@
-<!-- Diretrizes: https://github.com/Whiskey-Station/Whiskey-Station-14/blob/master/CONTRIBUTING.md -->
+<!-- Diretrizes: https://github.com/Whiskey-Station/Whiskey-Station-14/blob/master/CONTRIBUTING.pt-BR.md -->
 <!-- ATENÇÃO: todo código enviado para este repositório é licenciado como AGPL-3.0-or-later. -->
 
 ## Sobre a PR
@@ -19,7 +19,7 @@ Correção pequena e refatoração estão dispensadas. -->
 
 ## Requisitos
 <!-- Marque com X dentro dos colchetes, sem espaço: [X] -->
-- [ ] Li e estou seguindo as [diretrizes de contribuição](https://github.com/Whiskey-Station/Whiskey-Station-14/blob/master/CONTRIBUTING.md)
+- [ ] Li e estou seguindo as [diretrizes de contribuição](https://github.com/Whiskey-Station/Whiskey-Station-14/blob/master/CONTRIBUTING.pt-BR.md)
 - [ ] Testei esta PR e escrevi como reproduzir o teste
 - [ ] Anexei mídia, ou a mudança não precisa de demonstração no jogo
 
