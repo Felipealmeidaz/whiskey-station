@@ -159,3 +159,14 @@
             min: 20
           - !type:RoundDurationCondition
             min: 2100 # 35 minutes
+        # <Trauma>
+        - id: OperativeHiddenRule
+          weight: 5
+          conditions:
+          - !type:HasBudgetCondition
+          - !type:MaxRuleOccurenceCondition
+          - !type:PlayerCountCondition
+            min: 20
+          - !type:RoundDurationCondition
+            min: 2100 # Kept identical to LoneOpsSpawn.
+        # </Trauma>

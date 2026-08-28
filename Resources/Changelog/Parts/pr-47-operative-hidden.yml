@@ -1,0 +1,11 @@
+author: Punk-Walker
+changes:
+  - type: Add
+    message: >-
+      O antagonista de meio de rodada Operativo Oculto foi adicionado com
+      procedimentos cirúrgicos, pacientes recondicionados, habilidades próprias
+      e contrajogo sonoro de curta distância.
+  - type: Fix
+    message: >-
+      O progresso do Operativo Oculto agora sobrevive à morte e ao ghosting,
+      conversões são atômicas e um mesmo cadáver não pode contar repetidamente.

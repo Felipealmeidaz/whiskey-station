@@ -42,6 +42,14 @@ jobs:
         cd RobustToolbox/
         git submodule update --init --recursive
 
+    # <Trauma>
+    - &native_dependencies
+      name: Install native build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y nasm
+    # </Trauma>
+
     - &restore
       name: Install dependencies
       run: dotnet restore
@@ -53,14 +61,17 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: build-output
+        # <Trauma> Retain the native runtime consumed by downloaded integration-test jobs.
         path: |
           bin/Content.*/*.json
           bin/Content.IntegrationTests/*.dll
           bin/Content.IntegrationTests/*.pdb
+          bin/Content.IntegrationTests/libwhiskey_operativo_oculto.so
           bin/Content.IntegrationTests/runtimes/linux-x64/**
           bin/Content.MapRenderer/*.dll
           bin/Content.MapRenderer/*.pdb
           bin/Content.Tests/*.dll
+        # </Trauma>
         retention-days: 1
 
   build-release:
@@ -73,6 +84,7 @@ jobs:
     - *submodule
     - *submodule_pull
     - *submodule_update
+    - *native_dependencies # Trauma - required by the Hidden Operative native runtime.
     - *restore
     - name: Build Project
       run: dotnet build --configuration Release --no-restore /m
@@ -128,6 +140,46 @@ jobs:
         path: test_results/*
         retention-days: 7
         compression-level: 9
+
+  # <Trauma>
+  # Keep the native antag fixture independently observable. The aggregate main
+  # suite currently contains unrelated baseline failures and may hit its timeout.
+  test-operative-hidden:
+    name: Hidden Operative (Linux x64)
+    needs: build
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - *checkout
+    - *submodule
+    - *submodule_pull
+    - *submodule_update
+    - *download_build
+
+    - name: Verify Hidden Operative native runtime artifact
+      run: |
+        test -s bin/Content.IntegrationTests/libwhiskey_operativo_oculto.so
+        file bin/Content.IntegrationTests/libwhiskey_operativo_oculto.so
+        sha256sum bin/Content.IntegrationTests/libwhiskey_operativo_oculto.so
+
+    - name: Run Hidden Operative integration fixture
+      run: |
+        DOTNET_gcServer=1 dotnet test bin/Content.IntegrationTests/Content.IntegrationTests.dll \
+          --logger "console;verbosity=detailed" -- \
+          NUnit.Where="class == Content.IntegrationTests.Tests.Whiskey.OperativeHiddenTest" \
+          NUnit.ConsoleOut=0 NUnit.MapWarningTo=Failed NUnit.TestOutputXml="logs" NUnit.WorkDirectory="$(pwd)/test_results"
+
+    - name: Archive Hidden Operative NUnit3 results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: nunit3-results-operative-hidden-${{ github.run_attempt }}
+        path: test_results/*
+        retention-days: 7
+        compression-level: 9
+  # </Trauma>
 
   # Test all the map tests seperately
   # Any test with Category("MapTests") is used
@@ -207,7 +259,9 @@ jobs:
 
   ci-success:
     name: Build & Test Debug
-    needs: [build, build-release, test-unit, test-main, test-maps, test-gamerules, test-map-render]
+    # <Trauma> The native antag fixture is a required, independently visible Linux check.
+    needs: [build, build-release, test-unit, test-main, test-operative-hidden, test-maps, test-gamerules, test-map-render]
+    # </Trauma>
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -217,6 +271,7 @@ jobs:
                 "${{ needs.build-release.result }}" != "success" ||
                 "${{ needs.test-unit.result }}" != "success" ||
                 "${{ needs.test-main.result }}" != "success" ||
+                "${{ needs.test-operative-hidden.result }}" != "success" ||
                 "${{ needs.test-maps.result }}" != "success" ||
                 "${{ needs.test-gamerules.result }}" != "success" ||
                 "${{ needs.test-map-render.result }}" != "success" ]]; then

@@ -98,12 +98,16 @@ public sealed partial class ZombieSystem
         }
     }
 
+    // <Trauma>
     /// <summary>
     ///     This is the general purpose function to call if you want to zombify an entity.
     ///     It handles both humanoid and nonhumanoid transformation and everything should be called through it.
     /// </summary>
     /// <param name="target">the entity being zombified</param>
     /// <param name="mobState"></param>
+    /// <param name="zombieComponentOverride">
+    /// Optional detached component whose data fields define this transformation.
+    /// </param>
     /// <remarks>
     ///     ALRIGHT BIG BOYS, GIRLS AND ANYONE ELSE. YOU'VE COME TO THE LAYER OF THE BEAST. THIS IS YOUR WARNING.
     ///     This function is the god function for zombie stuff, and it is cursed. I have
@@ -111,7 +115,11 @@ public sealed partial class ZombieSystem
     ///     rewrite this, but this is how it shall lie eternal. Turn back now.
     ///     -emo
     /// </remarks>
-    public void ZombifyEntity(EntityUid target, MobStateComponent? mobState = null)
+    public void ZombifyEntity(
+        EntityUid target,
+        MobStateComponent? mobState = null,
+        ZombieComponent? zombieComponentOverride = null)
+    // </Trauma>
     {
         //Don't zombfiy zombies
         if (HasComp<ZombieComponent>(target) || HasComp<ZombieImmuneComponent>(target))
@@ -140,7 +148,18 @@ public sealed partial class ZombieSystem
 
         //you're a real zombie now, son.
         RaiseLocalEvent(target, new RejuvenateEvent(false, false)); // Shitmed Change
-        var zombiecomp = AddComp<ZombieComponent>(target);
+        // <Trauma>
+        ZombieComponent zombiecomp;
+        if (zombieComponentOverride is not null)
+        {
+            AddComp(target, zombieComponentOverride);
+            zombiecomp = zombieComponentOverride;
+        }
+        else
+        {
+            zombiecomp = AddComp<ZombieComponent>(target);
+        }
+        // </Trauma>
 
         //we need to basically remove all of these because zombies shouldn't
         //get diseases, breath, be thirst, be hungry, die in space, get double sentience, have offspring or be paraplegic.

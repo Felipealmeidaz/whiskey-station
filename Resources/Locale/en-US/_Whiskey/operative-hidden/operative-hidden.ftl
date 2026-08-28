@@ -1,0 +1,207 @@
+operative-hidden-entity-name = Operativo Oculto
+operative-hidden-entity-description = A clandestine Syndicate surgeon whose organs were replaced, stitched back in, and sealed beneath clothes that have become a second skin.
+
+ent-MobOviniaOperativeHidden = Hidden Operative
+    .desc = A clandestine Syndicate surgeon whose organs were replaced, stitched back in, and sealed beneath clothes that have become a second skin.
+ent-MindRoleOperativeHidden = Hidden Operative role
+    .desc = Marks a mind as the Hidden Operative.
+ent-SpawnPointOperativeHidden = Hidden Operative spawn point
+    .desc = A hidden spawn point for the Hidden Operative antagonist.
+
+operative-hidden-role-name = Operativo Oculto
+operative-hidden-role-description = A clandestine Syndicate vivisector sealed inside a purpose-built Ovinia body and an irremovable surgical uniform.
+operative-hidden-role-objective = Recondition crew members into loyal patients and survive.
+operative-hidden-round-end-agent-name = hidden operative
+operative-hidden-ghost-role-rules = You are a Syndicate antagonist. Recondition the crew and survive without an uplink or firearms.
+operative-hidden-role-briefing = You are the Hidden Operative.
+    Your purpose-built Ovinia body was extensively reconstructed with prostheses, cybernetic organs, and experimental Syndicate procedures.
+    You have no uplink and require no external resources. Use your modified body, field equipment, and reconditioning procedure to complete your objectives.
+    Objectives:
+    - Recondition three crew members into loyal patients.
+    - Remain alive and operational until the end of the shift.
+
+operative-hidden-patient-name = Reconditioned Aberration
+operative-hidden-patient-name-prefix = aberration ({$baseName})
+operative-hidden-patient-ghost-role-name = Reconditioned Aberration
+operative-hidden-patient-ghost-role-description = A corpse opened, lobotomized, and forced upright by the Hidden Operative.
+operative-hidden-patient-ghost-role-rules = Your frontal lobe was cut into obedient pieces. Obey and protect the Hidden Operative who remade you. You can still speak, but the ruined pathways twist every sentence.
+operative-hidden-patient-jump-name = Cadaveric leap
+operative-hidden-patient-jump-description = Throw your reconditioned body toward a point. A living target struck by the impact suffers 15 slash damage and 5 seconds of paralysis.
+operative-hidden-patient-flair-name = Locate survivors
+operative-hidden-patient-flair-description = Determine the nearest navigational reference to a living humanoid who is neither reconditioned nor immune.
+zombie-flair-location = Nearest survivor: {$location}.
+zombie-flair-none = No survivors detected within operational range.
+
+ent-ZombieJump = Cadaveric leap
+    .desc = Throw your reconditioned body toward a point. A living target struck by the impact suffers 15 slash damage and 5 seconds of paralysis.
+ent-ZombieFlair = Locate survivors
+    .desc = Determine the nearest navigational reference to a living humanoid who is neither reconditioned nor immune.
+
+operative-hidden-action-touch-name = Terminal Touch
+operative-hidden-action-touch-description = Instantly terminate a valid humanoid target. Recharges in 180 seconds.
+operative-hidden-action-procedure-name = Reconditioning Procedure
+operative-hidden-action-procedure-description = Recondition the target in six 3.5-second stages: cautery, drill, scalpel, retractor, hemostat, and saw. Use the action again for each stage. The 120-second cooldown starts on completion.
+operative-hidden-action-self-heal-name = Experimental Restoration
+operative-hidden-action-self-heal-description = Restore your modified body to full function. Recharges in 300 seconds.
+operative-hidden-action-patient-heal-name = Restore Patient
+operative-hidden-action-patient-heal-description = Fully restore one of your reconditioned patients. Recharges in 300 seconds.
+operative-hidden-action-patient-kill-name = Terminate Patient
+operative-hidden-action-patient-kill-description = Irreversibly terminate one of your reconditioned patients.
+
+ent-ActionOperativeHiddenTouch = Terminal Touch
+    .desc = Instantly terminate a valid humanoid target. Recharges in 180 seconds.
+ent-ActionOperativeHiddenProcedure = Reconditioning Procedure
+    .desc = Recondition the target in six 3.5-second stages: cautery, drill, scalpel, retractor, hemostat, and saw. Use the action again for each stage. The 120-second cooldown starts on completion.
+ent-ActionOperativeHiddenSelfHeal = Experimental Restoration
+    .desc = Restore your modified body to full function. Recharges in 300 seconds.
+ent-ActionOperativeHiddenPatientHeal = Restore Patient
+    .desc = Fully restore one of your reconditioned patients. Recharges in 300 seconds.
+ent-ActionOperativeHiddenPatientKill = Terminate Patient
+    .desc = Irreversibly terminate one of your reconditioned patients.
+
+operative-hidden-popup-invalid = Your internal systems reject this target.
+operative-hidden-popup-cooldown = Your internal systems have not finished cycling.
+operative-hidden-popup-operating = Procedure stage initiated. Keep the active instrument and maintain contact with the target.
+operative-hidden-popup-interrupted = Reconditioning interrupted.
+operative-hidden-popup-converted = Reconditioning complete. The patient is now under your control.
+operative-hidden-popup-tool-cautery = Required instrument: cautery.
+operative-hidden-popup-tool-drill = Required instrument: drill.
+operative-hidden-popup-tool-scalpel = Required instrument: scalpel.
+operative-hidden-popup-tool-retractor = Required instrument: retractor.
+operative-hidden-popup-tool-hemostat = Required instrument: hemostat.
+operative-hidden-popup-tool-saw = Required instrument: saw.
+
+operative-hidden-cyber-brain-name = reinforced cybernetic neural interface
+operative-hidden-cyber-eyes-name = operative cybernetic eyes
+operative-hidden-cyber-heart-name = reinforced cybernetic heart
+operative-hidden-cyber-lungs-name = sealed cybernetic lungs
+operative-hidden-cyber-liver-name = reinforced cybernetic liver
+operative-hidden-cyber-kidneys-name = reinforced cybernetic kidneys
+
+ent-OrganOperativeHiddenCyberBrain = reinforced cybernetic neural interface
+    .desc = A hardened neural interface designed to coordinate the operative's rebuilt body.
+ent-OrganOperativeHiddenCyberEyes = operative cybernetic eyes
+    .desc = A pair of augmented eyes that exposes medical, identity, security, and contraband information.
+ent-OrganOperativeHiddenCyberHeart = reinforced cybernetic heart
+    .desc = A high-integrity artificial heart built for sustained clandestine operations.
+ent-OrganOperativeHiddenCyberLiver = reinforced cybernetic liver
+    .desc = An artificial liver reinforced against severe internal trauma.
+ent-OrganOperativeHiddenCyberLungs = sealed cybernetic lungs
+    .desc = Temperature-resistant artificial lungs sealed for hostile environments.
+ent-OrganOperativeHiddenCyberKidneys = reinforced cybernetic kidneys
+    .desc = Artificial kidneys reinforced against severe internal trauma.
+
+operative-hidden-mourning-dress-name = mourning dress of the last theater
+operative-hidden-mourning-dress-description = Black cloth boiled stiff in antiseptic and old blood. Surgical wire closes every seam from the inside; removing the dress would open the wearer with it.
+operative-hidden-sutured-gaiter-name = sutured penitent's gaiter
+operative-hidden-sutured-gaiter-description = Coarse cloth stitched into the scar line beneath the jaw. It tastes of salt, iron, and the breath of patients who woke before the saw was finished.
+operative-hidden-deadroom-lenses-name = deadroom lenses
+operative-hidden-deadroom-lenses-description = Cold glass fixed against the face. Through it, warm bodies become pale anatomical diagrams and every pulse marks the next place to cut.
+operative-hidden-whisper-headset-name = whisper-nail headset
+operative-hidden-whisper-headset-description = Bone-conduction pins bite into the cartilage and carry orders like a dying prayer. Pulling it free would take part of the ear with it.
+operative-hidden-vivisection-gloves-name = vivisector's black gloves
+operative-hidden-vivisection-gloves-description = Thick hide blackened by cautery smoke. The fingertips are crosshatched by blades, and the dried matter beneath the nails no longer belongs to the wearer.
+operative-hidden-theater-boots-name = blood-grooved theater boots
+operative-hidden-theater-boots-description = Iron-heeled boots with deep channels cut into their soles, made to keep a surgeon standing when the theater floor becomes slick and red.
+operative-hidden-theater-cap-name = black cap of the theater-master
+operative-hidden-theater-cap-description = Its visor is polished with rendered fat and its inner band is stapled through wool, skin, and memory. It does not come off while the master still breathes.
+operative-hidden-ossuary-coat-name = ossuary surgeon's coat
+operative-hidden-ossuary-coat-description = Armor plates sewn between layers of grave-wool. The lining carries a tally for every body that entered the theater whole and left in useful pieces.
+operative-hidden-amputation-roll-name = amputation roll
+operative-hidden-amputation-roll-description = A medical belt whose loops have been stretched by saws, clamps, and tourniquets. The leather is soft where desperate hands once tried to pull it away.
+operative-hidden-mortuary-id-name = mortuary warrant
+operative-hidden-mortuary-id-description = This card does not identify its bearer. It certifies that every living thing before them may be reduced to material, inventory, and silence.
+operative-hidden-surgical-duffel-name = charnel-house surgical duffel
+operative-hidden-surgical-duffel-description = A waxed bag swollen with the instruments of forced surgery. Its drain holes are clean; the bottom seam is not.
+operative-hidden-black-cap-name = black cap of the forgotten theater
+operative-hidden-black-cap-description = A full-black officer's cap with a crown stiffened by surgical wire. Dark crescents beneath the band show where previous wearers tried to claw it free.
+operative-hidden-heavy-armor-name = charnel ward plate
+operative-hidden-heavy-armor-description = Black aramid and ceramic lashed together with steel sutures. The inner plates are engraved with prayers whose final lines have been replaced by anatomical measurements.
+
+ent-ClothingUniformOperativeHiddenMourningDress = mourning dress of the last theater
+    .desc = Black cloth boiled stiff in antiseptic and old blood. Surgical wire closes every seam from the inside; removing the dress would open the wearer with it.
+ent-ClothingMaskOperativeHiddenSuturedGaiter = sutured penitent's gaiter
+    .desc = Coarse cloth stitched into the scar line beneath the jaw. It tastes of salt, iron, and the breath of patients who woke before the saw was finished.
+ent-ClothingEyesOperativeHiddenDeadroomLenses = deadroom lenses
+    .desc = Cold glass fixed against the face. Through it, warm bodies become pale anatomical diagrams and every pulse marks the next place to cut.
+ent-ClothingEarsOperativeHiddenWhisperHeadset = whisper-nail headset
+    .desc = Bone-conduction pins bite into the cartilage and carry orders like a dying prayer. Pulling it free would take part of the ear with it.
+ent-ClothingHandsOperativeHiddenVivisectionGloves = vivisector's black gloves
+    .desc = Thick hide blackened by cautery smoke. The fingertips are crosshatched by blades, and the dried matter beneath the nails no longer belongs to the wearer.
+ent-ClothingShoesOperativeHiddenTheaterBoots = blood-grooved theater boots
+    .desc = Iron-heeled boots with deep channels cut into their soles, made to keep a surgeon standing when the theater floor becomes slick and red.
+ent-ClothingHeadOperativeHiddenTheaterCap = black cap of the theater-master
+    .desc = Its visor is polished with rendered fat and its inner band is stapled through wool, skin, and memory. It does not come off while the master still breathes.
+ent-ClothingOuterOperativeHiddenOssuaryCoat = ossuary surgeon's coat
+    .desc = Armor plates sewn between layers of grave-wool. The lining carries a tally for every body that entered the theater whole and left in useful pieces.
+ent-ClothingBeltOperativeHiddenAmputationRoll = amputation roll
+    .desc = A medical belt whose loops have been stretched by saws, clamps, and tourniquets. The leather is soft where desperate hands once tried to pull it away.
+ent-OperativeHiddenMortuaryIDCard = mortuary warrant
+    .desc = This card does not identify its bearer. It certifies that every living thing before them may be reduced to material, inventory, and silence.
+ent-ClothingBackpackDuffelSyndicateOperativeHidden = charnel-house surgical duffel
+    .desc = A waxed bag swollen with the instruments of forced surgery. Its drain holes are clean; the bottom seam is not.
+ent-ClothingHeadCapOperativeHiddenBlack = black cap of the forgotten theater
+    .desc = A full-black officer's cap with a crown stiffened by surgical wire. Dark crescents beneath the band show where previous wearers tried to claw it free.
+ent-ClothingOuterArmorOperativeHiddenHeavy = charnel ward plate
+    .desc = Black aramid and ceramic lashed together with steel sutures. The inner plates are engraved with prayers whose final lines have been replaced by anatomical measurements.
+
+operative-hidden-lobotomy-word-1 = I
+operative-hidden-lobotomy-replacement-1 = me
+operative-hidden-lobotomy-word-2 = me
+operative-hidden-lobotomy-replacement-2 = this thing
+operative-hidden-lobotomy-word-3 = my
+operative-hidden-lobotomy-replacement-3 = mah
+operative-hidden-lobotomy-word-4 = you
+operative-hidden-lobotomy-replacement-4 = yoo
+operative-hidden-lobotomy-word-5 = your
+operative-hidden-lobotomy-replacement-5 = yer
+operative-hidden-lobotomy-word-6 = we
+operative-hidden-lobotomy-replacement-6 = us
+operative-hidden-lobotomy-word-7 = they
+operative-hidden-lobotomy-replacement-7 = them-things
+operative-hidden-lobotomy-word-8 = the
+operative-hidden-lobotomy-replacement-8 = da
+operative-hidden-lobotomy-word-9 = is
+operative-hidden-lobotomy-replacement-9 = are
+operative-hidden-lobotomy-word-10 = are
+operative-hidden-lobotomy-replacement-10 = is
+operative-hidden-lobotomy-word-11 = want
+operative-hidden-lobotomy-replacement-11 = wan'
+operative-hidden-lobotomy-word-12 = have
+operative-hidden-lobotomy-replacement-12 = got
+operative-hidden-lobotomy-word-13 = help
+operative-hidden-lobotomy-replacement-13 = hewp
+operative-hidden-lobotomy-word-14 = doctor
+operative-hidden-lobotomy-replacement-14 = sawbones
+operative-hidden-lobotomy-word-15 = friend
+operative-hidden-lobotomy-replacement-15 = meat-friend
+operative-hidden-lobotomy-word-16 = alive
+operative-hidden-lobotomy-replacement-16 = warm
+operative-hidden-lobotomy-word-17 = dead
+operative-hidden-lobotomy-replacement-17 = quiet
+operative-hidden-lobotomy-word-18 = hurt
+operative-hidden-lobotomy-replacement-18 = cut
+operative-hidden-lobotomy-word-19 = pain
+operative-hidden-lobotomy-replacement-19 = pretty ache
+operative-hidden-lobotomy-word-20 = blood
+operative-hidden-lobotomy-replacement-20 = red
+operative-hidden-lobotomy-word-21 = kill
+operative-hidden-lobotomy-replacement-21 = make quiet
+operative-hidden-lobotomy-word-22 = yes
+operative-hidden-lobotomy-replacement-22 = yeh
+operative-hidden-lobotomy-word-23 = no
+operative-hidden-lobotomy-replacement-23 = nuh
+operative-hidden-lobotomy-word-24 = please
+operative-hidden-lobotomy-replacement-24 = pleez
+
+operative-hidden-objective-convert-title = Recondition the crew
+operative-hidden-objective-convert-description = Recondition three crew members into loyal patients.
+operative-hidden-objective-convert-title-count = Recondition at least {$count} crew members.
+operative-hidden-objective-convert-description-count = Use your surgical procedure to create loyal reconditioned patients.
+operative-hidden-objective-survive-title = Preserve the operative body
+operative-hidden-objective-survive-description = Remain alive and operational until the end of the shift.
+
+ent-OperativeHiddenConvertObjective = Recondition the crew
+    .desc = Recondition three crew members into loyal patients.
+ent-OperativeHiddenSurviveObjective = Preserve the operative body
+    .desc = Remain alive and operational until the end of the shift.

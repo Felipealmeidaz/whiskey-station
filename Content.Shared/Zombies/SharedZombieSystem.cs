@@ -42,6 +42,6 @@ public abstract class SharedZombieSystem : EntitySystem
 
     private void OnRefreshNameModifiers(Entity<ZombieComponent> entity, ref RefreshNameModifiersEvent args)
     {
-        args.AddModifier("zombie-name-prefix");
+        args.AddModifier(entity.Comp.NameModifier); // Trauma - use the profile-specific name modifier.
     }
 }

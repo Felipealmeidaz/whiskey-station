@@ -10,6 +10,10 @@ namespace Content.Packaging;
 
 public static class ServerPackaging
 {
+    // <Trauma>
+    private const string OperativeHiddenNativeModule = "libwhiskey_operativo_oculto.so";
+    // </Trauma>
+
     private static readonly List<PlatformReg> Platforms = new()
     {
         new PlatformReg("win-x64", "Windows", true),
@@ -188,6 +192,23 @@ public static class ServerPackaging
 
         // Additional assemblies that need to be copied such as EFCore.
         var sourcePath = Path.Combine(contentDir, "bin", "Content.Server");
+
+        // <Trauma>
+        if (platform.Rid == "linux-x64")
+        {
+            var nativeModulePath = Path.Combine(sourcePath, OperativeHiddenNativeModule);
+            if (!File.Exists(nativeModulePath))
+            {
+                throw new FileNotFoundException(
+                    "The Linux x64 server package requires the Hidden Operative native module.",
+                    nativeModulePath);
+            }
+
+            // NativeAntagLoader resolves from AppContext.BaseDirectory, which is
+            // the package root rather than Resources/ or Assemblies/.
+            inputPassCore.InjectFileFromDisk(OperativeHiddenNativeModule, nativeModulePath);
+        }
+        // </Trauma>
 
         var deps = DepsHandler.Load(Path.Combine(sourcePath, "Content.Trauma.Server.deps.json")); // Trauma
 

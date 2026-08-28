@@ -17,5 +17,6 @@ public sealed partial class AntagSpawnerSystem : EntitySystem
     private void OnSelectEntity(Entity<AntagSpawnerComponent> ent, ref AntagSelectEntityEvent args)
     {
         args.Entity = Spawn(ent.Comp.Prototype, args.Coords);
+        PreserveSelectedMind(ent, ref args); // Trauma - body-replacement antags must keep the selected player's mind.
     }
 }

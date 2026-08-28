@@ -1,0 +1,139 @@
+- type: entity
+  parent: BaseAction
+  id: ActionOperativeHiddenTouch
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Action
+    useDelay: 0
+    itemIconStyle: NoItem
+    priority: 12
+  - type: Sprite
+    sprite: _Whiskey/OperativeHidden/Actions/scp049.rsi
+    layers:
+    - state: kill
+  - type: TargetAction
+    interactOnMiss: false
+  - type: EntityTargetAction
+    canTargetSelf: false
+    whitelist:
+      components:
+      - MobState
+    event: !type:NativeAntagTargetActionEvent
+      eventType: 4
+
+- type: entity
+  parent: BaseAction
+  id: ActionOperativeHiddenProcedure
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Action
+    useDelay: 0
+    itemIconStyle: NoItem
+    priority: 12
+  - type: Sprite
+    sprite: _Whiskey/OperativeHidden/Actions/scp049.rsi
+    layers:
+    - state: resurrect
+  - type: TargetAction
+    interactOnMiss: false
+  - type: EntityTargetAction
+    canTargetSelf: false
+    whitelist:
+      components:
+      - MobState
+    event: !type:NativeAntagTargetActionEvent
+      eventType: 5
+
+- type: entity
+  parent: BaseAction
+  id: ActionOperativeHiddenSelfHeal
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Action
+    useDelay: 0
+    itemIconStyle: NoItem
+    priority: 12
+  - type: Sprite
+    sprite: _Whiskey/OperativeHidden/Actions/scp049.rsi
+    layers:
+    - state: heal
+  - type: InstantAction
+    event: !type:NativeAntagInstantActionEvent
+      eventType: 6
+
+- type: entity
+  parent: BaseAction
+  id: ActionOperativeHiddenPatientHeal
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Action
+    useDelay: 0
+    itemIconStyle: NoItem
+    priority: 12
+  - type: Sprite
+    sprite: _Whiskey/OperativeHidden/Actions/scp049.rsi
+    layers:
+    - state: heal
+  - type: TargetAction
+    interactOnMiss: false
+  - type: EntityTargetAction
+    canTargetSelf: false
+    whitelist:
+      components:
+      - NativeAntagPatient
+    event: !type:NativeAntagTargetActionEvent
+      eventType: 7
+
+- type: entity
+  parent: BaseAction
+  id: ActionOperativeHiddenPatientKill
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Action
+    useDelay: 0
+    itemIconStyle: NoItem
+    priority: 12
+  - type: Sprite
+    sprite: _Whiskey/OperativeHidden/Actions/scp049.rsi
+    layers:
+    - state: kill_minion
+  - type: TargetAction
+    interactOnMiss: false
+  - type: EntityTargetAction
+    canTargetSelf: false
+    whitelist:
+      components:
+      - NativeAntagPatient
+    event: !type:NativeAntagTargetActionEvent
+      eventType: 8
+- type: entity
+  parent: BaseAction
+  id: ZombieJump
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Action
+    useDelay: 15
+    itemIconStyle: NoItem
+  - type: Sprite
+    layers:
+    - texture: _Goobstation/Interface/Emotes/jump.png
+  - type: TargetAction
+    range: 200
+    checkCanAccess: false
+  - type: WorldTargetAction
+    event: !type:OperativeHiddenPatientJumpActionEvent
+
+- type: entity
+  parent: BaseAction
+  id: ZombieFlair
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Action
+    useDelay: 5
+    itemIconStyle: NoItem
+  - type: Sprite
+    sprite: Interface/Actions/actions_borg.rsi
+    layers:
+    - state: gps-module
+  - type: InstantAction
+    event: !type:OperativeHiddenPatientFlairActionEvent

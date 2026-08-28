@@ -1,0 +1,19 @@
+- type: entity
+  parent: BaseLoneOpsCompatibleRule
+  id: OperativeHiddenRule
+  components:
+  - type: NativeModuleRequirement
+    module: operative-hidden
+    abiVersion: 1
+  - type: AntagSpawner
+    prototype: MobOviniaOperativeHidden
+    preserveMind: true
+  - type: AntagSelection
+    agentName: operative-hidden-round-end-agent-name
+    antags:
+    - !type:FixedAntagCount
+      proto: OperativeHidden
+  - type: AntagObjectives
+    objectives:
+    - OperativeHiddenConvertObjective
+    - OperativeHiddenSurviveObjective

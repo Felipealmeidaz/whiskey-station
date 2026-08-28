@@ -1,0 +1,209 @@
+- type: damageModifierSet
+  id: OperativeHiddenScp049Parity
+
+- type: entity
+  parent: MobOvinia
+  id: MobOviniaOperativeHidden
+  components:
+  - type: InitialBody
+    organs:
+      Torso: OrganOviniaTorso
+      Head: OrganOviniaHead
+      Tail: OrganOviniaTail
+      ArmLeft: OrganOviniaArmLeft
+      ArmRight: OrganOviniaArmRight
+      HandRight: OrganOviniaHandRight
+      HandLeft: OrganOviniaHandLeft
+      LegLeft: OrganOviniaLegLeft
+      LegRight: OrganOviniaLegRight
+      FootLeft: OrganOviniaFootLeft
+      FootRight: OrganOviniaFootRight
+      Brain: OrganOperativeHiddenCyberBrain
+      Eyes: OrganOperativeHiddenCyberEyes
+      Tongue: OrganOviniaTongue
+      Appendix: OrganOviniaAppendix
+      Ears: OrganOviniaEars
+      Lungs: OrganOperativeHiddenCyberLungs
+      Heart: OrganOperativeHiddenCyberHeart
+      Stomach: OrganOviniaStomach
+      Liver: OrganOperativeHiddenCyberLiver
+      Kidneys: OrganOperativeHiddenCyberKidneys
+  - type: HumanoidProfile
+    species: Ovinia
+  - type: NpcFactionMember
+    factions:
+    - Syndicate
+  - type: NativeAntag
+    module: operative-hidden
+    scenario: 49
+    actions:
+      1: ActionOperativeHiddenTouch
+      2: ActionOperativeHiddenProcedure
+      3: ActionOperativeHiddenSelfHeal
+      4: ActionOperativeHiddenPatientHeal
+      5: ActionOperativeHiddenPatientKill
+    popups:
+      1: operative-hidden-popup-invalid
+      2: operative-hidden-popup-cooldown
+      3: operative-hidden-popup-operating
+      4: operative-hidden-popup-interrupted
+      5: operative-hidden-popup-converted
+      10: operative-hidden-popup-tool-cautery
+      11: operative-hidden-popup-tool-drill
+      12: operative-hidden-popup-tool-scalpel
+      13: operative-hidden-popup-tool-retractor
+      14: operative-hidden-popup-tool-hemostat
+      15: operative-hidden-popup-tool-saw
+    componentBundles:
+      1: OperativeHiddenPatientComponents
+      2: OperativeHiddenUnrevivableComponents
+      3: OperativeHiddenPatientGhostRoleComponents
+      4: OperativeHiddenRemoveAiComponents
+    factions:
+      1: Syndicate
+    sounds:
+      1:
+        path: /Audio/_Whiskey/OperativeHidden/operative_hidden_position.ogg
+        params:
+          volume: -7
+          maxDistance: 5
+          referenceDistance: 0.8
+      2:
+        collection: OperativeHiddenSpeech
+        params:
+          volume: -7
+          maxDistance: 5
+          referenceDistance: 0.8
+    requiredTools:
+      1: Cautery
+      2: Drill
+      3: Scalpel
+      4: Retractor
+      5: Hemostat
+      6: Saw
+    zombieProfiles:
+      1: OperativeHiddenPatientZombieProfile
+  - type: Damageable
+    damageModifierSet: OperativeHiddenScp049Parity
+  - type: Satiation
+    satiations: {}
+  - type: StatusEffects
+    allowed:
+    - Electrocution
+    - TemporaryBlindness
+    - Flashed
+    - RadiationProtection
+    - Adrenaline
+    - Flip
+  - type: PermanentStatusEffects
+    statusEffects:
+    - StatusEffectPressureImmunity
+  - type: TemperatureImmunity
+  - type: Tag
+    tags:
+    - CanPilot
+    - FootstepSound
+    - DoorBumpOpener
+    - OviniaEmotes
+    - StunImmune
+    - CannotSuicide
+  - type: MovementSpeedModifier
+    baseWalkSpeed: 2.5
+    baseSprintSpeed: 3.5
+  - type: MobThresholds
+    thresholds:
+      0: Alive
+      500: Critical
+      600: Dead
+  - type: SlowOnDamage
+    speedModifierThresholds:
+      100: 0.9
+      250: 0.8
+      400: 0.7
+  - type: ZombieImmune
+  - type: FlashImmunity
+    showInExamine: false
+  - type: NativeScenarioOwnerIconViewer
+  - type: NightVision
+    action: ActionToggleNightVision
+    prioritized: false
+    relayOverlay: false
+    lightingColor: '#FFFFFF33'
+
+- type: entity
+  id: OperativeHiddenPatientZombieProfile
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Zombie
+    forcedLanguage: TauCetiBasic
+    nameModifier: operative-hidden-patient-name-prefix
+    baseZombieInfectionChance: 0.75
+    zombieMovementSpeedDebuff: 0.95
+    passiveHealingCritMultiplier: 2
+    zombieStatusIcon: OperativeHiddenPatientFaction
+    resistanceEffectiveness:
+      types:
+        Slash: 0.5
+        Piercing: 0.3
+        Blunt: 0.1
+    passiveHealing:
+      types:
+        Blunt: -0.4
+        Slash: -0.2
+        Piercing: -0.2
+        Heat: -0.02
+        Shock: -0.02
+    healingOnBite:
+      types:
+        Blunt: -2
+        Slash: -2
+        Piercing: -2
+
+- type: factionIcon
+  id: OperativeHiddenPatientFaction
+  priority: 11
+  showTo:
+    components:
+    - NativeScenarioOwnerIconViewer
+    - NativeScenarioPatientIconViewer
+  icon:
+    sprite: /Textures/Interface/Misc/job_icons.rsi
+    state: Zombie
+- type: entity
+  id: OperativeHiddenPatientComponents
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: NativeAntagPatient
+    speechSoundToken: 2
+    actionJumpId: ZombieJump
+    actionFlairId: ZombieFlair
+  - type: NativeScenarioPatientIconViewer
+  - type: NonSpreaderZombie
+  - type: ZombieAccentOverride
+    accent: OperativeHiddenLobotomy
+
+- type: entity
+  id: OperativeHiddenUnrevivableComponents
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Unrevivable
+
+- type: entity
+  id: OperativeHiddenPatientGhostRoleComponents
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: GhostRole
+    name: operative-hidden-patient-ghost-role-name
+    description: operative-hidden-patient-ghost-role-description
+    rules: operative-hidden-patient-ghost-role-rules
+    mindRoles:
+    - MindRoleZombie
+  - type: GhostTakeoverAvailable
+
+- type: entity
+  id: OperativeHiddenRemoveAiComponents
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: HTN
+    rootTask:
+      task: SimpleHostileCompound

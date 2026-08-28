@@ -1,0 +1,28 @@
+- type: entity
+  parent: BaseObjective
+  id: OperativeHiddenConvertObjective
+  components:
+  - type: Objective
+    difficulty: 1.5
+    issuer: TheSyndicate
+    icon:
+      sprite: Mobs/Species/Human/organs.rsi
+      state: brain
+  - type: NumberObjective
+    min: 3
+    max: 3
+    title: operative-hidden-objective-convert-title-count
+    description: operative-hidden-objective-convert-description-count
+  - type: NativeCounterCondition
+    token: 1
+
+- type: entity
+  parent: BaseSurviveObjective
+  id: OperativeHiddenSurviveObjective
+  components:
+  - type: Objective
+    difficulty: 1
+    issuer: TheSyndicate
+    icon:
+      sprite: Structures/Furniture/chairs.rsi
+      state: shuttle

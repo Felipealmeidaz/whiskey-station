@@ -1,0 +1,207 @@
+operative-hidden-entity-name = Operativo Oculto
+operative-hidden-entity-description = Um cirurgião clandestino do Sindicato cujos órgãos foram substituídos, costurados de volta e lacrados sob roupas que se tornaram uma segunda pele.
+
+ent-MobOviniaOperativeHidden = Operativo Oculto
+    .desc = Um cirurgião clandestino do Sindicato cujos órgãos foram substituídos, costurados de volta e lacrados sob roupas que se tornaram uma segunda pele.
+ent-MindRoleOperativeHidden = papel de Operativo Oculto
+    .desc = Marca uma mente como o Operativo Oculto.
+ent-SpawnPointOperativeHidden = ponto de surgimento do Operativo Oculto
+    .desc = Um ponto oculto para o surgimento do antagonista Operativo Oculto.
+
+operative-hidden-role-name = Operativo Oculto
+operative-hidden-role-description = Um vivissector clandestino do Sindicato, selado dentro de um corpo Ovinia construído para a missão e de um uniforme cirúrgico irremovível.
+operative-hidden-role-objective = Recondicione tripulantes em pacientes leais e sobreviva.
+operative-hidden-round-end-agent-name = operativo oculto
+operative-hidden-ghost-role-rules = Você é um antagonista do Sindicato. Recondicione a tripulação e sobreviva sem uplink ou armas de fogo.
+operative-hidden-role-briefing = Você é o Operativo Oculto.
+    Seu corpo Ovinia padronizado foi extensivamente reconstruído por próteses, órgãos cibernéticos e procedimentos experimentais do Sindicato.
+    Você não possui uplink e não depende de recursos externos. Use seu corpo modificado, equipamento de campo e procedimento de recondicionamento para cumprir seus objetivos.
+    Objetivos:
+    - Recondicione três tripulantes em pacientes leais.
+    - Permaneça vivo e operacional até o fim do turno.
+
+operative-hidden-patient-name = Aberração Recondicionada
+operative-hidden-patient-name-prefix = aberração ({$baseName})
+operative-hidden-patient-ghost-role-name = Aberração Recondicionada
+operative-hidden-patient-ghost-role-description = Um cadáver aberto, lobotomizado e forçado a ficar de pé pelo Operativo Oculto.
+operative-hidden-patient-ghost-role-rules = Seu lobo frontal foi cortado em pedaços obedientes. Obedeça e proteja o Operativo Oculto que refez você. Ainda consegue falar, mas os caminhos arruinados torcem cada frase.
+operative-hidden-patient-jump-name = Salto cadavérico
+operative-hidden-patient-jump-description = Arremessa o corpo recondicionado até um ponto. Um alvo vivo atingido pelo impacto sofre 15 de dano cortante e 5 segundos de paralisia.
+operative-hidden-patient-flair-name = Localizar sobreviventes
+operative-hidden-patient-flair-description = Determina a referência de navegação mais próxima de um humanoide vivo que não seja recondicionado nem imune.
+zombie-flair-location = Sobrevivente mais próximo: {$location}.
+zombie-flair-none = Nenhum sobrevivente detectado dentro do alcance operacional.
+
+ent-ZombieJump = Salto cadavérico
+    .desc = Arremessa o corpo recondicionado até um ponto. Um alvo vivo atingido pelo impacto sofre 15 de dano cortante e 5 segundos de paralisia.
+ent-ZombieFlair = Localizar sobreviventes
+    .desc = Determina a referência de navegação mais próxima de um humanoide vivo que não seja recondicionado nem imune.
+
+operative-hidden-action-touch-name = Toque Terminal
+operative-hidden-action-touch-description = Encerra instantaneamente um alvo humanoide válido. Recarga de 180 segundos.
+operative-hidden-action-procedure-name = Procedimento de Recondicionamento
+operative-hidden-action-procedure-description = Recondiciona o alvo em seis etapas de 3,5 segundos: cautério, broca, bisturi, retrator, hemostato e serra. Use a ação novamente em cada etapa. A recarga de 120 segundos começa ao concluir.
+operative-hidden-action-self-heal-name = Restauração Experimental
+operative-hidden-action-self-heal-description = Restaura completamente seu corpo modificado. Recarga de 300 segundos.
+operative-hidden-action-patient-heal-name = Restaurar Paciente
+operative-hidden-action-patient-heal-description = Restaura completamente um de seus pacientes recondicionados. Recarga de 300 segundos.
+operative-hidden-action-patient-kill-name = Encerrar Paciente
+operative-hidden-action-patient-kill-description = Encerra irreversivelmente um de seus pacientes recondicionados.
+
+ent-ActionOperativeHiddenTouch = Toque Terminal
+    .desc = Encerra instantaneamente um alvo humanoide válido. Recarga de 180 segundos.
+ent-ActionOperativeHiddenProcedure = Procedimento de Recondicionamento
+    .desc = Recondiciona o alvo em seis etapas de 3,5 segundos: cautério, broca, bisturi, retrator, hemostato e serra. Use a ação novamente em cada etapa. A recarga de 120 segundos começa ao concluir.
+ent-ActionOperativeHiddenSelfHeal = Restauração Experimental
+    .desc = Restaura completamente seu corpo modificado. Recarga de 300 segundos.
+ent-ActionOperativeHiddenPatientHeal = Restaurar Paciente
+    .desc = Restaura completamente um de seus pacientes recondicionados. Recarga de 300 segundos.
+ent-ActionOperativeHiddenPatientKill = Encerrar Paciente
+    .desc = Encerra irreversivelmente um de seus pacientes recondicionados.
+
+operative-hidden-popup-invalid = Seus sistemas internos rejeitam este alvo.
+operative-hidden-popup-cooldown = Seus sistemas internos ainda não concluíram o ciclo.
+operative-hidden-popup-operating = Etapa iniciada. Mantenha o instrumento ativo e o contato com o alvo.
+operative-hidden-popup-interrupted = Recondicionamento interrompido.
+operative-hidden-popup-converted = Recondicionamento concluído. O paciente agora está sob seu controle.
+operative-hidden-popup-tool-cautery = Instrumento necessário: cautério.
+operative-hidden-popup-tool-drill = Instrumento necessário: broca cirúrgica.
+operative-hidden-popup-tool-scalpel = Instrumento necessário: bisturi.
+operative-hidden-popup-tool-retractor = Instrumento necessário: retrator.
+operative-hidden-popup-tool-hemostat = Instrumento necessário: hemostato.
+operative-hidden-popup-tool-saw = Instrumento necessário: serra cirúrgica.
+
+operative-hidden-cyber-brain-name = interface neural cibernética reforçada
+operative-hidden-cyber-eyes-name = olhos cibernéticos operacionais
+operative-hidden-cyber-heart-name = coração cibernético reforçado
+operative-hidden-cyber-lungs-name = pulmões cibernéticos selados
+operative-hidden-cyber-liver-name = fígado cibernético reforçado
+operative-hidden-cyber-kidneys-name = rins cibernéticos reforçados
+
+ent-OrganOperativeHiddenCyberBrain = interface neural cibernética reforçada
+    .desc = Uma interface neural endurecida para coordenar o corpo reconstruído do operativo.
+ent-OrganOperativeHiddenCyberEyes = olhos cibernéticos operacionais
+    .desc = Olhos aumentados que revelam informações médicas, de identidade, segurança e contrabando.
+ent-OrganOperativeHiddenCyberHeart = coração cibernético reforçado
+    .desc = Um coração artificial de alta integridade construído para operações clandestinas prolongadas.
+ent-OrganOperativeHiddenCyberLiver = fígado cibernético reforçado
+    .desc = Um fígado artificial reforçado contra traumas internos severos.
+ent-OrganOperativeHiddenCyberLungs = pulmões cibernéticos selados
+    .desc = Pulmões artificiais resistentes à temperatura e selados para ambientes hostis.
+ent-OrganOperativeHiddenCyberKidneys = rins cibernéticos reforçados
+    .desc = Rins artificiais reforçados contra traumas internos severos.
+
+operative-hidden-mourning-dress-name = vestido de luto do último teatro
+operative-hidden-mourning-dress-description = Tecido negro fervido até endurecer em antisséptico e sangue velho. Arame cirúrgico fecha cada costura por dentro; remover o vestido abriria o usuário junto com ele.
+operative-hidden-sutured-gaiter-name = gola suturada do penitente
+operative-hidden-sutured-gaiter-description = Pano áspero costurado à linha de cicatriz sob a mandíbula. Tem gosto de sal, ferro e do hálito de pacientes que acordaram antes de a serra terminar.
+operative-hidden-deadroom-lenses-name = lentes da sala morta
+operative-hidden-deadroom-lenses-description = Vidro frio fixado contra o rosto. Através dele, corpos quentes viram diagramas anatômicos pálidos e cada pulso marca o próximo lugar a cortar.
+operative-hidden-whisper-headset-name = headset do prego sussurrante
+operative-hidden-whisper-headset-description = Pinos de condução óssea mordem a cartilagem e carregam ordens como uma oração moribunda. Arrancá-lo levaria parte da orelha junto.
+operative-hidden-vivisection-gloves-name = luvas negras do vivissector
+operative-hidden-vivisection-gloves-description = Couro grosso enegrecido por fumaça de cautério. As pontas são riscadas por lâminas, e a matéria seca sob as unhas já não pertence ao usuário.
+operative-hidden-theater-boots-name = botas estriadas de sangue do teatro
+operative-hidden-theater-boots-description = Botas de salto de ferro com canais profundos nas solas, feitas para manter um cirurgião de pé quando o chão do teatro fica liso e vermelho.
+operative-hidden-theater-cap-name = quepe negro do mestre do teatro
+operative-hidden-theater-cap-description = A pala foi polida com gordura derretida e a faixa interna está grampeada através de lã, pele e memória. Não sai enquanto o mestre ainda respirar.
+operative-hidden-ossuary-coat-name = casaco do cirurgião do ossuário
+operative-hidden-ossuary-coat-description = Placas de armadura costuradas entre camadas de lã funerária. O forro conta cada corpo que entrou inteiro no teatro e saiu em pedaços úteis.
+operative-hidden-amputation-roll-name = rolo de amputação
+operative-hidden-amputation-roll-description = Um cinto médico cujas presilhas foram alargadas por serras, pinças e torniquetes. O couro está macio onde mãos desesperadas tentaram puxá-lo para longe.
+operative-hidden-mortuary-id-name = mandado mortuário
+operative-hidden-mortuary-id-description = Este cartão não identifica seu portador. Ele certifica que todo ser vivo à frente pode ser reduzido a material, inventário e silêncio.
+operative-hidden-surgical-duffel-name = mochila cirúrgica do matadouro
+operative-hidden-surgical-duffel-description = Uma bolsa encerada inchada pelos instrumentos da cirurgia forçada. Seus furos de drenagem estão limpos; a costura do fundo, não.
+operative-hidden-black-cap-name = quepe negro do teatro esquecido
+operative-hidden-black-cap-description = Um quepe de oficial inteiramente preto, com a copa endurecida por arame cirúrgico. Meias-luas escuras sob a faixa mostram onde usuários anteriores tentaram arrancá-lo com as unhas.
+operative-hidden-heavy-armor-name = placas da enfermaria mortuária
+operative-hidden-heavy-armor-description = Aramida negra e cerâmica unidas por suturas de aço. As placas internas carregam orações cujas últimas linhas foram substituídas por medidas anatômicas.
+
+ent-ClothingUniformOperativeHiddenMourningDress = vestido de luto do último teatro
+    .desc = Tecido negro fervido até endurecer em antisséptico e sangue velho. Arame cirúrgico fecha cada costura por dentro; remover o vestido abriria o usuário junto com ele.
+ent-ClothingMaskOperativeHiddenSuturedGaiter = gola suturada do penitente
+    .desc = Pano áspero costurado à linha de cicatriz sob a mandíbula. Tem gosto de sal, ferro e do hálito de pacientes que acordaram antes de a serra terminar.
+ent-ClothingEyesOperativeHiddenDeadroomLenses = lentes da sala morta
+    .desc = Vidro frio fixado contra o rosto. Através dele, corpos quentes viram diagramas anatômicos pálidos e cada pulso marca o próximo lugar a cortar.
+ent-ClothingEarsOperativeHiddenWhisperHeadset = headset do prego sussurrante
+    .desc = Pinos de condução óssea mordem a cartilagem e carregam ordens como uma oração moribunda. Arrancá-lo levaria parte da orelha junto.
+ent-ClothingHandsOperativeHiddenVivisectionGloves = luvas negras do vivissector
+    .desc = Couro grosso enegrecido por fumaça de cautério. As pontas são riscadas por lâminas, e a matéria seca sob as unhas já não pertence ao usuário.
+ent-ClothingShoesOperativeHiddenTheaterBoots = botas estriadas de sangue do teatro
+    .desc = Botas de salto de ferro com canais profundos nas solas, feitas para manter um cirurgião de pé quando o chão do teatro fica liso e vermelho.
+ent-ClothingHeadOperativeHiddenTheaterCap = quepe negro do mestre do teatro
+    .desc = A pala foi polida com gordura derretida e a faixa interna está grampeada através de lã, pele e memória. Não sai enquanto o mestre ainda respirar.
+ent-ClothingOuterOperativeHiddenOssuaryCoat = casaco do cirurgião do ossuário
+    .desc = Placas de armadura costuradas entre camadas de lã funerária. O forro conta cada corpo que entrou inteiro no teatro e saiu em pedaços úteis.
+ent-ClothingBeltOperativeHiddenAmputationRoll = rolo de amputação
+    .desc = Um cinto médico cujas presilhas foram alargadas por serras, pinças e torniquetes. O couro está macio onde mãos desesperadas tentaram puxá-lo para longe.
+ent-OperativeHiddenMortuaryIDCard = mandado mortuário
+    .desc = Este cartão não identifica seu portador. Ele certifica que todo ser vivo à frente pode ser reduzido a material, inventário e silêncio.
+ent-ClothingBackpackDuffelSyndicateOperativeHidden = mochila cirúrgica do matadouro
+    .desc = Uma bolsa encerada inchada pelos instrumentos da cirurgia forçada. Seus furos de drenagem estão limpos; a costura do fundo, não.
+ent-ClothingHeadCapOperativeHiddenBlack = quepe negro do teatro esquecido
+    .desc = Um quepe de oficial inteiramente preto, com a copa endurecida por arame cirúrgico. Meias-luas escuras sob a faixa mostram onde usuários anteriores tentaram arrancá-lo com as unhas.
+ent-ClothingOuterArmorOperativeHiddenHeavy = placas da enfermaria mortuária
+    .desc = Aramida negra e cerâmica unidas por suturas de aço. As placas internas carregam orações cujas últimas linhas foram substituídas por medidas anatômicas.
+
+operative-hidden-lobotomy-word-1 = eu
+operative-hidden-lobotomy-replacement-1 = mim
+operative-hidden-lobotomy-word-2 = me
+operative-hidden-lobotomy-replacement-2 = esse aqui
+operative-hidden-lobotomy-word-3 = meu
+operative-hidden-lobotomy-replacement-3 = mê
+operative-hidden-lobotomy-word-4 = você
+operative-hidden-lobotomy-replacement-4 = vossê
+operative-hidden-lobotomy-word-5 = seu
+operative-hidden-lobotomy-replacement-5 = sêo
+operative-hidden-lobotomy-word-6 = nós
+operative-hidden-lobotomy-replacement-6 = nóis
+operative-hidden-lobotomy-word-7 = eles
+operative-hidden-lobotomy-replacement-7 = as coisa
+operative-hidden-lobotomy-word-8 = o
+operative-hidden-lobotomy-replacement-8 = u
+operative-hidden-lobotomy-word-9 = é
+operative-hidden-lobotomy-replacement-9 = tá
+operative-hidden-lobotomy-word-10 = são
+operative-hidden-lobotomy-replacement-10 = é
+operative-hidden-lobotomy-word-11 = quero
+operative-hidden-lobotomy-replacement-11 = qué
+operative-hidden-lobotomy-word-12 = tenho
+operative-hidden-lobotomy-replacement-12 = tem
+operative-hidden-lobotomy-word-13 = ajuda
+operative-hidden-lobotomy-replacement-13 = ajúda
+operative-hidden-lobotomy-word-14 = doutor
+operative-hidden-lobotomy-replacement-14 = dotô
+operative-hidden-lobotomy-word-15 = amigo
+operative-hidden-lobotomy-replacement-15 = amigo-carne
+operative-hidden-lobotomy-word-16 = vivo
+operative-hidden-lobotomy-replacement-16 = quente
+operative-hidden-lobotomy-word-17 = morto
+operative-hidden-lobotomy-replacement-17 = quieto
+operative-hidden-lobotomy-word-18 = machuca
+operative-hidden-lobotomy-replacement-18 = corta
+operative-hidden-lobotomy-word-19 = dor
+operative-hidden-lobotomy-replacement-19 = boniteza
+operative-hidden-lobotomy-word-20 = sangue
+operative-hidden-lobotomy-replacement-20 = vermeio
+operative-hidden-lobotomy-word-21 = matar
+operative-hidden-lobotomy-replacement-21 = fazer quieto
+operative-hidden-lobotomy-word-22 = sim
+operative-hidden-lobotomy-replacement-22 = sĩ
+operative-hidden-lobotomy-word-23 = não
+operative-hidden-lobotomy-replacement-23 = num
+operative-hidden-lobotomy-word-24 = por favor
+operative-hidden-lobotomy-replacement-24 = pur favô
+
+operative-hidden-objective-convert-title = Recondicione a tripulação
+operative-hidden-objective-convert-description = Recondicione três tripulantes em pacientes leais.
+operative-hidden-objective-convert-title-count = Recondicione pelo menos {$count} tripulantes.
+operative-hidden-objective-convert-description-count = Use seu procedimento cirúrgico para criar pacientes recondicionados leais.
+operative-hidden-objective-survive-title = Preserve o corpo operativo
+operative-hidden-objective-survive-description = Permaneça vivo e operacional até o fim do turno.
+
+ent-OperativeHiddenConvertObjective = Recondicione a tripulação
+    .desc = Recondicione três tripulantes em pacientes leais.
+ent-OperativeHiddenSurviveObjective = Preserve o corpo operativo
+    .desc = Permaneça vivo e operacional até o fim do turno.

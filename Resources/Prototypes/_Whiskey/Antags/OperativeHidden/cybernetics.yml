@@ -1,0 +1,86 @@
+- type: entity
+  parent: [ OrganBaseBrain, OrganCyberneticInternal ]
+  id: OrganOperativeHiddenCyberBrain
+  components:
+  - type: InternalChildOrgan
+    intCap: 32
+    integrity: 32
+    integrityThresholds:
+      Normal: 32
+      Damaged: 12
+      Destroyed: 0
+  - type: Sprite
+    sprite: Mobs/Species/Human/organs.rsi
+    layers:
+    - state: brain
+
+- type: entity
+  parent: OrganCyberneticEyes
+  id: OrganOperativeHiddenCyberEyes
+  components:
+  - type: OrganComponents
+    onAdd:
+    - type: ShowHealthBars
+      damageContainers: [ Biological, BiologicalMetaphysical ]
+    - type: ShowHealthIcons
+      damageContainers: [ Biological, BiologicalMetaphysical ]
+    - type: ShowJobIcons
+    - type: ShowMindShieldIcons
+    - type: ShowCriminalRecordIcons
+    - type: ShowContrabandDetails
+    - type: EyeProtection
+
+- type: entity
+  parent: [ OrganBaseHeart, OrganCyberneticInternal, OrganCyberneticMetabolizer ]
+  id: OrganOperativeHiddenCyberHeart
+  components:
+  - type: InternalChildOrgan
+    intCap: 35
+    integrity: 35
+    integrityThresholds:
+      Normal: 35
+      Damaged: 14
+      Destroyed: 0
+
+- type: entity
+  parent: [ OrganBaseLiver, OrganCyberneticInternal, OrganCyberneticMetabolizer ]
+  id: OrganOperativeHiddenCyberLiver
+  components:
+  - type: InternalChildOrgan
+    intCap: 35
+    integrity: 35
+    integrityThresholds:
+      Normal: 35
+      Damaged: 14
+      Destroyed: 0
+
+- type: entity
+  parent: [ OrganBaseLungs, OrganCyberneticInternal, OrganCyberneticMetabolizer ]
+  id: OrganOperativeHiddenCyberLungs
+  components:
+  - type: InternalChildOrgan
+    intCap: 32
+    integrity: 32
+    integrityThresholds:
+      Normal: 32
+      Damaged: 9
+      Destroyed: 0
+  - type: OrganComponents
+    onAdd:
+    - type: SpecialLowTempImmunity
+    - type: SpecialHighTempImmunity
+
+- type: entity
+  parent: [ OrganBaseKidneys, OrganCyberneticInternal, OrganCyberneticMetabolizer ]
+  id: OrganOperativeHiddenCyberKidneys
+  components:
+  - type: InternalChildOrgan
+    intCap: 35
+    integrity: 35
+    integrityThresholds:
+      Normal: 35
+      Damaged: 14
+      Destroyed: 0
+  - type: Sprite
+    layers:
+    - state: kidneys

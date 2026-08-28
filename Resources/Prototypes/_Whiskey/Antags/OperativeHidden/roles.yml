@@ -1,0 +1,47 @@
+- type: antag
+  id: OperativeHidden
+  name: operative-hidden-role-name
+  antagonist: true
+  setPreference: false
+  objective: operative-hidden-role-objective
+  guides: [ NuclearOperatives ]
+
+- type: antagSpecifier
+  id: OperativeHidden
+  parent: RestrictedAntag
+  prefRoles:
+  - GenericTeamAntagonist
+  pickPlayer: false
+  allowNonHumans: true
+  spawnerPrototype: SpawnPointOperativeHidden
+  startingGear: OperativeHiddenGear
+  components:
+  - type: NpcFactionMember
+    factions:
+    - Syndicate
+  mindRoles:
+  - MindRoleOperativeHidden
+  briefing:
+    text: operative-hidden-role-briefing
+    color: '#d82020'
+
+- type: entity
+  parent: BaseMindRoleAntag
+  id: MindRoleOperativeHidden
+  components:
+  - type: MindRole
+    roleType: SoloAntagonist
+    exclusiveAntag: true
+    antagPrototype: OperativeHidden
+
+- type: entity
+  parent: SpawnPointLoneNukeOperative
+  id: SpawnPointOperativeHidden
+  categories: [ HideSpawnMenu, Spawner ]
+  components:
+  - type: GhostRole
+    name: operative-hidden-role-name
+    description: operative-hidden-role-description
+    rules: operative-hidden-ghost-role-rules
+    mindRoles:
+    - MindRoleOperativeHidden
