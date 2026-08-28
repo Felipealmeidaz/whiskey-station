@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 using System.Linq;
 using System.Text.RegularExpressions;
 using Content.Shared.Random.Helpers;
@@ -24,6 +26,7 @@ namespace Content.Shared._Whiskey.Speech;
 /// </remarks>
 public sealed partial class RegionalAccentSystem : RelayAccentSystem<RegionalAccentComponent>
 {
+    private static readonly Regex RegexPrimeiraPalavra = new(@"^(\S+)");
     private static readonly Regex RegexUltimaPalavra = new(@"(\S+)$");
     private static readonly Regex RegexTerminaPergunta = new(@"\?+\s*$");
     private static readonly Regex RegexTerminaExclamacao = new(@"!+\s*$");
@@ -51,9 +54,21 @@ public sealed partial class RegionalAccentSystem : RelayAccentSystem<RegionalAcc
         {
             var prefixo = Loc.GetString($"accent-{chave}-prefix-{random.Next(1, comp.PrefixCount + 1)}");
 
-            // A frase perde a maiúscula inicial porque agora vem depois do
-            // bordão, senão sai "Pô, Preciso de ajuda".
-            msg = msg[0].ToString().ToLower() + msg.Remove(0, 1);
+            // Quem estava gritando continua gritando: se a primeira palavra vem
+            // toda em maiúscula, o bordão sobe junto em vez de a frase descer.
+            // Mesmo tratamento que o Fechar faz do outro lado, e que o
+            // PirateAccentSystem do jogo base já fazia.
+            if (RegexPrimeiraPalavra.Match(msg).Value.Any(char.IsLower))
+            {
+                // A frase perde a maiúscula inicial porque agora vem depois do
+                // bordão, senão sai "Pô, Preciso de ajuda".
+                msg = msg[0].ToString().ToLower() + msg.Remove(0, 1);
+            }
+            else
+            {
+                prefixo = prefixo.ToUpper();
+            }
+
             msg = $"{prefixo} {msg}";
         }
 
