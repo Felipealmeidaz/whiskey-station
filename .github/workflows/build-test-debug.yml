@@ -61,14 +61,17 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: build-output
+        # <Trauma> Retain the native runtime consumed by downloaded integration-test jobs.
         path: |
           bin/Content.*/*.json
           bin/Content.IntegrationTests/*.dll
           bin/Content.IntegrationTests/*.pdb
+          bin/Content.IntegrationTests/libwhiskey_operativo_oculto.so
           bin/Content.IntegrationTests/runtimes/linux-x64/**
           bin/Content.MapRenderer/*.dll
           bin/Content.MapRenderer/*.pdb
           bin/Content.Tests/*.dll
+        # </Trauma>
         retention-days: 1
 
   build-release:
