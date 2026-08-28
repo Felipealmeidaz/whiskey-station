@@ -70,7 +70,8 @@ public sealed partial class ChatSystem
     /// </summary>
     // Trauma - added name and obfuscated strings
     private void SendInVoiceRange(ChatChannel channel, string name, string message, string wrappedMessage, string obfuscated, string obfuscatedWrappedMessage, EntityUid source, ChatTransmitRange range, NetUserId? author = null,
-        LanguagePrototype? languageOverride = null, bool checkLOS = false, SpeechVerbPrototype? speech = null, Color? colorOverride = null) // Trauma
+        LanguagePrototype? languageOverride = null, bool checkLOS = false, SpeechVerbPrototype? speech = null, Color? colorOverride = null,
+        string? speechStyleClass = null) // Trauma
     {
         var language = languageOverride ?? _language.GetLanguage(source); // Trauma
 
@@ -122,10 +123,10 @@ public sealed partial class ChatSystem
                 }
                 // </Whiskey>
 
-                _chatManager.ChatMessageToOne(channel, message, wrappedMessage, source, entHideChat, session.Channel, author: author);
+                _chatManager.ChatMessageToOne(channel, message, wrappedMessage, source, entHideChat, session.Channel, author: author, speechStyleClass: speechStyleClass);
             }
             else
-                _chatManager.ChatMessageToOne(channel, ev.Message, ev.WrappedMessage, source, entHideChat, session.Channel, author: author);
+                _chatManager.ChatMessageToOne(channel, ev.Message, ev.WrappedMessage, source, entHideChat, session.Channel, author: author, speechStyleClass: speechStyleClass);
             // </Trauma>
         }
 
@@ -133,11 +134,11 @@ public sealed partial class ChatSystem
         if (porIdioma != null && speech != null)
         {
             foreach (var (destino, fila) in porIdioma)
-                EntregarTraduzido(destino, fila, channel, source, name, message, speech, language, colorOverride, author);
+                EntregarTraduzido(destino, fila, channel, source, name, message, speech, language, colorOverride, author, speechStyleClass);
         }
         // </Whiskey>
 
-        _replay.RecordServerMessage(new ChatMessage(channel, message, wrappedMessage, GetNetEntity(source), null, MessageRangeHideChatForReplay(range)));
+        _replay.RecordServerMessage(new ChatMessage(channel, message, wrappedMessage, GetNetEntity(source), null, MessageRangeHideChatForReplay(range), speechStyleClass: speechStyleClass));
     }
 
     /// <summary>
@@ -202,7 +203,8 @@ public sealed partial class ChatSystem
         SpeechVerbPrototype speech,
         LanguagePrototype language,
         Color? colorOverride,
-        NetUserId? author)
+        NetUserId? author,
+        string? speechStyleClass)
     {
         var origem = _translation.DetectarIdioma(message);
 
@@ -217,7 +219,7 @@ public sealed partial class ChatSystem
                 if (sessao.Status != SessionStatus.InGame)
                     continue;
 
-                _chatManager.ChatMessageToOne(channel, resultado.Text, embrulhada, source, esconderChat, sessao.Channel, author: author);
+                _chatManager.ChatMessageToOne(channel, resultado.Text, embrulhada, source, esconderChat, sessao.Channel, author: author, speechStyleClass: speechStyleClass);
             }
         });
     }

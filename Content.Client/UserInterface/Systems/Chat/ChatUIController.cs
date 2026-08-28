@@ -19,6 +19,7 @@ using Content.Client.Stylesheets;
 using Content.Client.UserInterface.Screens;
 using Content.Client.UserInterface.Systems.Chat.Widgets;
 using Content.Client.UserInterface.Systems.Gameplay;
+using Content.Shared._Whiskey.Chat;
 using Content.Shared.Administration;
 using Content.Shared.CCVar;
 using Content.Shared.Chat;
@@ -201,7 +202,10 @@ public sealed partial class ChatUIController : UIController
         _config.OnValueChanged(CCVars.ChatEnableColorName, (value) => { _chatNameColorsEnabled = value; });
         _chatNameColorsEnabled = _config.GetCVar(CCVars.ChatEnableColorName);
 
-        _speechBubbleRoot = new LayoutContainer();
+        _speechBubbleRoot = new LayoutContainer
+        {
+            MouseFilter = Control.MouseFilterMode.Ignore,
+        };
 
         UpdateChannelPermissions();
 
@@ -508,6 +512,14 @@ public sealed partial class ChatUIController : UIController
         if (EntityManager.GetComponent<TransformComponent>(entity).MapID != _eye.CurrentEye.Position.MapId)
             return;
 
+        if (!_config.GetCVar(CCVars.ChatUseSs14SpeechBubbles) &&
+            RunechatStyles.IsInterrupting(message.SpeechStyleClass))
+        {
+            ClearSpeechBubbles(entity);
+            CreateSpeechBubble(entity, new SpeechBubbleData(message, speechType));
+            return;
+        }
+
         if (!_queuedSpeechBubbles.TryGetValue(entity, out var queueData))
         {
             queueData = new SpeechBubbleQueueData();
@@ -515,6 +527,19 @@ public sealed partial class ChatUIController : UIController
         }
 
         queueData.MessageQueue.Enqueue(new SpeechBubbleData(message, speechType));
+    }
+
+    private void ClearSpeechBubbles(EntityUid entity)
+    {
+        _queuedSpeechBubbles.Remove(entity);
+
+        if (!_activeSpeechBubbles.TryGetValue(entity, out var active))
+            return;
+
+        foreach (var bubble in active.ToArray())
+        {
+            RemoveSpeechBubble(entity, bubble);
+        }
     }
 
     public void RemoveSpeechBubble(EntityUid entityUid, SpeechBubble bubble)
