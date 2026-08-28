@@ -1,4 +1,4 @@
-; SPDX-License-Identifier: MIT
+; SPDX-License-Identifier: AGPL-3.0-or-later
 
 ; Common command constructors. These macros deliberately describe generic ECS
 ; operations; semantic combinations remain in the native handlers.

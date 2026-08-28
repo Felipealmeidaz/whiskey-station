@@ -1,4 +1,4 @@
-; SPDX-License-Identifier: MIT
+; SPDX-License-Identifier: AGPL-3.0-or-later
 
 event_conversion_complete:
     COMMAND_OPEN CMD_ADD_COMPONENT_BUNDLE

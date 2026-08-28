@@ -1,4 +1,4 @@
-; SPDX-License-Identifier: MIT
+; SPDX-License-Identifier: AGPL-3.0-or-later
 
 ; uint64 operative_hidden_create(uint64 self)
 ; Allocates a deterministic slot. Calls are serialized by the ECS main thread;

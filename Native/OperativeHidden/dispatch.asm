@@ -1,4 +1,4 @@
-; SPDX-License-Identifier: MIT
+; SPDX-License-Identifier: AGPL-3.0-or-later
 
 ; uint32 operative_hidden_dispatch(const NativeEvent *event,
 ;                                   NativeCommand *commands,

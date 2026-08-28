@@ -1,4 +1,4 @@
-; SPDX-License-Identifier: MIT
+; SPDX-License-Identifier: AGPL-3.0-or-later
 ;
 ; Stable ABI shared by libwhiskey_operativo_oculto.so and the managed bridge.
 ; All public entry points use the System V AMD64 calling convention. The module

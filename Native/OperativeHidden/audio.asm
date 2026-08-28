@@ -1,4 +1,4 @@
-; SPDX-License-Identifier: MIT
+; SPDX-License-Identifier: AGPL-3.0-or-later
 
 ; Positional disclosure audio remains continuous while the operative is alive
 ; and controlled. RobustToolbox supplies monotonic time and random bits; this

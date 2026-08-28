@@ -1,4 +1,4 @@
-; SPDX-License-Identifier: MIT
+; SPDX-License-Identifier: AGPL-3.0-or-later
 
 event_entity_deleted:
     mov rax, [r12 + EV_TARGET]
