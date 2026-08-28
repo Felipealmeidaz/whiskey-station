@@ -33,4 +33,13 @@
   <Import Project="..\RobustToolbox\Imports\Server.props" />
   <Import Project="..\RobustToolbox\Imports\Shared.props" />
   <Import Project="..\RobustToolbox\Imports\Testing.props" />
+
+  <!-- <Trauma> -->
+  <Target Name="CopyOperativeHiddenNativeForIntegrationTests"
+          AfterTargets="Build"
+          Condition="$([MSBuild]::IsOSPlatform('Linux')) and Exists('$(MSBuildProjectDirectory)/../Native/OperativeHidden/build/libwhiskey_operativo_oculto.so')">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/../Native/OperativeHidden/build/libwhiskey_operativo_oculto.so"
+          DestinationFolder="$(OutputPath)" />
+  </Target>
+  <!-- </Trauma> -->
 </Project>

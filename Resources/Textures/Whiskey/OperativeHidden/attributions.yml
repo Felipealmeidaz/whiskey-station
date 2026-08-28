@@ -1,0 +1,18 @@
+- files:
+  - Actions/scp049.rsi/bag.png
+  - Actions/scp049.rsi/heal.png
+  - Actions/scp049.rsi/kill.png
+  - Actions/scp049.rsi/kill_minion.png
+  - Actions/scp049.rsi/resurrect.png
+  license: CC-BY-SA-3.0
+  copyright: max_gab2
+  source: https://github.com/makura-games/project-fire/tree/fb133b13e2b2696a4f4e17a030ed4a7d6f36e082/Resources/Textures/_Scp/Actions/scp-049.rsi
+
+- files:
+  - Clothing/Head/black_cap.rsi/icon.png
+  - Clothing/Head/black_cap.rsi/equipped-HELMET.png
+  - Clothing/Head/black_cap.rsi/inhand-left.png
+  - Clothing/Head/black_cap.rsi/inhand-right.png
+  license: CC-BY-SA-3.0
+  copyright: haZZLO
+  source: https://github.com/makura-games/project-fire/tree/fb133b13e2b2696a4f4e17a030ed4a7d6f36e082/Resources/Textures/_Sunrise/Clothing/Head/Hats/centcom_officer_black.rsi

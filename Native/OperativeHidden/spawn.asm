@@ -1,0 +1,17 @@
+; SPDX-License-Identifier: MIT
+
+event_spawn:
+    cmp dword [r15 + ST_STATE], STATE_INITIALIZING
+    jne .done
+    mov dword [r15 + ST_STATE], STATE_ACTIVE
+    mov dword [r15 + ST_REQUIRED_TOOL], 1
+    EMIT_ADD_ACTION TOKEN_ACTION_TOUCH
+    EMIT_ADD_ACTION TOKEN_ACTION_PROCEDURE
+    EMIT_ADD_ACTION TOKEN_ACTION_SELF_HEAL
+    EMIT_ADD_ACTION TOKEN_ACTION_PATIENT_HEAL
+    EMIT_ADD_ACTION TOKEN_ACTION_PATIENT_KILL
+    test dword [r12 + EV_FLAGS], FLAG_SELF_HAS_SESSION
+    jz .done
+    INTERNAL_CALL operative_audio_start
+.done:
+    ret

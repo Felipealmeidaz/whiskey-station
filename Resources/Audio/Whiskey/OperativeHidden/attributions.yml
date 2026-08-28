@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2026 Whiskey Station Contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+- files:
+  - operative_hidden_position.ogg
+  license: "Custom"
+  copyright: "Recordings from The Conet Project by Irdial-Discs, distributed under Irdial's Free Music Philosophy license for copying, distribution, and modification on a noncommercial basis: https://irdial.com/free_and_easy.htm. Excerpt montage from the NPMT Underground YouTube mirror. Source intervals 00:05:00-00:05:35, 00:13:20-00:13:55, 00:21:40-00:22:15, 00:30:00-00:30:35, 00:38:20-00:38:55, 00:46:40-00:47:15, 00:55:00-00:55:35, and 01:03:20-01:03:55; downmixed to mono, loudness-normalized, attenuated in its sound prototype, and encoded as OGG Vorbis for Whiskey Station."
+  source: "https://www.youtube.com/watch?v=45Y3cHlFUKw"
+
+- files:
+  - operative_hidden_speech.ogg
+  - operative_hidden_speech_02.ogg
+  - operative_hidden_speech_03.ogg
+  - operative_hidden_speech_04.ogg
+  - operative_hidden_speech_05.ogg
+  - operative_hidden_speech_06.ogg
+  - operative_hidden_speech_07.ogg
+  - operative_hidden_speech_08.ogg
+  license: "Custom"
+  copyright: "Free Sound Library declares its sound effects and clips free to download and use, requesting a channel citation when used in YouTube productions: https://www.youtube.com/@FreeSoundLibraryEffects. Randomized 1.5-second and 2-second excerpts from 'Radio AM FM Tuning Sound Effect | Old Radio Switching Channels'; downmixed to mono, loudness-normalized, attenuated in its sound prototype, and encoded as OGG Vorbis for Whiskey Station. Source intervals: 00:00:00-00:00:01.5, 00:00:00.7-00:00:02.7, 00:00:01.6-00:00:03.1, 00:00:02.2-00:00:04.2, 00:00:03.5-00:00:05, 00:00:04-00:00:06, 00:00:05.5-00:00:07, and 00:00:05.9-00:00:07.9."
+  source: "https://www.youtube.com/watch?v=mYFX5AwLNrY"

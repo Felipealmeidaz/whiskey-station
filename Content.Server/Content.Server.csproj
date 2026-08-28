@@ -33,4 +33,19 @@
   <Import Project="..\RobustToolbox\Imports\Server.props" />
   <Import Project="..\RobustToolbox\Imports\Shared.props" />
   <Import Project="..\RobustToolbox\Imports\Packaging.props" />
+
+  <!-- <Trauma> -->
+  <Target Name="BuildOperativeHiddenNative"
+          BeforeTargets="BeforeBuild"
+          Condition="$([MSBuild]::IsOSPlatform('Linux')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'X64'">
+    <Exec Command="make --no-print-directory -C &quot;$(MSBuildProjectDirectory)/../Native/OperativeHidden&quot;" />
+  </Target>
+
+  <Target Name="CopyOperativeHiddenNative"
+          AfterTargets="Build"
+          Condition="$([MSBuild]::IsOSPlatform('Linux')) and Exists('$(MSBuildProjectDirectory)/../Native/OperativeHidden/build/libwhiskey_operativo_oculto.so')">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/../Native/OperativeHidden/build/libwhiskey_operativo_oculto.so"
+          DestinationFolder="$(OutputPath)" />
+  </Target>
+  <!-- </Trauma> -->
 </Project>

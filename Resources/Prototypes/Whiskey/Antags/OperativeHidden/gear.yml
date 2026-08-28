@@ -1,0 +1,134 @@
+- type: startingGear
+  id: OperativeHiddenGear
+  equipment:
+    jumpsuit: ClothingUniformOperativeHiddenMourningDress
+    back: ClothingBackpackDuffelSyndicateOperativeHidden
+    mask: ClothingMaskOperativeHiddenSuturedGaiter
+    eyes: ClothingEyesOperativeHiddenDeadroomLenses
+    ears: ClothingEarsOperativeHiddenWhisperHeadset
+    gloves: ClothingHandsOperativeHiddenVivisectionGloves
+    shoes: ClothingShoesOperativeHiddenTheaterBoots
+    head: ClothingHeadOperativeHiddenTheaterCap
+    outerClothing: ClothingOuterOperativeHiddenOssuaryCoat
+    belt: ClothingBeltOperativeHiddenAmputationRoll
+    id: OperativeHiddenMortuaryIDCard
+
+- type: entity
+  parent: ClothingUniformJumpskirtSyndieFormalDress
+  id: ClothingUniformOperativeHiddenMourningDress
+  components:
+  - type: Unremoveable
+
+- type: entity
+  parent: ClothingMaskNeckGaiter
+  id: ClothingMaskOperativeHiddenSuturedGaiter
+  components:
+  - type: Unremoveable
+
+- type: entity
+  parent: PatreonGungeonologist2
+  id: ClothingEyesOperativeHiddenDeadroomLenses
+  components:
+  - type: Unremoveable
+
+- type: entity
+  parent: ClothingHeadsetAltSyndicate
+  id: ClothingEarsOperativeHiddenWhisperHeadset
+  components:
+  - type: Unremoveable
+
+- type: entity
+  parent: ClothingHandsGlovesCombat
+  id: ClothingHandsOperativeHiddenVivisectionGloves
+  components:
+  - type: Unremoveable
+
+- type: entity
+  parent: ClothingShoesBootsCombatFilled
+  id: ClothingShoesOperativeHiddenTheaterBoots
+  components:
+  - type: Unremoveable
+
+- type: entity
+  parent: ClothingHeadHatSyndieMAA
+  id: ClothingHeadOperativeHiddenTheaterCap
+  components:
+  - type: Unremoveable
+
+- type: entity
+  parent: ClothingOuterWinterSyndieCapArmored
+  id: ClothingOuterOperativeHiddenOssuaryCoat
+  components:
+  - type: Unremoveable
+
+- type: entity
+  parent: ClothingBeltMedicalFilled
+  id: ClothingBeltOperativeHiddenAmputationRoll
+  components:
+  - type: Unremoveable
+
+- type: entity
+  parent: SyndiOperativeIDCard
+  id: OperativeHiddenMortuaryIDCard
+  components:
+  - type: Unremoveable
+
+- type: entity
+  parent: ClothingHeadBase
+  id: ClothingHeadCapOperativeHiddenBlack
+  components:
+  - type: Unremoveable
+  - type: Sprite
+    sprite: Whiskey/OperativeHidden/Clothing/Head/black_cap.rsi
+  - type: Clothing
+    sprite: Whiskey/OperativeHidden/Clothing/Head/black_cap.rsi
+
+- type: entity
+  parent: [ AllowSuitStorageClothing, ClothingOuterStorageBase ]
+  id: ClothingOuterArmorOperativeHiddenHeavy
+  components:
+  - type: Unremoveable
+  - type: Item
+    size: Huge
+    shape:
+    - 0,0,3,3
+  - type: Sprite
+    sprite: Clothing/OuterClothing/Armor/heavy.rsi
+  - type: Clothing
+    sprite: Clothing/OuterClothing/Armor/heavy.rsi
+  - type: ExplosionResistance
+    damageCoefficient: 0.5
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.6
+        Slash: 0.55
+        Piercing: 0.3
+        Ballistic: 0.3
+        Heat: 0.5
+        Caustic: 0.7
+  - type: ClothingSpeedModifier
+    walkModifier: 0.8
+    sprintModifier: 0.8
+  - type: HeldSpeedModifier
+  - type: StaminaResistance
+    damageCoefficient: 0.4
+
+- type: entity
+  parent: ClothingBackpackDuffelSyndicateMedicalBundle
+  id: ClothingBackpackDuffelSyndicateOperativeHidden
+  components:
+  - type: Unremoveable
+  - type: EntityTableContainerFill
+    containers:
+      storagebase: !type:AllSelector
+        children:
+        - id: MedkitCombatFilled
+        - id: Scalpel
+        - id: Retractor
+        - id: Hemostat
+        - id: Cautery
+        - id: Saw
+        - id: Drill
+        - id: Bonesetter
+        - id: BoneGel

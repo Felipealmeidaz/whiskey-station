@@ -46,6 +46,7 @@ public sealed partial class ZombieComponent : Component
     /// <summary>
     /// How effective each resistance type on a piece of armor is. Using a damage specifier for this seems illegal.
     /// </summary>
+    [DataField] // Trauma - allow detached scenario profiles to override zombie resistances.
     public DamageSpecifier ResistanceEffectiveness = new()
     {
         DamageDict = new ()
@@ -85,10 +86,10 @@ public sealed partial class ZombieComponent : Component
     public ProtoId<AntagPrototype> ZombieRoleId = "Zombie";
 
     [DataField]
-    public Dictionary<ProtoId<OrganCategoryPrototype>, OrganProfileData> BeforeZombifiedProfiles;
+    public Dictionary<ProtoId<OrganCategoryPrototype>, OrganProfileData> BeforeZombifiedProfiles = new(); // Trauma - detached profiles must initialize runtime snapshots.
 
     [DataField]
-    public Dictionary<ProtoId<OrganCategoryPrototype>, Dictionary<HumanoidVisualLayers, List<Marking>>> BeforeZombifiedMarkings;
+    public Dictionary<ProtoId<OrganCategoryPrototype>, Dictionary<HumanoidVisualLayers, List<Marking>>> BeforeZombifiedMarkings = new(); // Trauma - detached profiles must initialize runtime snapshots.
 
     [DataField("emoteId")]
     public ProtoId<EmoteSoundsPrototype>? EmoteSoundsId = "Zombie";

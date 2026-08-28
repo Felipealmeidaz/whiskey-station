@@ -62,6 +62,7 @@
     #- id: SleeperAgents # Trauma, moved to minor
     #- id: ZombieOutbreak Trauma - we dont want this as a midround
     - id: LoneOpsSpawn
+    - id: OperativeHiddenRule # Trauma - Whiskey Hidden Operative midround event.
     #- id: WizardSpawn # Trauma - chud wizard removed pending rework
     # - !type:NestedSelector # Trauma, moved to minor
     #   tableId: DerelictBorgEventTable
@@ -537,16 +538,13 @@
   - type: DynamicRuleCost
     cost: 200
 
+# <Trauma>
 - type: entity
-  parent: [ BaseAntagGhostRoleRule, BaseNukeopsRule ]
-  id: LoneOpsSpawn
+  abstract: true
+  parent: BaseAntagGhostRoleRule
+  id: BaseLoneOpsCompatibleRule
   components:
-  # <Trauma>
   - type: GhostroleAlert
-  - type: AntagLoadProfileRule
-    speciesOverride: Human
-    alwaysUseSpeciesOverride: true
-  # </Trauma>
   - type: StationEvent
     earliestStart: 50 # trauma, was 35
     weight: 1 # Trauma - was 5.5
@@ -556,14 +554,25 @@
   - type: RuleGrids
   - type: LoadMapRule
     gridPath: /Maps/Shuttles/ShuttleEvent/striker.yml
+  - type: DynamicRuleCost
+    cost: 75
+
+- type: entity
+  parent: [ BaseLoneOpsCompatibleRule, BaseNukeopsRule ]
+  id: LoneOpsSpawn
+  components:
+  # <Trauma>
+  - type: AntagLoadProfileRule
+    speciesOverride: Human
+    alwaysUseSpeciesOverride: true
+  # </Trauma>
   - type: NukeopsRule
     roundEndBehavior: Nothing
   - type: AntagSelection
     antags:
     - !type:FixedAntagCount
       proto: LoneOp
-  - type: DynamicRuleCost
-    cost: 75
+# </Trauma>
 
 - type: entity
   parent: BaseTraitorRule
