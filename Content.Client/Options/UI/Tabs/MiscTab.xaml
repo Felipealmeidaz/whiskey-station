@@ -18,6 +18,8 @@
                 <CheckBox Name="ShowLoocAboveHeadCheckBox" Text="{Loc 'ui-options-show-looc-on-head'}" />
                 <CheckBox Name="FancySpeechBubblesCheckBox" Text="{Loc 'ui-options-fancy-speech'}" />
                 <CheckBox Name="FancyNameBackgroundsCheckBox" Text="{Loc 'ui-options-fancy-name-background'}" />
+                <CheckBox Name="OriginalSpeechBubblesCheckBox" Text="{Loc 'ui-options-original-speech-bubbles'}" />
+                <ui:OptionSlider Name="RunechatSpeechBubbleScaleSlider" Title="{Loc 'ui-options-runechat-speech-scale'}" />
                 <!-- <Trauma> -->
                 <CheckBox Name="LogInChatCheckBox" Text="{Loc 'ui-options-log-in-chat'}" />
                 <CheckBox Name="CoalesceIdenticalMessagesCheckBox" Text="{Loc 'ui-options-coalesce-identical-messages'}" />
