@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 accent-carioca-words-1 = sério
 accent-carioca-words-replace-1 = papo reto
 

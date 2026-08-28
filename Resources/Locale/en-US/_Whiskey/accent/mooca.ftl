@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 accent-mooca-words-1 = mas
 accent-mooca-words-replace-1 = ma
 
