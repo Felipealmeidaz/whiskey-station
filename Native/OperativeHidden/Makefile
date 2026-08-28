@@ -9,8 +9,14 @@ OBJECT := $(BUILD_DIR)/main.o
 # reloc-rel-dword even though the linker resolves them into position-independent
 # PC32 relocations. Keep every other warning fatal and disable only that
 # inapplicable diagnostic.
-NASMFLAGS := -f elf64 -Wall -Werror -w-reloc-rel-dword -I.
+NASMFLAGS := -f elf64 -Wall -Werror -I.
 LDFLAGS := -shared -nostdlib -Wl,--no-undefined -Wl,-z,defs -Wl,-z,relro -Wl,-z,now
+
+# This warning category exists only in newer NASM releases. Probe it with
+# unknown warnings promoted to errors so older distro toolchains remain usable.
+ifeq ($(shell $(NASM) -Werror -w-reloc-rel-dword -v >/dev/null 2>&1 && echo yes),yes)
+NASMFLAGS += -w-reloc-rel-dword
+endif
 
 ifeq ($(CONFIG),debug)
 NASMFLAGS += -g -F dwarf
