@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using System.Numerics;
 using Content.Shared.Whiskey.OperativeHidden;
 using Robust.Client.GameObjects;
 using Robust.Shared.Prototypes;
@@ -13,13 +14,10 @@ namespace Content.Client.Whiskey.OperativeHidden;
 /// </summary>
 public sealed partial class OperativeHiddenPuppetVisualsSystem : EntitySystem
 {
+    private const string PocketLayer = "pocket1";
+    private static readonly Vector2 HeadControllerOffset = new(0f, 6f / 32f);
     private static readonly ResPath ControllerRsi =
         new("_Whiskey/OperativeHidden/puppet_head_controller.rsi");
-
-    private enum VisualLayers : byte
-    {
-        HeadController,
-    }
 
     [Dependency] private SpriteSystem _sprite = default!;
 
@@ -41,7 +39,7 @@ public sealed partial class OperativeHiddenPuppetVisualsSystem : EntitySystem
     private void OnShutdown(Entity<OperativeHiddenPuppetVisualsComponent> ent, ref ComponentShutdown args)
     {
         if (TryComp<SpriteComponent>(ent.Owner, out var sprite))
-            _sprite.RemoveLayer((ent.Owner, sprite), VisualLayers.HeadController, false);
+            _sprite.RemoveLayer((ent.Owner, sprite), OperativeHiddenPuppetVisualLayers.HeadController, false);
     }
 
     private void UpdateVisual(Entity<OperativeHiddenPuppetVisualsComponent> ent)
@@ -59,17 +57,21 @@ public sealed partial class OperativeHiddenPuppetVisualsSystem : EntitySystem
 
         if (!_sprite.LayerMapTryGet(
                 (ent.Owner, sprite),
-                VisualLayers.HeadController,
+                OperativeHiddenPuppetVisualLayers.HeadController,
                 out var layer,
                 false))
         {
-            layer = _sprite.AddLayer(
+            var specifier = new SpriteSpecifier.Rsi(ControllerRsi, state);
+            layer = _sprite.LayerMapTryGet((ent.Owner, sprite), PocketLayer, out var pocketLayer, false)
+                ? _sprite.AddLayer((ent.Owner, sprite), specifier, pocketLayer)
+                : _sprite.AddLayer((ent.Owner, sprite), specifier);
+            _sprite.LayerMapSet(
                 (ent.Owner, sprite),
-                new SpriteSpecifier.Rsi(ControllerRsi, state));
-            _sprite.LayerMapSet((ent.Owner, sprite), VisualLayers.HeadController, layer);
-            return;
+                OperativeHiddenPuppetVisualLayers.HeadController,
+                layer);
         }
 
         _sprite.LayerSetRsiState((ent.Owner, sprite), layer, state);
+        _sprite.LayerSetOffset((ent.Owner, sprite), layer, HeadControllerOffset);
     }
 }

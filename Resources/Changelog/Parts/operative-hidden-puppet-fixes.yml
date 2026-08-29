@@ -1,0 +1,10 @@
+author: Whiskey Station
+changes:
+  - type: Fix
+    message: >-
+      Fora do alcance do Operativo Oculto, marionetes agora ficam apenas lentas,
+      sem serem arremessadas, derrubadas ou teleportadas pelo receptor neural.
+  - type: Fix
+    message: >-
+      O receptor neural agora aparece na cabeça sem cobrir as mãos ou os itens
+      carregados pelas marionetes.

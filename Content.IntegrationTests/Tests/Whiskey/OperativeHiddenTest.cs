@@ -43,6 +43,7 @@ using Content.Shared.Stunnable;
 using Content.Shared.Store;
 using Content.Shared.Store.Components;
 using Content.Shared.Tag;
+using Content.Shared.Throwing;
 using Content.Shared.Speech.Components;
 using Content.Shared.Speech.EntitySystems;
 using Content.Shared.FixedPoint;
@@ -412,7 +413,7 @@ public sealed class OperativeHiddenTest : GameTest
             Assert.That(patient.MaxThrow, Is.EqualTo(10f));
             Assert.That(patient.MaxFlairDistance, Is.EqualTo(500f));
             Assert.That(patient.MaxMasterDistance, Is.EqualTo(10f));
-            Assert.That(patient.LeashPainCooldown, Is.EqualTo(TimeSpan.FromSeconds(3)));
+            Assert.That(patient.OutOfRangeSpeedModifier, Is.EqualTo(0.5f));
             Assert.That(receiver.State, Is.EqualTo(OperativeHiddenPuppetVisualState.Linked));
             Assert.That(patient.ActionJumpId?.Id, Is.EqualTo("ZombieJump"));
             Assert.That(patient.ActionFlairId?.Id, Is.EqualTo("ZombieFlair"));
@@ -663,6 +664,11 @@ public sealed class OperativeHiddenTest : GameTest
                     "patients must not inherit the operative's continuous disclosure radio");
                 Assert.That(server.EntMan.HasComponent<HandsComponent>(victim), Is.True,
                     "reconditioned people retain hands and can wield weapons");
+                var retainedHands = server.EntMan.GetComponent<HandsComponent>(victim);
+                Assert.That(retainedHands.Count, Is.GreaterThan(0),
+                    "reconditioned people must retain their real hand slots");
+                Assert.That(retainedHands.ActiveHandId, Is.Not.Null,
+                    "reconditioned people must retain an active hand");
                 Assert.That(server.EntMan.GetComponent<OperativeHiddenPuppetVisualsComponent>(victim).State,
                     Is.EqualTo(OperativeHiddenPuppetVisualState.Linked),
                     "the implanted receiver must visibly show a live link");
@@ -672,6 +678,13 @@ public sealed class OperativeHiddenTest : GameTest
                     "the mind-owned objective mirror must advance only after the atomic conversion commits");
                 Assert.That(condition.DistinctTargets, Does.Contain(victim));
             });
+
+            var hands = server.System<SharedHandsSystem>();
+            var pen = server.EntMan.SpawnEntity("Pen", map.GridCoords);
+            Assert.That(hands.TryPickup(victim, pen), Is.True,
+                "a reconditioned patient's retained hands must remain functional");
+            Assert.That(hands.TryDrop(victim, pen, checkActionBlocker: false), Is.True);
+            server.EntMan.DeleteEntity(pen);
 
             var accentSource = localization.GetString("operative-hidden-lobotomy-word-1");
             var accentReplacement = localization.GetString("operative-hidden-lobotomy-replacement-1");
@@ -762,6 +775,114 @@ public sealed class OperativeHiddenTest : GameTest
             server.EntMan.Dirty(operativeMind);
             server.EntMan.DeleteEntity(conversionObjective);
             server.EntMan.DeleteEntity(victim);
+            server.System<SharedMapSystem>().DeleteMap(map.MapId);
+        });
+    }
+
+    [Test]
+    public async Task PuppetReceiverStaysOnHeadBelowInHandSprites()
+    {
+        var pair = Pair;
+        var server = pair.Server;
+        var client = pair.Client;
+        var map = await pair.CreateTestMap();
+        EntityUid patient = default;
+
+        await server.WaitAssertion(() =>
+        {
+            patient = server.EntMan.SpawnEntity("MobHuman", map.GridCoords);
+            server.EntMan.EnsureComponent<OperativeHiddenPuppetVisualsComponent>(patient);
+            var mind = server.System<MindSystem>().GetOrCreateMind(pair.Player!.UserId);
+            server.System<MindSystem>().TransferTo(mind, patient, ghostCheckOverride: true, mind: mind.Comp);
+
+            var pen = server.EntMan.SpawnEntity("Pen", map.GridCoords);
+            Assert.That(server.System<SharedHandsSystem>().TryPickup(patient, pen), Is.True);
+        });
+
+        await pair.RunTicksSync(5);
+        await client.WaitAssertion(() =>
+        {
+            var clientPatient = client.EntMan.GetEntity(server.EntMan.GetNetEntity(patient));
+            var sprite = client.EntMan.GetComponent<SpriteComponent>(clientPatient);
+            var spriteSystem = client.System<SpriteSystem>();
+            Assert.That(spriteSystem.LayerMapTryGet(
+                (clientPatient, sprite),
+                OperativeHiddenPuppetVisualLayers.HeadController,
+                out var controllerLayer,
+                false), Is.True);
+            Assert.That(spriteSystem.TryGetLayer(
+                (clientPatient, sprite),
+                controllerLayer,
+                out var controller,
+                false), Is.True);
+            Assert.That(controller.Offset, Is.EqualTo(new Vector2(0f, 6f / 32f)),
+                "the receiver art must be raised from the torso to the head");
+
+            var hands = client.EntMan.GetComponent<HandsComponent>(clientPatient);
+            var inHandLayers = hands.RevealedLayers.Values.SelectMany(layers => layers).ToArray();
+            Assert.That(inHandLayers, Is.Not.Empty);
+            foreach (var key in inHandLayers)
+            {
+                Assert.That(spriteSystem.LayerMapGet((clientPatient, sprite), key),
+                    Is.GreaterThan(controllerLayer),
+                    "held items and hands must render above the receiver layer");
+            }
+        });
+
+        await server.WaitAssertion(() => server.System<SharedMapSystem>().DeleteMap(map.MapId));
+    }
+
+    [Test]
+    public async Task NeuralLeashOnlySlowsPatientsOutsideRange()
+    {
+        var pair = Pair;
+        var server = pair.Server;
+        var map = await pair.CreateTestMap();
+        EntityUid master = default;
+        EntityUid patient = default;
+        Vector2 startingPosition = default;
+
+        await server.WaitAssertion(() =>
+        {
+            master = server.EntMan.SpawnEntity(
+                "MobHuman",
+                map.GridCoords.Offset(new Vector2(12f, 0f)));
+            patient = server.EntMan.SpawnEntity("MobHuman", map.GridCoords);
+            var leash = server.EntMan.EnsureComponent<NativeAntagPatientComponent>(patient);
+            leash.Master = master;
+            startingPosition = server.System<SharedTransformSystem>().GetMapCoordinates(patient).Position;
+        });
+
+        await server.WaitRunTicks(5);
+        await server.WaitAssertion(() =>
+        {
+            Assert.That(server.EntMan.HasComponent<ThrownItemComponent>(patient), Is.False,
+                "the neural leash must never throw an out-of-range patient");
+            Assert.That(server.EntMan.HasComponent<KnockedDownComponent>(patient), Is.False,
+                "the neural leash must never knock down an out-of-range patient");
+            Assert.That(server.System<SharedTransformSystem>().GetMapCoordinates(patient).Position,
+                Is.EqualTo(startingPosition),
+                "the neural leash must not move or teleport an out-of-range patient");
+
+            var leash = server.EntMan.GetComponent<NativeAntagPatientComponent>(patient);
+            var movement = server.EntMan.GetComponent<MovementSpeedModifierComponent>(patient);
+            Assert.That(leash.OutOfRange, Is.True);
+            Assert.That(movement.WalkSpeedModifier, Is.EqualTo(0.5f));
+            Assert.That(movement.SprintSpeedModifier, Is.EqualTo(0.5f));
+
+            server.System<SharedTransformSystem>().SetCoordinates(
+                master,
+                map.GridCoords.Offset(new Vector2(5f, 0f)));
+        });
+
+        await server.WaitRunTicks(2);
+        await server.WaitAssertion(() =>
+        {
+            var leash = server.EntMan.GetComponent<NativeAntagPatientComponent>(patient);
+            var movement = server.EntMan.GetComponent<MovementSpeedModifierComponent>(patient);
+            Assert.That(leash.OutOfRange, Is.False);
+            Assert.That(movement.WalkSpeedModifier, Is.EqualTo(1f));
+            Assert.That(movement.SprintSpeedModifier, Is.EqualTo(1f));
             server.System<SharedMapSystem>().DeleteMap(map.MapId);
         });
     }

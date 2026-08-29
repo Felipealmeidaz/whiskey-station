@@ -1,12 +1,10 @@
 using Content.Server.Chat.Managers;
-using Content.Server.Chat.Systems;
 using Content.Server.Pinpointer;
-using Content.Shared._ES.Camera;
 using Content.Shared.Actions;
 using Content.Shared.Damage.Systems;
 using Content.Shared.Humanoid;
-using Content.Shared.Jittering;
 using Content.Shared.Mobs.Systems;
+using Content.Shared.Movement.Systems;
 using Content.Shared.Popups;
 using Content.Shared.Projectiles;
 using Content.Shared.Stunnable;
@@ -31,11 +29,9 @@ public sealed partial class NativeAntagPatientSystem : EntitySystem
 {
     [Dependency] private SharedActionsSystem _actions = default!;
     [Dependency] private SharedAudioSystem _audio = default!;
-    [Dependency] private ChatSystem _chat = default!;
     [Dependency] private IChatManager _chatManager = default!;
-    [Dependency] private ESScreenshakeSystem _screenshake = default!;
-    [Dependency] private SharedJitteringSystem _jitter = default!;
     [Dependency] private MobStateSystem _mobState = default!;
+    [Dependency] private MovementSpeedModifierSystem _movement = default!;
     [Dependency] private NavMapSystem _navMap = default!;
     [Dependency] private SharedPopupSystem _popup = default!;
     [Dependency] private SharedStunSystem _stun = default!;
@@ -48,6 +44,8 @@ public sealed partial class NativeAntagPatientSystem : EntitySystem
         base.Initialize();
 
         SubscribeLocalEvent<NativeAntagPatientComponent, ComponentInit>(OnInit);
+        SubscribeLocalEvent<NativeAntagPatientComponent, ComponentRemove>(OnRemove);
+        SubscribeLocalEvent<NativeAntagPatientComponent, RefreshMovementSpeedModifiersEvent>(OnRefreshMovementSpeed);
         SubscribeLocalEvent<NativeAntagPatientComponent, PlayerAttachedEvent>(OnPlayerAttached);
         SubscribeLocalEvent<NativeAntagPatientComponent, OperativeHiddenPatientJumpActionEvent>(OnJump);
         SubscribeLocalEvent<NativeAntagPatientComponent, OperativeHiddenPatientFlairActionEvent>(OnFlair);
@@ -81,6 +79,7 @@ public sealed partial class NativeAntagPatientSystem : EntitySystem
 
             if (!Exists(patient.Master) || TerminatingOrDeleted(patient.Master))
             {
+                SetOutOfRange((uid, patient), false);
                 SetVisualState(uid, visualState);
                 continue;
             }
@@ -92,15 +91,14 @@ public sealed partial class NativeAntagPatientSystem : EntitySystem
                 SetVisualState(
                     uid,
                     patient.SignalLost ? visualState : OperativeHiddenPuppetVisualState.Range);
-                PunishBrokenLeash((uid, patient));
-                _transform.SetCoordinates(uid, Transform(patient.Master).Coordinates);
+                SetOutOfRange((uid, patient), true);
                 continue;
             }
 
-            var returnVector = masterPosition.Position - patientPosition.Position;
-            var distance = returnVector.Length();
+            var distance = (masterPosition.Position - patientPosition.Position).Length();
             if (distance <= patient.MaxMasterDistance || distance <= 0f)
             {
+                SetOutOfRange((uid, patient), false);
                 SetVisualState(uid, visualState);
                 continue;
             }
@@ -108,18 +106,7 @@ public sealed partial class NativeAntagPatientSystem : EntitySystem
             SetVisualState(
                 uid,
                 patient.SignalLost ? visualState : OperativeHiddenPuppetVisualState.Range);
-            PunishBrokenLeash((uid, patient));
-
-            // The receiver does not teleport or damage its victim. It seizes
-            // the motor pathways and violently forces the body back inside the
-            // ten-tile leash in short, visible convulsions.
-            var correction = MathF.Min(distance - patient.MaxMasterDistance + 0.5f, 3f);
-            _throwing.TryThrow(
-                uid,
-                returnVector.Normalized() * correction,
-                7f,
-                patient.Master,
-                0f);
+            SetOutOfRange((uid, patient), true);
         }
     }
 
@@ -133,6 +120,29 @@ public sealed partial class NativeAntagPatientSystem : EntitySystem
         // receiver and play its replacement vocalization.
         if (TryComp<ActorComponent>(ent.Owner, out var actor))
             NotifyReception(ent, actor.PlayerSession);
+    }
+
+    private void OnRemove(Entity<NativeAntagPatientComponent> ent, ref ComponentRemove args)
+    {
+        ent.Comp.OutOfRange = false;
+        _movement.RefreshMovementSpeedModifiers(ent.Owner);
+    }
+
+    private void OnRefreshMovementSpeed(
+        Entity<NativeAntagPatientComponent> ent,
+        ref RefreshMovementSpeedModifiersEvent args)
+    {
+        if (ent.Comp.OutOfRange)
+            args.ModifySpeed(ent.Comp.OutOfRangeSpeedModifier, bypassImmunity: true);
+    }
+
+    private void SetOutOfRange(Entity<NativeAntagPatientComponent> ent, bool outOfRange)
+    {
+        if (ent.Comp.OutOfRange == outOfRange)
+            return;
+
+        ent.Comp.OutOfRange = outOfRange;
+        _movement.RefreshMovementSpeedModifiers(ent.Owner);
     }
 
     private void OnPlayerAttached(Entity<NativeAntagPatientComponent> ent, ref PlayerAttachedEvent args)
@@ -229,46 +239,6 @@ public sealed partial class NativeAntagPatientSystem : EntitySystem
             return;
 
         _stun.TryKnockdown(args.Target, ent.Comp.KnockdownTime, force: true);
-    }
-
-    private void PunishBrokenLeash(Entity<NativeAntagPatientComponent> patient)
-    {
-        if (_timing.CurTime < patient.Comp.NextLeashPain)
-            return;
-
-        patient.Comp.NextLeashPain = _timing.CurTime + patient.Comp.LeashPainCooldown;
-        _popup.PopupEntity(
-            Loc.GetString("operative-hidden-patient-leash-pain"),
-            patient.Owner,
-            patient.Owner,
-            PopupType.LargeCaution);
-        _chat.TryEmoteWithChat(
-            patient.Owner,
-            "Scream",
-            ignoreActionBlocker: true,
-            forceEmote: true);
-        _jitter.DoJitter(
-            patient.Owner,
-            TimeSpan.FromSeconds(2),
-            refresh: true,
-            amplitude: 16f,
-            frequency: 8f,
-            forceValueChange: true);
-        _screenshake.Screenshake(
-            patient.Owner,
-            new ESScreenshakeParameters
-            {
-                Trauma = 0.65f,
-                DecayRate = 0.02f,
-                Frequency = 0.04f,
-            },
-            new ESScreenshakeParameters
-            {
-                Trauma = 0.5f,
-                DecayRate = 0.018f,
-                Frequency = 0.045f,
-            });
-        _stun.TryKnockdown(patient.Owner, TimeSpan.FromSeconds(1), force: true);
     }
 
     private void OnPatientHarmfulAction(
