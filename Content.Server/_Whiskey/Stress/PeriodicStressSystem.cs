@@ -4,6 +4,8 @@ using Content.Server.Mind;
 using Content.Shared._Whiskey.Stress;
 using Content.Shared.Popups;
 using Robust.Shared.Player;
+using Content.Shared.Random.Helpers;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
 
@@ -15,6 +17,7 @@ namespace Content.Server._Whiskey.Stress;
 public sealed partial class PeriodicStressSystem : EntitySystem
 {
     [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IPrototypeManager _proto = default!;
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private MindSystem _mind = default!;
     [Dependency] private ISharedPlayerManager _player = default!;
@@ -34,6 +37,9 @@ public sealed partial class PeriodicStressSystem : EntitySystem
     private void OnStartup(Entity<PeriodicStressComponent> ent, ref ComponentStartup args)
     {
         Agendar(ent);
+
+        if (ent.Comp.GainMessage is { } aviso)
+            MostrarParaODono(ent, Loc.GetString(aviso));
     }
 
     public override void Update(float frameTime)
@@ -63,19 +69,24 @@ public sealed partial class PeriodicStressSystem : EntitySystem
     {
         _estresse.Adicionar(ent, ent.Comp.Amount);
 
-        if (ent.Comp.Message is not { } chave)
+        if (ent.Comp.Messages is not { } listaId)
             return;
 
-        if (!_mind.TryGetMind(ent, out _, out var mente) || mente.UserId is not { } usuario)
+        if (!_proto.TryIndex(listaId, out var lista) || lista.Values.Count == 0)
             return;
 
-        if (!_player.TryGetSessionById(usuario, out var sessao))
-            return;
+        MostrarParaODono(ent, _random.Pick(lista));
+    }
 
-        var frase = Loc.GetString(chave);
-
-        // Popup em vez de chat, e só para quem tem o traço. Ver o comentário no
-        // HallucinationSystem sobre a sobrecarga de três argumentos.
-        _popup.PopupEntity(frase, ent, ent, PopupType.LargeCaution);
+    /// <summary>
+    /// Mostra o texto só para quem tem o componente.
+    ///
+    /// A sobrecarga de três argumentos do popup tem o destinatário no terceiro.
+    /// A de dois mostraria para todo mundo por perto, e um pensamento que é da
+    /// pessoa passaria a ser lido pela estação inteira.
+    /// </summary>
+    private void MostrarParaODono(EntityUid uid, string texto)
+    {
+        _popup.PopupEntity(texto, uid, uid, PopupType.LargeCaution);
     }
 }

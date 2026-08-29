@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using Content.Shared.Dataset;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom;
 
 namespace Content.Shared._Whiskey.Stress;
@@ -37,11 +39,22 @@ public sealed partial class PeriodicStressComponent : Component
     public float MaxTimeBetween = 900f;
 
     /// <summary>
-    /// Frases que a pessoa lê quando o episódio bate. Opcional: sem isto o
-    /// episódio é silencioso e só se percebe pelo efeito.
+    /// Conjunto de frases que a pessoa lê quando o episódio bate. Opcional:
+    /// sem isto o episódio é silencioso e só se percebe pelo efeito.
+    ///
+    /// É conjunto e não frase única de propósito: com uma frase só ela repete
+    /// toda vez e a pessoa para de ler depois da terceira.
     /// </summary>
     [DataField]
-    public string? Message;
+    public ProtoId<LocalizedDatasetPrototype>? Messages;
+
+    /// <summary>
+    /// Aviso mostrado uma vez, quando a pessoa ganha isto. Serve para deixar
+    /// claro que é interpretação de papel, que é o que o TG faz com a quirk
+    /// equivalente.
+    /// </summary>
+    [DataField]
+    public string? GainMessage;
 
     /// <summary>
     /// Quando vem o próximo. Pausa junto com a entidade, senão a rodada volta

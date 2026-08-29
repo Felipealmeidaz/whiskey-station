@@ -19,3 +19,20 @@ hallucination-voice-14 = You are alone. You have always been alone.
 trait-depression-name = Depression
 trait-depression-desc = You sometimes just hate life. It comes without warning and passes on its own.
 trait-depression-episode = Everything suddenly feels heavy and pointless.
+
+depression-thought-1 = You suddenly remember the funeral. It will not leave your head.
+depression-thought-2 = Nobody here would miss you.
+depression-thought-3 = You are just taking up space.
+depression-thought-4 = You should have done it differently. You always should have.
+depression-thought-5 = It is the kind of tired that sleeping does not fix.
+depression-thought-6 = Everyone here does this better than you.
+depression-thought-7 = You still remember their face. It has been years and you still remember.
+depression-thought-8 = It does not help. It never helped.
+depression-thought-9 = If you vanished today, it would take them a week to notice.
+depression-thought-10 = You fake it well. It is the only thing you do well.
+depression-thought-11 = You should be feeling something. You are not feeling anything.
+depression-thought-12 = It was your fault. You know it was.
+depression-thought-13 = Tomorrow will be the same. So will the day after.
+depression-thought-14 = You have been here before. It passed. And it came back.
+
+trait-depression-aviso = The weight drops without warning and lifts on its own. This is roleplay: it is not an excuse to ruin anyone's round, and it is not a real cry for help.

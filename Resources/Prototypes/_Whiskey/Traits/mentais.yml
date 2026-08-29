@@ -21,6 +21,12 @@
   name: stress slowdown
 
 - type: localizedDataset
+  id: WhiskeyDepressaoPensamentos
+  values:
+    prefix: depression-thought-
+    count: 14
+
+- type: localizedDataset
   id: WhiskeyAlucinacaoFrases
   values:
     prefix: hallucination-voice-
@@ -53,4 +59,5 @@
       amount: 35
       minTimeBetween: 240
       maxTimeBetween: 900
-      message: trait-depression-episode
+      messages: WhiskeyDepressaoPensamentos
+      gainMessage: trait-depression-aviso

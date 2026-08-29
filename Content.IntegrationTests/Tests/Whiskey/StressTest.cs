@@ -55,6 +55,35 @@ public sealed class StressTest : GameTest
         await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// O traço de depressão precisa apontar para um dataset que existe.
+    ///
+    /// Id errado aqui não quebra nada e não aparece em log: o TryIndex devolve
+    /// falso e o episódio fica mudo, com o estresse subindo sem explicação.
+    /// </summary>
+    [Test]
+    public async Task ADepressaoApontaParaUmDatasetQueExiste()
+    {
+        var server = Server;
+        var protos = server.ProtoMan;
+
+        var traco = protos.Index<Content.Shared.Traits.TraitPrototype>("Depression");
+        var nome = server.EntMan.ComponentFactory.GetComponentName(typeof(PeriodicStressComponent));
+
+        Assert.That(traco.Components.TryGetComponent(nome, out var bruto), Is.True,
+            "o traço de depressão precisa trazer o PeriodicStressComponent");
+
+        var periodico = (PeriodicStressComponent) bruto!;
+
+        Assert.That(periodico.Messages, Is.Not.Null, "sem conjunto de frases o episódio é mudo");
+
+        Assert.That(protos.HasIndex<Content.Shared.Dataset.LocalizedDatasetPrototype>(periodico.Messages!.Value),
+            Is.True,
+            $"o dataset {periodico.Messages} não existe");
+
+        await Task.CompletedTask;
+    }
+
     [Test]
     public async Task ValorFicaPresoEntreZeroECem()
     {
