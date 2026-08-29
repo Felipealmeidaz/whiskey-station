@@ -34,11 +34,15 @@ public sealed partial class HallucinationSystem : EntitySystem
     {
         base.Initialize();
 
-        SubscribeLocalEvent<HallucinationComponent, MapInitEvent>(OnMapInit);
+        // ComponentStartup, e não MapInitEvent. O TraitSystem responde a
+        // PlayerSpawnCompleteEvent e faz AddComponents numa entidade que já
+        // nasceu, então MapInit não dispara nesse caminho e o traço não faria
+        // nada. É o mesmo evento que a paracusia usa do lado do cliente.
+        SubscribeLocalEvent<HallucinationComponent, ComponentStartup>(OnStartup);
         SubscribeLocalEvent<HallucinationComponent, ComponentShutdown>(OnShutdown);
     }
 
-    private void OnMapInit(Entity<HallucinationComponent> ent, ref MapInitEvent args)
+    private void OnStartup(Entity<HallucinationComponent> ent, ref ComponentStartup args)
     {
         LigarSom(ent);
         AgendarProximaFala(ent);
@@ -53,7 +57,7 @@ public sealed partial class HallucinationSystem : EntitySystem
     /// </summary>
     private void LigarSom(Entity<HallucinationComponent> ent)
     {
-        if (ent.Comp.Sounds is not { } sons)
+        if (ent.Comp.Sounds is not { } sons || ent.Comp.PosParacusia)
             return;
 
         if (EnsureComp<ParacusiaComponent>(ent, out var paracusia))
@@ -82,6 +86,12 @@ public sealed partial class HallucinationSystem : EntitySystem
         var consulta = EntityQueryEnumerator<HallucinationComponent>();
         while (consulta.MoveNext(out var uid, out var alucinacao))
         {
+            // De novo aqui, e não só no startup, porque quem preencher Sounds
+            // depois de adicionar o componente ficaria com o canal de som mudo
+            // e sem aviso nenhum. É barato: o componente é raro e o
+            // LigarSom sai na primeira linha quando não há o que fazer.
+            LigarSom((uid, alucinacao));
+
             if (alucinacao.Messages is null || agora < alucinacao.NextMessageTime)
                 continue;
 
