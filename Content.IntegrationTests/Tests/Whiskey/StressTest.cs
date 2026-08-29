@@ -6,6 +6,7 @@ using Content.IntegrationTests.Fixtures;
 using Content.Shared._Whiskey.Stress;
 using Content.Shared.StatusEffectNew;
 using Robust.Shared.GameObjects;
+using Robust.Shared.Prototypes;
 
 namespace Content.IntegrationTests.Tests.Whiskey;
 
@@ -16,6 +17,44 @@ namespace Content.IntegrationTests.Tests.Whiskey;
 [TestFixture]
 public sealed class StressTest : GameTest
 {
+    /// <summary>
+    /// Os três efeitos de faixa precisam existir **como entidade**.
+    ///
+    /// Isto existe por causa de um erro real: o `StatusEffectSlowdown` do
+    /// repositório é `abstract: true`, e o engine recusa com "Attempted to
+    /// resolve invalid EntProtoId". O jogo continuava rodando, o embaçado
+    /// funcionava, e o servidor lançava exceção doze vezes em silêncio.
+    ///
+    /// O teste antigo não pegou porque só chegava no primeiro limiar. Este
+    /// confere os três sem depender de encenar estresse alto.
+    /// </summary>
+    [Test]
+    public async Task OsTresEfeitosDeFaixaExistemComoEntidade()
+    {
+        var server = Server;
+        var protos = server.ProtoMan;
+        var padrao = new StressComponent();
+
+        Assert.Multiple(() =>
+        {
+            foreach (var (nome, proto) in new[]
+                     {
+                         ("leve", padrao.MildEffect),
+                         ("médio", padrao.MediumEffect),
+                         ("alto", padrao.HighEffect),
+                     })
+            {
+                Assert.That(protos.HasIndex<EntityPrototype>(proto), Is.True,
+                    $"o efeito da faixa {nome}, {proto}, não existe como entidade");
+
+                Assert.That(protos.Index<EntityPrototype>(proto).Abstract, Is.False,
+                    $"o efeito da faixa {nome}, {proto}, é abstract e não pode ser aplicado");
+            }
+        });
+
+        await Task.CompletedTask;
+    }
+
     [Test]
     public async Task ValorFicaPresoEntreZeroECem()
     {

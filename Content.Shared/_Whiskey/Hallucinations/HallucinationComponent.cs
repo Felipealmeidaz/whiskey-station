@@ -56,6 +56,18 @@ public sealed partial class HallucinationComponent : Component
     public ProtoId<LocalizedDatasetPrototype>? Messages;
 
     /// <summary>
+    /// Se a frase também aparece como popup em cima do próprio personagem,
+    /// além de ir para o chat.
+    ///
+    /// Ligado por padrão, por sugestão de quem testou: no chat a frase cai no
+    /// meio dos comunicados da estação e se perde, ou pior, é confundida com
+    /// mensagem de verdade. Popup em cima de você é mais perto de "está na sua
+    /// cabeça". O chat continua recebendo, porque é o que permite reler.
+    /// </summary>
+    [DataField]
+    public bool Popup = true;
+
+    /// <summary>
     /// Intervalo do canal de fala, em segundos.
     /// </summary>
     [DataField]

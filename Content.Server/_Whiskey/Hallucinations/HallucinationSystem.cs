@@ -5,6 +5,7 @@ using Content.Server.Mind;
 using Content.Server.Traits.Assorted;
 using Content.Shared._Whiskey.Hallucinations;
 using Content.Shared.Chat;
+using Content.Shared.Popups;
 using Content.Shared.Random.Helpers;
 using Content.Shared.Traits.Assorted;
 using Robust.Shared.Player;
@@ -29,6 +30,7 @@ public sealed partial class HallucinationSystem : EntitySystem
     [Dependency] private MindSystem _mind = default!;
     [Dependency] private ParacusiaSystem _paracusia = default!;
     [Dependency] private ISharedPlayerManager _player = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
 
     public override void Initialize()
     {
@@ -138,5 +140,11 @@ public sealed partial class HallucinationSystem : EntitySystem
             default,
             false,
             sessao.Channel);
+
+        // O popup vai só para quem alucina, porque o terceiro argumento é o
+        // destinatário. Se fosse PopupEntity de dois argumentos, a estação
+        // inteira leria a voz que existe só na cabeça de uma pessoa.
+        if (ent.Comp.Popup)
+            _popup.PopupEntity(frase, ent, ent, PopupType.MediumCaution);
     }
 }

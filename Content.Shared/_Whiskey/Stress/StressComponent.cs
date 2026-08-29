@@ -71,7 +71,7 @@ public sealed partial class StressComponent : Component
 
     /// <inheritdoc cref="MildEffect"/>
     [DataField]
-    public EntProtoId HighEffect = "StatusEffectSlowdown";
+    public EntProtoId HighEffect = "StatusEffectWhiskeyStressSlowdown";
 
     /// <summary>
     /// O sistema não roda todo tique. Este é o instante do próximo passo.

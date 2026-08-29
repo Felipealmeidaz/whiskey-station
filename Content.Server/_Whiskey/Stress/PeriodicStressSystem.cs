@@ -4,6 +4,7 @@ using Content.Server.Chat.Managers;
 using Content.Server.Mind;
 using Content.Shared._Whiskey.Stress;
 using Content.Shared.Chat;
+using Content.Shared.Popups;
 using Robust.Shared.Player;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
@@ -20,6 +21,7 @@ public sealed partial class PeriodicStressSystem : EntitySystem
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private MindSystem _mind = default!;
     [Dependency] private ISharedPlayerManager _player = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
     [Dependency] private StressSystem _estresse = default!;
 
     public override void Initialize()
@@ -77,5 +79,8 @@ public sealed partial class PeriodicStressSystem : EntitySystem
         var embrulho = Loc.GetString("chat-manager-server-wrap-message", ("message", frase));
 
         _chat.ChatMessageToOne(ChatChannel.Server, frase, embrulho, default, false, sessao.Channel);
+
+        // Só para quem alucina, ver o comentário no HallucinationSystem.
+        _popup.PopupEntity(frase, ent, ent, PopupType.MediumCaution);
     }
 }
