@@ -32,3 +32,16 @@
       messages: WhiskeyAlucinacaoFrases
       minTimeBetweenMessages: 120
       maxTimeBetweenMessages: 420
+
+- type: trait
+  id: Depression
+  name: trait-depression-name
+  description: trait-depression-desc
+  category: Disabilities
+  components:
+    - type: Stress
+    - type: PeriodicStress
+      amount: 35
+      minTimeBetween: 240
+      maxTimeBetween: 900
+      message: trait-depression-episode

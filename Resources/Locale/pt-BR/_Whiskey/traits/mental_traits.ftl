@@ -15,3 +15,7 @@ hallucination-voice-11 = Estão falando de você no rádio.
 hallucination-voice-12 = Aquela porta estava trancada agora há pouco.
 hallucination-voice-13 = Tem alguma coisa errada com o ar.
 hallucination-voice-14 = Você está sozinho. Sempre esteve.
+
+trait-depression-name = Depressão
+trait-depression-desc = Às vezes você simplesmente odeia a vida. Vem sem aviso e passa sozinho.
+trait-depression-episode = De repente tudo parece pesado e sem sentido.
