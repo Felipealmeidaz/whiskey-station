@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "license": "CC0-1.0",
+  "copyright": "Original sprite created for Whiskey Station, 2026.",
+  "size": {
+    "x": 32,
+    "y": 32
+  },
+  "states": [
+    {
+      "name": "equipped-HEAD",
+      "directions": 4
+    },
+    {
+      "name": "equipped-HEAD-reconnect",
+      "directions": 4,
+      "delays": [
+        [
+          0.16,
+          0.16
+        ],
+        [
+          0.16,
+          0.16
+        ],
+        [
+          0.16,
+          0.16
+        ],
+        [
+          0.16,
+          0.16
+        ]
+      ]
+    },
+    {
+      "name": "equipped-HEAD-range",
+      "directions": 4
+    },
+    {
+      "name": "equipped-HEAD-linked",
+      "directions": 4,
+      "delays": [
+        [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.18
+        ],
+        [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.18
+        ],
+        [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.18
+        ],
+        [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.18
+        ]
+      ]
+    }
+  ]
+}

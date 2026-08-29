@@ -20,3 +20,9 @@
   license: "Custom"
   copyright: "Free Sound Library declares its sound effects and clips free to download and use, requesting a channel citation when used in YouTube productions: https://www.youtube.com/@FreeSoundLibraryEffects. Randomized 1.5-second and 2-second excerpts from 'Radio AM FM Tuning Sound Effect | Old Radio Switching Channels'; downmixed to mono, loudness-normalized, attenuated in its sound prototype, and encoded as OGG Vorbis for Whiskey Station. Source intervals: 00:00:00-00:00:01.5, 00:00:00.7-00:00:02.7, 00:00:01.6-00:00:03.1, 00:00:02.2-00:00:04.2, 00:00:03.5-00:00:05, 00:00:04-00:00:06, 00:00:05.5-00:00:07, and 00:00:05.9-00:00:07.9."
   source: "https://www.youtube.com/watch?v=mYFX5AwLNrY"
+
+- files:
+  - operative_hidden_patient_reception.ogg
+  license: "Custom"
+  copyright: "M3/1 from The Conet Project by Irdial-Discs, distributed under Irdial's Free Music Philosophy license for copying, distribution, and modification on a noncommercial basis: https://irdial.com/free_and_easy.htm. Original mono recording was loudness-normalized and encoded as OGG Vorbis for Whiskey Station."
+  source: "https://archive.org/download/ird059/tcp_d4_36_m3_irdial.mp3"

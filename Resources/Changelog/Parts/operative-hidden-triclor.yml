@@ -1,0 +1,31 @@
+author: Whiskey Station
+changes:
+  - type: Tweak
+    message: >-
+      O toque fatal do Operativo Oculto agora aplica Triclor Hyper:
+      a vítima sofre uma sequência de 8 segundos com vômitos, gritos,
+      alucinações e tremores antes de morrer com dano corporal mínimo. O
+      reagente também pode ser produzido pela síntese química mais exigente do jogo.
+  - type: Remove
+    message: >-
+      A habilidade de autocura do Operativo Oculto foi removida.
+  - type: Tweak
+    message: >-
+      Pacientes recondicionados agora preservam a voz humana, não emitem sons
+      de zumbi e seu salto apenas derruba o alvo por 2 segundos, sem causar dano.
+  - type: Add
+    message: >-
+      Pacientes recondicionados recebem um receptor neural audível, preservam
+      as mãos e não podem ferir a si mesmos nem seu Operativo Oculto. O
+      Operativo agora pode usar Recepção para controlar remotamente seus
+      movimentos e armas sem expulsar o jogador da marionete; dano ou empurrão
+      no corpo original encerra o controle.
+  - type: Add
+    message: >-
+      Marionetes permanecem conscientes e capazes de falar, mas o receptor
+      neural impede suicídio e força o corpo, com espasmos e dor, a permanecer
+      dentro de 10 tiles do Operativo Oculto.
+  - type: Add
+    message: >-
+      Uma rajada de 20 de dano em 1 segundo no Operativo Oculto corta o sinal
+      das marionetes por 2 segundos e as derruba até a reconexão.

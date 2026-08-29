@@ -188,7 +188,7 @@ namespace Content.Server.Zombies
         private void OnEmote(EntityUid uid, ZombieComponent component, ref EmoteEvent args)
         {
             // always play zombie emote sounds and ignore others
-            if (args.Handled)
+            if (args.Handled || !component.UseZombieEmoteSounds) // Trauma - Whiskey human reconditioning profile.
                 return;
 
             ProtoMan.Resolve(component.EmoteSoundsId, out var sounds);
@@ -200,6 +200,11 @@ namespace Content.Server.Zombies
         {
             if (args.NewMobState == MobState.Alive)
             {
+                // <Trauma> Whiskey - configurable human reconditioning profile.
+                if (!component.AutoGroan)
+                    return;
+                // </Trauma>
+
                 // Groaning when damaged
                 EnsureComp<EmoteOnDamageComponent>(uid);
                 _emoteOnDamage.AddEmote(uid, "Scream");

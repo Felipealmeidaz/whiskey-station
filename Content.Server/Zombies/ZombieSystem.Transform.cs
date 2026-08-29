@@ -205,7 +205,7 @@ public sealed partial class ZombieSystem
             nameof(MeleeWeaponComponent.HitSound),
         ]);
 
-        if (mobState.CurrentState == MobState.Alive)
+        if (mobState.CurrentState == MobState.Alive && zombiecomp.AutoGroan) // Trauma - Whiskey human reconditioning profile.
         {
             // Groaning when damaged
             EnsureComp<EmoteOnDamageComponent>(target);
@@ -328,7 +328,8 @@ public sealed partial class ZombieSystem
             _chatMan.DispatchServerMessage(session, Loc.GetString("zombie-infection-greeting"));
 
             // Notificate player about new role assignment
-            _audio.PlayGlobal(zombiecomp.GreetSoundNotification, session);
+            if (zombiecomp.PlayGreetSound) // Trauma - Whiskey human reconditioning profile.
+                _audio.PlayGlobal(zombiecomp.GreetSoundNotification, session);
         }
         else
         {
@@ -340,7 +341,7 @@ public sealed partial class ZombieSystem
             MakeGhostRole(target);
         }
 
-        if (TryComp<HandsComponent>(target, out var handsComp))
+        if (zombiecomp.RemoveHands && TryComp<HandsComponent>(target, out var handsComp)) // Trauma - Whiskey human reconditioning profile.
         {
             _hands.RemoveHands(target);
             RemComp(target, handsComp);

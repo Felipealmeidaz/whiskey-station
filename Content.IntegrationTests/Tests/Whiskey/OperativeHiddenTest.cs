@@ -11,10 +11,14 @@ using Content.Server.PDA.Ringer;
 using Content.Server.Roles;
 using Content.Server.Traitor.Uplink;
 using Content.Server.Whiskey.Native;
+using Content.Server.Whiskey.OperativeHidden;
 using Content.Server.Zombies;
 using Content.Shared.Body;
 using Content.Shared.Antag;
 using Content.Shared.Chat;
+using Content.Shared.Chemistry.Reaction;
+using Content.Shared.Chemistry.Reagent;
+using Content.Shared.CombatMode;
 using Content.Shared.Damage;
 using Content.Shared.Damage.Systems;
 using Content.Shared.Humanoid;
@@ -25,6 +29,7 @@ using Content.Shared.Interaction.Components;
 using Content.Shared.Mobs;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Mobs.Systems;
+using Content.Shared.Movement.Components;
 using Content.Shared.Mind;
 using Content.Shared.NPC.Prototypes;
 using Content.Shared.NPC.Systems;
@@ -34,16 +39,20 @@ using Content.Shared.Roles;
 using Content.Shared.Roles.Components;
 using Content.Shared.Storage;
 using Content.Shared.StatusEffect;
+using Content.Shared.Stunnable;
 using Content.Shared.Store;
 using Content.Shared.Store.Components;
 using Content.Shared.Speech.Components;
 using Content.Shared.Speech.EntitySystems;
 using Content.Shared.FixedPoint;
 using Content.Shared.Whiskey.Native;
+using Content.Shared.Whiskey.OperativeHidden;
+using Content.Shared.Traits.Assorted;
 using Content.Shared.Zombies;
 using Content.Trauma.Common.Language;
 using Robust.Client.GameObjects;
 using Robust.Shared.Audio.Components;
+using Robust.Shared.Audio;
 using Robust.Shared.Containers;
 using Robust.Shared.Localization;
 using Robust.Shared.Map;
@@ -60,9 +69,9 @@ public sealed class OperativeHiddenTest : GameTest
     [
         "ActionOperativeHiddenTouch",
         "ActionOperativeHiddenProcedure",
-        "ActionOperativeHiddenSelfHeal",
         "ActionOperativeHiddenPatientHeal",
         "ActionOperativeHiddenPatientKill",
+        "ActionOperativeHiddenReception",
     ];
     private static readonly EntProtoId OperativeBody = "MobOviniaOperativeHidden";
     private static readonly EntProtoId OrdinaryOvinia = "MobOvinia";
@@ -156,10 +165,15 @@ public sealed class OperativeHiddenTest : GameTest
             });
 
             var native = server.EntMan.GetComponent<NativeAntagComponent>(operative);
+            var remote = server.EntMan.GetComponent<OperativeHiddenRemoteControlComponent>(operative);
             Assert.Multiple(() =>
             {
                 Assert.That(native.Handle, Is.Not.Zero, "the real native ELF must initialize during entity startup");
-                Assert.That(native.ActionEntities, Has.Count.EqualTo(5));
+                Assert.That(native.ActionEntities, Has.Count.EqualTo(4));
+                Assert.That(native.ActionEntities.ContainsKey(3), Is.False,
+                    "the operative self-heal action must not be granted");
+                Assert.That(remote.ActionEntity, Is.Not.Null,
+                    "the reception action must be granted independently from the native action map");
             });
 
             Assert.That(outfitSystem.SetOutfit(operative, "OperativeHiddenGear"), Is.True);
@@ -233,16 +247,19 @@ public sealed class OperativeHiddenTest : GameTest
     }
 
     [Test]
-    public async Task TouchDeathWorksForPlayableSpeciesAndSurvivesThresholdRecalculation()
+    public async Task TriclorSequenceKillsAfterEightSecondsWithTraceDamageAndAllowsRecovery()
     {
         var pair = Pair;
         var server = pair.Server;
         var map = await pair.CreateTestMap();
+        var victims = new List<(string Species, EntityUid Uid, FixedPoint2 OriginalDeathThreshold)>();
+        var ticksBeforeDeath = 0;
 
         await server.WaitAssertion(() =>
         {
             var mobState = server.System<MobStateSystem>();
             var thresholds = server.System<MobThresholdSystem>();
+            ticksBeforeDeath = (int) Math.Ceiling(server.ResolveDependency<IGameTiming>().TickRate * 7.5);
             foreach (var species in new[]
                      {
                          "MobHuman",
@@ -258,24 +275,68 @@ public sealed class OperativeHiddenTest : GameTest
                 var victim = server.EntMan.SpawnEntity(species, map.GridCoords);
                 Assert.That(server.EntMan.HasComponent<HumanoidProfileComponent>(victim), Is.True,
                     $"{species} must be recognized as a playable species target");
+                Assert.That(thresholds.TryGetThresholdForState(victim, MobState.Dead, out var originalDeath), Is.True);
 
-                var action = new NativeAntagTargetActionEvent
+                var action = new OperativeHiddenTriclorActionEvent
                 {
-                    EventType = (uint) NativeAntagEventType.TouchAction,
                     Target = victim,
                 };
                 server.EntMan.EventBus.RaiseLocalEvent(operative, action);
 
-                Assert.That(mobState.IsDead(victim), Is.True,
-                    $"touch must kill playable species {species} through the ordinary damage pipeline");
-                Assert.That(thresholds.TryGetThresholdForState(victim, MobState.Dead, out var deadThreshold), Is.True);
-                Assert.That(thresholds.CheckVitalDamage(victim), Is.GreaterThanOrEqualTo(deadThreshold!.Value));
+                Assert.Multiple(() =>
+                {
+                    Assert.That(action.Handled, Is.True);
+                    Assert.That(mobState.IsDead(victim), Is.False,
+                        $"triclor must not instantly kill playable species {species}");
+                    Assert.That(server.EntMan.HasComponent<OperativeHiddenTriclorComponent>(victim), Is.True);
+                    Assert.That(server.EntMan.HasComponent<UnrevivableComponent>(victim), Is.False,
+                        "the victim must remain eligible for recovery surgery");
+                });
+                victims.Add((species, victim, originalDeath!.Value));
+            }
+        });
 
-                thresholds.VerifyThresholds(victim);
-                Assert.That(mobState.IsDead(victim), Is.True,
-                    $"a later threshold recalculation must not bring {species} back to life");
+        await server.WaitRunTicks(ticksBeforeDeath);
+        await server.WaitAssertion(() =>
+        {
+            var mobState = server.System<MobStateSystem>();
+            foreach (var victim in victims)
+                Assert.That(mobState.IsDead(victim.Uid), Is.False,
+                    $"{victim.Species} must still be alive before second eight");
+        });
+
+        await server.WaitRunTicks((int) Math.Ceiling(
+            (double) server.ResolveDependency<IGameTiming>().TickRate));
+        await server.WaitAssertion(() =>
+        {
+            var mobState = server.System<MobStateSystem>();
+            var thresholds = server.System<MobThresholdSystem>();
+            foreach (var victim in victims)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(mobState.IsDead(victim.Uid), Is.True,
+                        $"{victim.Species} must die at second eight");
+                    Assert.That(thresholds.CheckVitalDamage(victim.Uid).Float(), Is.LessThan(10f),
+                        $"{victim.Species} must retain only trace real damage");
+                    Assert.That(server.EntMan.HasComponent<UnrevivableComponent>(victim.Uid), Is.False);
+                });
             }
 
+            // Recovery surgery ultimately performs the same dead-to-alive
+            // state transition. Verify that it restores the original health
+            // threshold and consumes the temporary triclor death marker.
+            var recoveryPatient = victims[0];
+            mobState.ChangeMobState(recoveryPatient.Uid, MobState.Alive);
+            Assert.That(mobState.IsAlive(recoveryPatient.Uid), Is.True);
+            Assert.That(thresholds.GetThresholdForState(recoveryPatient.Uid, MobState.Dead),
+                Is.EqualTo(recoveryPatient.OriginalDeathThreshold));
+        });
+
+        await server.WaitRunTicks(1);
+        await server.WaitAssertion(() =>
+        {
+            Assert.That(server.EntMan.HasComponent<OperativeHiddenTriclorComponent>(victims[0].Uid), Is.False);
             server.System<SharedMapSystem>().DeleteMap(map.MapId);
         });
     }
@@ -298,13 +359,37 @@ public sealed class OperativeHiddenTest : GameTest
     }
 
     [Test]
-    public void PatientZombieProfileMatchesFireRuntime()
+    public void TriclorIsAVisibleToxinWithTheHardestGuidebookRecipe()
+    {
+        var reagent = SProtoMan.Index<ReagentPrototype>("OperativeHiddenTriclor");
+        var reaction = SProtoMan.Index<ReactionPrototype>("OperativeHiddenTriclor");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(reagent.Group.Id, Is.EqualTo("Toxins"),
+                "the guidebook's toxin group must enumerate Triclor Hyper");
+            Assert.That(reaction.Products["OperativeHiddenTriclor"], Is.EqualTo(FixedPoint2.New(5)));
+            Assert.That(reaction.Reactants, Has.Count.EqualTo(11));
+            Assert.That(reaction.Reactants["Uranium"].Catalyst, Is.True);
+            Assert.That(reaction.Reactants["Johntonite"].Amount, Is.EqualTo(FixedPoint2.New(10)));
+            Assert.That(reaction.MinimumTemperature, Is.EqualTo(665f));
+            Assert.That(reaction.MaximumTemperature, Is.EqualTo(675f));
+            Assert.That(reaction.Quantized, Is.True);
+            Assert.That(reaction.MixingCategories, Is.Not.Null);
+            Assert.That(reaction.MixingCategories!.Select(category => category.Id),
+                Does.Contain("Centrifuge"));
+        });
+    }
+
+    [Test]
+    public void PatientZombieProfilePreservesHumanBodyAndUsesNeuralLeash()
     {
         var factory = Server.ResolveDependency<IComponentFactory>();
         var profilePrototype = SProtoMan.Index(PatientZombieProfile);
         var bundlePrototype = SProtoMan.Index(PatientComponentBundle);
         Assert.That(profilePrototype.TryComp<ZombieComponent>(out var zombie, factory), Is.True);
         Assert.That(bundlePrototype.TryComp<NativeAntagPatientComponent>(out var patient, factory), Is.True);
+        Assert.That(bundlePrototype.TryComp<OperativeHiddenPuppetVisualsComponent>(out var receiver, factory), Is.True);
         var ordinaryZombie = new ZombieComponent();
 
         Assert.Multiple(() =>
@@ -319,20 +404,109 @@ public sealed class OperativeHiddenTest : GameTest
             Assert.That(zombie.PassiveHealing.DamageDict.ContainsKey("Ballistic"), Is.False);
             Assert.That(zombie.DamageOnBite.DamageDict["Slash"].Float(), Is.EqualTo(13f));
             Assert.That(zombie.DamageOnBite.DamageDict["Piercing"].Float(), Is.EqualTo(7f));
-            Assert.That(patient.ThrowDamage.DamageDict["Slash"].Float(), Is.EqualTo(15f));
-            Assert.That(patient.ParalyzeTime, Is.EqualTo(TimeSpan.FromSeconds(5)));
+            Assert.That(patient.KnockdownTime, Is.EqualTo(TimeSpan.FromSeconds(2)));
             Assert.That(patient.MaxThrow, Is.EqualTo(10f));
             Assert.That(patient.MaxFlairDistance, Is.EqualTo(500f));
+            Assert.That(patient.MaxMasterDistance, Is.EqualTo(10f));
+            Assert.That(patient.LeashPainCooldown, Is.EqualTo(TimeSpan.FromSeconds(3)));
+            Assert.That(receiver.State, Is.EqualTo(OperativeHiddenPuppetVisualState.Linked));
             Assert.That(patient.ActionJumpId?.Id, Is.EqualTo("ZombieJump"));
             Assert.That(patient.ActionFlairId?.Id, Is.EqualTo("ZombieFlair"));
+            Assert.That(patient.ReceptionSound, Is.TypeOf<SoundPathSpecifier>());
+            Assert.That(((SoundPathSpecifier) patient.ReceptionSound).Path.ToString(),
+                Is.EqualTo("/Audio/_Whiskey/OperativeHidden/operative_hidden_patient_reception.ogg"));
             Assert.That(zombie.ForcedLanguage.Id, Is.EqualTo("TauCetiBasic"));
             Assert.That(zombie.NameModifier.Id, Is.EqualTo("operative-hidden-patient-name-prefix"));
+            Assert.That(zombie.UseZombieEmoteSounds, Is.False);
+            Assert.That(zombie.AutoGroan, Is.False);
+            Assert.That(zombie.PlayGreetSound, Is.False);
+            Assert.That(zombie.RemoveHands, Is.False);
+            Assert.That(zombie.AttackAnimation.Id, Is.EqualTo("WeaponArcFist"));
+            Assert.That(zombie.BiteSound, Is.TypeOf<SoundCollectionSpecifier>());
+            Assert.That(((SoundCollectionSpecifier) zombie.BiteSound).Collection?.Id, Is.EqualTo("Punch"));
             Assert.That(SProtoMan.HasIndex<EntityPrototype>(patient.ActionJumpId!.Value), Is.True);
             Assert.That(SProtoMan.HasIndex<EntityPrototype>(patient.ActionFlairId!.Value), Is.True);
             Assert.That(ordinaryZombie.BaseZombieInfectionChance, Is.EqualTo(1f),
                 "the patient profile must not rebalance ordinary Whiskey zombies");
             Assert.That(ordinaryZombie.PassiveHealingCritMultiplier, Is.EqualTo(5f));
             Assert.That(ordinaryZombie.HealingOnBite.DamageDict["Blunt"].Float(), Is.EqualTo(-25f));
+            Assert.That(ordinaryZombie.UseZombieEmoteSounds, Is.True);
+            Assert.That(ordinaryZombie.AutoGroan, Is.True);
+            Assert.That(ordinaryZombie.PlayGreetSound, Is.True);
+            Assert.That(ordinaryZombie.RemoveHands, Is.True);
+        });
+    }
+
+    [Test]
+    public async Task ReceptionPreservesBothMindsAndReturnsOnDamageOrShove()
+    {
+        var pair = Pair;
+        var server = pair.Server;
+        var map = await pair.CreateTestMap();
+
+        await server.WaitAssertion(() =>
+        {
+            var operative = server.EntMan.SpawnEntity(OperativeBody, map.GridCoords);
+            var patient = server.EntMan.SpawnEntity("MobHuman", map.GridCoords);
+            var patientComponent = server.EntMan.EnsureComponent<NativeAntagPatientComponent>(patient);
+            var receiver = server.EntMan.EnsureComponent<OperativeHiddenPuppetVisualsComponent>(patient);
+            patientComponent.Master = operative;
+
+            var mindSystem = server.System<MindSystem>();
+            var operativeMind = mindSystem.CreateMind(null);
+            var patientMind = mindSystem.CreateMind(null);
+            mindSystem.TransferTo(operativeMind, operative, ghostCheckOverride: true, mind: operativeMind.Comp);
+            mindSystem.TransferTo(patientMind, patient, ghostCheckOverride: true, mind: patientMind.Comp);
+
+            var reception = new OperativeHiddenReceptionActionEvent { Target = patient };
+            server.EntMan.EventBus.RaiseLocalEvent(operative, reception);
+
+            var remote = server.EntMan.GetComponent<OperativeHiddenRemoteControlComponent>(operative);
+            Assert.Multiple(() =>
+            {
+                Assert.That(reception.Handled, Is.True);
+                Assert.That(remote.ControlledPatient, Is.EqualTo(patient));
+                Assert.That(server.EntMan.GetComponent<RelayInputMoverComponent>(operative).RelayEntity,
+                    Is.EqualTo(patient));
+                Assert.That(server.EntMan.GetComponent<InteractionRelayComponent>(operative).RelayEntity,
+                    Is.EqualTo(patient));
+                Assert.That(server.EntMan.GetComponent<EyeComponent>(operative).Target, Is.EqualTo(patient));
+                Assert.That(operativeMind.Comp.CurrentEntity, Is.EqualTo(operative));
+                Assert.That(patientMind.Comp.CurrentEntity, Is.EqualTo(patient));
+                Assert.That(server.EntMan.HasComponent<HandsComponent>(patient), Is.True,
+                    "the conscious patient must retain hands for relayed weapons");
+            });
+
+            var smallDamage = new DamageSpecifier();
+            smallDamage.DamageDict.Add("Blunt", FixedPoint2.New(1));
+            var damageEvent = new DamageDealtEvent(smallDamage, patient, true, false, smallDamage);
+            server.EntMan.EventBus.RaiseLocalEvent(operative, ref damageEvent);
+            Assert.Multiple(() =>
+            {
+                Assert.That(remote.ControlledPatient, Is.Null);
+                Assert.That(server.EntMan.HasComponent<RelayInputMoverComponent>(operative), Is.False);
+                Assert.That(server.EntMan.HasComponent<InteractionRelayComponent>(operative), Is.False);
+                Assert.That(server.EntMan.GetComponent<EyeComponent>(operative).Target, Is.Null);
+            });
+
+            reception = new OperativeHiddenReceptionActionEvent { Target = patient };
+            server.EntMan.EventBus.RaiseLocalEvent(operative, reception);
+            var shove = new DisarmedEvent(operative, patient, 0f);
+            server.EntMan.EventBus.RaiseLocalEvent(operative, ref shove);
+            Assert.That(remote.ControlledPatient, Is.Null);
+
+            var burst = new DamageSpecifier();
+            burst.DamageDict.Add("Blunt", FixedPoint2.New(20));
+            var burstEvent = new DamageDealtEvent(burst, patient, true, false, burst);
+            server.EntMan.EventBus.RaiseLocalEvent(operative, ref burstEvent);
+            Assert.Multiple(() =>
+            {
+                Assert.That(patientComponent.SignalLost, Is.True);
+                Assert.That(receiver.State, Is.EqualTo(OperativeHiddenPuppetVisualState.Reconnect));
+                Assert.That(server.EntMan.HasComponent<KnockedDownComponent>(patient), Is.True);
+            });
+
+            server.System<SharedMapSystem>().DeleteMap(map.MapId);
         });
     }
 
@@ -483,6 +657,13 @@ public sealed class OperativeHiddenTest : GameTest
                     "zombification must apply the configured lobotomy replacement accent");
                 Assert.That(server.EntMan.HasComponent<NativeAntagComponent>(victim), Is.False,
                     "patients must not inherit the operative's continuous disclosure radio");
+                Assert.That(server.EntMan.HasComponent<HandsComponent>(victim), Is.True,
+                    "reconditioned people retain hands and can wield weapons");
+                Assert.That(server.EntMan.GetComponent<OperativeHiddenPuppetVisualsComponent>(victim).State,
+                    Is.EqualTo(OperativeHiddenPuppetVisualState.Linked),
+                    "the implanted receiver must visibly show a live link");
+                Assert.That(server.System<Content.Shared.Tag.TagSystem>().HasTag(victim, "CannotSuicide"), Is.True,
+                    "the receiver must prevent the conscious patient from taking their own life");
                 Assert.That(condition.Current, Is.EqualTo(1),
                     "the mind-owned objective mirror must advance only after the atomic conversion commits");
                 Assert.That(condition.DistinctTargets, Does.Contain(victim));

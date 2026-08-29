@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+- type: reagent
+  id: OperativeHiddenTriclor
+  name: reagent-name-operative-hidden-triclor
+  group: Toxins
+  desc: reagent-desc-operative-hidden-triclor
+  physicalDesc: reagent-physical-desc-pungent
+  flavor: terrible
+  color: "#101f10"
+  metabolisms:
+    Bloodstream:
+      metabolismRate: 0.125
+      effects:
+      # The C# sequence owns the spectacle and guaranteed death. This trace
+      # damage deliberately keeps the health analyzer close to an intact body.
+      - !type:HealthChange
+        damage:
+          types:
+            Poison: 0.125
+      - !type:Vomit
+      - !type:Jitter
+
+# The final synthesis chains together the station's most demanding precursors,
+# requires a uranium catalyst, and only completes inside a centrifuge while the
+# batch is held in a narrow high-temperature window.
+- type: reaction
+  id: OperativeHiddenTriclor
+  impact: High
+  quantized: true
+  minTemp: 665
+  maxTemp: 675
+  requiredMixerCategories:
+  - Centrifuge
+  reactants:
+    Johntonite:
+      amount: 10
+    Triclor:
+      amount: 6
+    ProcenylLazide:
+      amount: 5
+    Anacea:
+      amount: 3
+    Pendetide:
+      amount: 3
+    Fentanyl:
+      amount: 2
+    FluorosulfuricAcid:
+      amount: 3
+    Blood:
+      amount: 5
+    Plasma:
+      amount: 3
+    Radium:
+      amount: 3
+    Uranium:
+      amount: 5
+      catalyst: true
+  products:
+    OperativeHiddenTriclor: 5
