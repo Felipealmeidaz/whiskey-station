@@ -20,7 +20,7 @@ namespace Content.Server._Whiskey.Hallucinations;
 /// O canal de som não é tocado aqui: ele é entregue à paracusia, que já resolve
 /// som posicional falso do lado do cliente. Este sistema só liga e desliga.
 /// </summary>
-public sealed class HallucinationSystem : EntitySystem
+public sealed partial class HallucinationSystem : EntitySystem
 {
     [Dependency] private IChatManager _chat = default!;
     [Dependency] private IGameTiming _timing = default!;
