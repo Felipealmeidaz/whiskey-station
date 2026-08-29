@@ -4,11 +4,16 @@
 #
 # Portado de https://github.com/ss14Starlight/space-station-14
 
+# Whiskey: o parent precisa ser o BaseAntagSpawner, que traz o
+# GhostRoleAntagSpawner. O AntagSelectionSystem exige esse componente no
+# spawnerPrototype do antagSpecifier, e sem ele apaga o spawner e registra erro.
+# Quem cria o corpo é o AntagLoadProfileRule da BaseBrighteyeRule, com
+# speciesHardOverride Shadekin, e não um mob fixo.
 - type: entity
   id: SpawnPointGhostBrighteye
   name: ghost role spawn point
   suffix: brighteye
-  parent: MarkerBase
+  parent: BaseAntagSpawner
   components:
   - type: GhostRole
     name: roles-antag-brighteye-name
@@ -18,8 +23,6 @@
     - MindRoleBrighteye
     raffle:
       settings: default
-  - type: GhostRoleMobSpawner
-    prototype: MobBrighteye
 
 # Whiskey: ponto de nascimento usado pelos mapas da escuridão. Diferente do
 # SpawnPointGhostBrighteye acima, que é a vaga de ghost role: este aqui é só o
