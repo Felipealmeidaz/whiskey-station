@@ -131,6 +131,19 @@ public sealed partial class HallucinationSystem : EntitySystem
 
         // O Pick já devolve a frase traduzida, então não cabe Loc.GetString aqui.
         var frase = _random.Pick(lista);
+
+        // Um canal ou o outro, nunca os dois. Mandar nos dois mostrava a mesma
+        // frase duas vezes seguidas na tela, o que estraga o efeito: voz na
+        // cabeça repetida vira mensagem de sistema.
+        if (ent.Comp.Popup)
+        {
+            // O terceiro argumento é o destinatário. A sobrecarga de dois
+            // mostraria para todo mundo por perto, e a estação inteira leria a
+            // voz que existe só na cabeça de uma pessoa.
+            _popup.PopupEntity(frase, ent, ent, PopupType.LargeCaution);
+            return;
+        }
+
         var embrulho = Loc.GetString("chat-manager-server-wrap-message", ("message", frase));
 
         _chat.ChatMessageToOne(
@@ -140,11 +153,5 @@ public sealed partial class HallucinationSystem : EntitySystem
             default,
             false,
             sessao.Channel);
-
-        // O popup vai só para quem alucina, porque o terceiro argumento é o
-        // destinatário. Se fosse PopupEntity de dois argumentos, a estação
-        // inteira leria a voz que existe só na cabeça de uma pessoa.
-        if (ent.Comp.Popup)
-            _popup.PopupEntity(frase, ent, ent, PopupType.MediumCaution);
     }
 }

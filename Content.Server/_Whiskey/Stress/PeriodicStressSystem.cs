@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-using Content.Server.Chat.Managers;
 using Content.Server.Mind;
 using Content.Shared._Whiskey.Stress;
-using Content.Shared.Chat;
 using Content.Shared.Popups;
 using Robust.Shared.Player;
 using Robust.Shared.Random;
@@ -16,7 +14,6 @@ namespace Content.Server._Whiskey.Stress;
 /// </summary>
 public sealed partial class PeriodicStressSystem : EntitySystem
 {
-    [Dependency] private IChatManager _chat = default!;
     [Dependency] private IGameTiming _timing = default!;
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private MindSystem _mind = default!;
@@ -76,11 +73,9 @@ public sealed partial class PeriodicStressSystem : EntitySystem
             return;
 
         var frase = Loc.GetString(chave);
-        var embrulho = Loc.GetString("chat-manager-server-wrap-message", ("message", frase));
 
-        _chat.ChatMessageToOne(ChatChannel.Server, frase, embrulho, default, false, sessao.Channel);
-
-        // Só para quem alucina, ver o comentário no HallucinationSystem.
-        _popup.PopupEntity(frase, ent, ent, PopupType.MediumCaution);
+        // Popup em vez de chat, e só para quem tem o traço. Ver o comentário no
+        // HallucinationSystem sobre a sobrecarga de três argumentos.
+        _popup.PopupEntity(frase, ent, ent, PopupType.LargeCaution);
     }
 }
