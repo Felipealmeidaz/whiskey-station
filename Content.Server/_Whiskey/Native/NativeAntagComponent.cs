@@ -1,4 +1,3 @@
-using Content.Shared.Damage;
 using Content.Shared.NPC.Prototypes;
 using Robust.Shared.Audio;
 using Robust.Shared.Prototypes;
@@ -97,22 +96,36 @@ public sealed partial class NativeAntagPatientComponent : Component
     public EntProtoId? ActionFlairId;
 
     [DataField]
-    public TimeSpan ParalyzeTime = TimeSpan.FromSeconds(5);
+    public TimeSpan KnockdownTime = TimeSpan.FromSeconds(2);
 
     [DataField]
-    public DamageSpecifier ThrowDamage = new()
-    {
-        DamageDict = new()
-        {
-            { "Slash", 15 },
-        },
-    };
+    public SoundSpecifier ReceptionSound = new SoundPathSpecifier(
+        "/Audio/_Whiskey/OperativeHidden/operative_hidden_patient_reception.ogg");
 
     [DataField]
     public float MaxThrow = 10f;
 
     [DataField]
     public float MaxFlairDistance = 500f;
+
+    /// <summary>
+    /// Maximum distance the receiver permits between this conscious patient
+    /// and its Hidden Operative before seizing the patient's motor cortex.
+    /// </summary>
+    [DataField]
+    public float MaxMasterDistance = 10f;
+
+    [DataField]
+    public TimeSpan LeashPainCooldown = TimeSpan.FromSeconds(3);
+
+    [ViewVariables]
+    public TimeSpan NextLeashPain;
+
+    [ViewVariables]
+    public TimeSpan SignalLostUntil;
+
+    [ViewVariables]
+    public bool SignalLost;
 
     [ViewVariables]
     public List<EntityUid> ActionEntities = new();

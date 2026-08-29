@@ -16,3 +16,19 @@
   license: CC-BY-SA-3.0
   copyright: haZZLO
   source: https://github.com/makura-games/project-fire/tree/fb133b13e2b2696a4f4e17a030ed4a7d6f36e082/Resources/Textures/_Sunrise/Clothing/Head/Hats/centcom_officer_black.rsi
+
+- files:
+  - Hallucinations/hand.png
+  - Hallucinations/eye.png
+  license: CC-BY-SA-3.0
+  copyright: Whiskey Station administration (user-provided original artwork)
+  source: https://github.com/Whiskey-Station/Whiskey-Station-14
+
+- files:
+  - puppet_head_controller.rsi/equipped-HEAD.png
+  - puppet_head_controller.rsi/equipped-HEAD-linked.png
+  - puppet_head_controller.rsi/equipped-HEAD-range.png
+  - puppet_head_controller.rsi/equipped-HEAD-reconnect.png
+  license: CC0-1.0
+  copyright: Original sprite created for Whiskey Station, 2026 (user-provided)
+  source: https://github.com/Whiskey-Station/Whiskey-Station-14

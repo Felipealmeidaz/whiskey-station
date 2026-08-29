@@ -39,7 +39,6 @@
     actions:
       1: ActionOperativeHiddenTouch
       2: ActionOperativeHiddenProcedure
-      3: ActionOperativeHiddenSelfHeal
       4: ActionOperativeHiddenPatientHeal
       5: ActionOperativeHiddenPatientKill
     popups:
@@ -83,6 +82,10 @@
       6: Saw
     zombieProfiles:
       1: OperativeHiddenPatientZombieProfile
+  - type: OperativeHiddenRemoteControl
+    signalLossDamageThreshold: 20
+    signalLossDamageWindow: 1
+    signalLossDuration: 2
   - type: Damageable
     damageModifierSet: OperativeHiddenScp049Parity
   - type: Satiation
@@ -137,6 +140,13 @@
   - type: Zombie
     forcedLanguage: TauCetiBasic
     nameModifier: operative-hidden-patient-name-prefix
+    useZombieEmoteSounds: false
+    autoGroan: false
+    playGreetSound: false
+    removeHands: false
+    attackArc: WeaponArcFist
+    biteSound:
+      collection: Punch
     baseZombieInfectionChance: 0.75
     zombieMovementSpeedDebuff: 0.95
     passiveHealingCritMultiplier: 2
@@ -177,6 +187,16 @@
     speechSoundToken: 2
     actionJumpId: ZombieJump
     actionFlairId: ZombieFlair
+    knockdownTime: 2
+    maxMasterDistance: 10
+    leashPainCooldown: 3
+    receptionSound:
+      path: /Audio/_Whiskey/OperativeHidden/operative_hidden_patient_reception.ogg
+      params:
+        volume: -7
+        maxDistance: 5
+        referenceDistance: 0.8
+  - type: OperativeHiddenPuppetVisuals
   - type: NativeScenarioPatientIconViewer
   - type: NonSpreaderZombie
   - type: ZombieAccentOverride

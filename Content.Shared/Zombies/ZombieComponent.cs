@@ -94,6 +94,34 @@ public sealed partial class ZombieComponent : Component
     [DataField("emoteId")]
     public ProtoId<EmoteSoundsPrototype>? EmoteSoundsId = "Zombie";
 
+    // <Trauma> Whiskey - configurable human reconditioning profile.
+    /// <summary>
+    /// Whether this profile replaces the body's ordinary vocal sounds with
+    /// zombie emotes. Scenario profiles can retain the original human voice.
+    /// </summary>
+    [DataField]
+    public bool UseZombieEmoteSounds = true;
+
+    /// <summary>
+    /// Whether this profile periodically groans while alive.
+    /// </summary>
+    [DataField]
+    public bool AutoGroan = true;
+
+    /// <summary>
+    /// Whether zombification plays the global zombie greeting sound.
+    /// </summary>
+    [DataField]
+    public bool PlayGreetSound = true;
+
+    /// <summary>
+    /// Whether zombification destroys the body's hands. Specialized
+    /// reconditioned humans retain hands so they can use ordinary equipment.
+    /// </summary>
+    [DataField]
+    public bool RemoveHands = true;
+    // </Trauma>
+
     [DataField(customTypeSerializer:typeof(TimeOffsetSerializer))]
     public TimeSpan NextTick;
 
