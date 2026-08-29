@@ -110,16 +110,16 @@ public sealed partial class NativeAntagPatientComponent : Component
 
     /// <summary>
     /// Maximum distance the receiver permits between this conscious patient
-    /// and its Hidden Operative before seizing the patient's motor cortex.
+    /// and its Hidden Operative before reducing the patient's movement speed.
     /// </summary>
     [DataField]
     public float MaxMasterDistance = 10f;
 
     [DataField]
-    public TimeSpan LeashPainCooldown = TimeSpan.FromSeconds(3);
+    public float OutOfRangeSpeedModifier = 0.5f;
 
     [ViewVariables]
-    public TimeSpan NextLeashPain;
+    public bool OutOfRange;
 
     [ViewVariables]
     public TimeSpan SignalLostUntil;

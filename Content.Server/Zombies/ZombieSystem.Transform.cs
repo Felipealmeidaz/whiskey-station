@@ -341,10 +341,20 @@ public sealed partial class ZombieSystem
             MakeGhostRole(target);
         }
 
-        if (zombiecomp.RemoveHands && TryComp<HandsComponent>(target, out var handsComp)) // Trauma - Whiskey human reconditioning profile.
+        if (TryComp<HandsComponent>(target, out var handsComp)) // Trauma - Whiskey human reconditioning profile.
         {
-            _hands.RemoveHands(target);
-            RemComp(target, handsComp);
+            if (zombiecomp.RemoveHands)
+            {
+                _hands.RemoveHands(target);
+                RemComp(target, handsComp);
+            }
+            else
+            {
+                if (handsComp.ActiveHandId is null)
+                    _hands.TrySetActiveHand((target, handsComp), handsComp.SortedHands.FirstOrDefault());
+
+                Dirty(target, handsComp);
+            }
         }
 
         // Sloth: What the fuck?

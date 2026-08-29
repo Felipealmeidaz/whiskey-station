@@ -25,3 +25,9 @@ public enum OperativeHiddenPuppetVisualState : byte
     Range,
     Reconnect,
 }
+
+[Serializable, NetSerializable]
+public enum OperativeHiddenPuppetVisualLayers : byte
+{
+    HeadController,
+}

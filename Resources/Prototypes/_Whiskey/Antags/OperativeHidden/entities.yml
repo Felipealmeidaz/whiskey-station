@@ -189,7 +189,7 @@
     actionFlairId: ZombieFlair
     knockdownTime: 2
     maxMasterDistance: 10
-    leashPainCooldown: 3
+    outOfRangeSpeedModifier: 0.5
     receptionSound:
       path: /Audio/_Whiskey/OperativeHidden/operative_hidden_patient_reception.ogg
       params:
