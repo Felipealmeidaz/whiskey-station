@@ -42,12 +42,12 @@ using Content.Shared.StatusEffect;
 using Content.Shared.Stunnable;
 using Content.Shared.Store;
 using Content.Shared.Store.Components;
+using Content.Shared.Tag;
 using Content.Shared.Speech.Components;
 using Content.Shared.Speech.EntitySystems;
 using Content.Shared.FixedPoint;
 using Content.Shared.Whiskey.Native;
 using Content.Shared.Whiskey.OperativeHidden;
-using Content.Shared.Tag;
 using Content.Shared.Traits.Assorted;
 using Content.Shared.Zombies;
 using Content.Trauma.Common.Language;
@@ -88,8 +88,8 @@ public sealed class OperativeHiddenTest : GameTest
     private static readonly ProtoId<AntagSpecifierPrototype> OperativeSpecifier = "OperativeHidden";
     private static readonly ProtoId<AntagSpecifierPrototype> LoneOpsSpecifier = "LoneOp";
     private static readonly ProtoId<NpcFactionPrototype> SyndicateFaction = "Syndicate";
-    private static readonly ProtoId<ReagentPrototype> TriclorReagent = "OperativeHiddenTriclor";
-    private static readonly ProtoId<ReactionPrototype> TriclorReaction = "OperativeHiddenTriclor";
+    private static readonly ProtoId<ReagentPrototype> OperativeTriclorReagent = "OperativeHiddenTriclor";
+    private static readonly ProtoId<ReactionPrototype> OperativeTriclorReaction = "OperativeHiddenTriclor";
     private static readonly ProtoId<TagPrototype> CannotSuicideTag = "CannotSuicide";
 
     public override PoolSettings PoolSettings => new() { Connected = true, Dirty = true };
@@ -365,8 +365,8 @@ public sealed class OperativeHiddenTest : GameTest
     [Test]
     public void TriclorIsAVisibleToxinWithTheHardestGuidebookRecipe()
     {
-        var reagent = SProtoMan.Index(TriclorReagent);
-        var reaction = SProtoMan.Index(TriclorReaction);
+        var reagent = SProtoMan.Index(OperativeTriclorReagent);
+        var reaction = SProtoMan.Index(OperativeTriclorReaction);
 
         Assert.Multiple(() =>
         {
@@ -666,7 +666,7 @@ public sealed class OperativeHiddenTest : GameTest
                 Assert.That(server.EntMan.GetComponent<OperativeHiddenPuppetVisualsComponent>(victim).State,
                     Is.EqualTo(OperativeHiddenPuppetVisualState.Linked),
                     "the implanted receiver must visibly show a live link");
-                Assert.That(server.System<Content.Shared.Tag.TagSystem>().HasTag(victim, CannotSuicideTag), Is.True,
+                Assert.That(server.System<TagSystem>().HasTag(victim, CannotSuicideTag), Is.True,
                     "the receiver must prevent the conscious patient from taking their own life");
                 Assert.That(condition.Current, Is.EqualTo(1),
                     "the mind-owned objective mirror must advance only after the atomic conversion commits");
