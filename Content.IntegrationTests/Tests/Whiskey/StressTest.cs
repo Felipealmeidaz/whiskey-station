@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Zequinza <felipe828218@gmail.com>
+// SPDX-FileCopyrightText: 2026 Whiskey Station Contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 #nullable enable
@@ -20,6 +22,16 @@ namespace Content.IntegrationTests.Tests.Whiskey;
 [TestFixture]
 public sealed class StressTest : GameTest
 {
+    // ProtoId e nao string: o analisador RA0033 proibe literal no Index, e ele
+    // so reprova em Release, entao a build em Debug passa e esconde o erro.
+    private static readonly ProtoId<Content.Shared.Traits.TraitPrototype> TracoDepressao = "Depression";
+
+    private static readonly ProtoId<LocalizedDatasetPrototype>[] Datasets =
+    {
+        "WhiskeyDepressaoPensamentos",
+        "WhiskeyAlucinacaoFrases",
+    };
+
     /// <summary>
     /// Os três efeitos de faixa precisam existir **como entidade**.
     ///
@@ -70,7 +82,7 @@ public sealed class StressTest : GameTest
         var server = Server;
         var protos = server.ProtoMan;
 
-        var traco = protos.Index<Content.Shared.Traits.TraitPrototype>("Depression");
+        var traco = protos.Index(TracoDepressao);
         var nome = server.EntMan.ComponentFactory.GetComponentName(typeof(PeriodicStressComponent));
 
         Assert.That(traco.Components.TryGetComponent(nome, out var bruto), Is.True,
@@ -109,9 +121,9 @@ public sealed class StressTest : GameTest
 
         await server.WaitPost(() =>
         {
-            foreach (var id in new[] { "WhiskeyDepressaoPensamentos", "WhiskeyAlucinacaoFrases" })
+            foreach (var id in Datasets)
             {
-                foreach (var chave in protos.Index<LocalizedDatasetPrototype>(id).Values)
+                foreach (var chave in protos.Index(id).Values)
                 {
                     if (!loc.TryGetString(chave, out _))
                         faltando.Add($"{id} promete {chave}");

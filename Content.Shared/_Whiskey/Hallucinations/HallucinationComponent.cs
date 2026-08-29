@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Zequinza <felipe828218@gmail.com>
+// SPDX-FileCopyrightText: 2026 Whiskey Station Contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using Content.Shared.Dataset;
@@ -16,7 +18,8 @@ namespace Content.Shared._Whiskey.Hallucinations;
 ///
 /// 1. Som, delegado ao <c>ParacusiaComponent</c>, que já toca som posicional
 ///    falso no cliente. Não vale reescrever isso aqui.
-/// 2. Fala, que manda mensagem de chat só para quem tem o componente.
+/// 2. Fala, que aparece só para quem tem o componente, como popup ou como
+///    linha de chat.
 ///
 /// Cada canal tem o próprio relógio, porque a cadência natural dos dois é
 /// diferente: som ambiente cansa menos que voz falando com você.
@@ -56,13 +59,13 @@ public sealed partial class HallucinationComponent : Component
     public ProtoId<LocalizedDatasetPrototype>? Messages;
 
     /// <summary>
-    /// Se a frase também aparece como popup em cima do próprio personagem,
-    /// além de ir para o chat.
+    /// Escolhe o canal da frase: popup em cima do personagem quando ligado,
+    /// linha de chat quando desligado. **Um ou outro, nunca os dois.**
     ///
-    /// Ligado por padrão, por sugestão de quem testou: no chat a frase cai no
+    /// Ligado por padrão, por sugestão de quem testou. No chat a frase cai no
     /// meio dos comunicados da estação e se perde, ou pior, é confundida com
-    /// mensagem de verdade. Popup em cima de você é mais perto de "está na sua
-    /// cabeça". O chat continua recebendo, porque é o que permite reler.
+    /// mensagem de verdade. E mandar nos dois mostrava a mesma frase duas
+    /// vezes seguidas, o que faz voz na cabeça virar mensagem de sistema.
     /// </summary>
     [DataField]
     public bool Popup = true;

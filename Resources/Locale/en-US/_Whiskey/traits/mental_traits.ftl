@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Zequinza <felipe828218@gmail.com>
+# SPDX-FileCopyrightText: 2026 Whiskey Station Contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
 trait-schizophrenia-name = Schizophrenia
 trait-schizophrenia-desc = You hear sounds and voices that are not there. Nobody else does.
 
