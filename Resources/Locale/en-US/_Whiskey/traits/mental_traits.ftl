@@ -36,3 +36,9 @@ depression-thought-13 = Tomorrow will be the same. So will the day after.
 depression-thought-14 = You have been here before. It passed. And it came back.
 
 trait-depression-aviso = The weight drops without warning and lifts on its own. This is roleplay: it is not an excuse to ruin anyone's round, and it is not a real cry for help.
+depression-thought-15 = You are fucking useless.
+depression-thought-16 = You are dead weight, and everyone here knows it.
+depression-thought-17 = You are not going to save anyone, asshole. You never did.
+depression-thought-18 = It would be easier for everyone if you were not here.
+depression-thought-19 = You have thought about what it would be like to just not wake up.
+depression-thought-20 = Look at you. What a shit life.

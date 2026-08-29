@@ -5,7 +5,10 @@ using Content.Server._Whiskey.Stress;
 using Content.IntegrationTests.Fixtures;
 using Content.Shared._Whiskey.Stress;
 using Content.Shared.StatusEffectNew;
+using System.Collections.Generic;
+using Content.Shared.Dataset;
 using Robust.Shared.GameObjects;
+using Robust.Shared.Localization;
 using Robust.Shared.Prototypes;
 
 namespace Content.IntegrationTests.Tests.Whiskey;
@@ -77,11 +80,47 @@ public sealed class StressTest : GameTest
 
         Assert.That(periodico.Messages, Is.Not.Null, "sem conjunto de frases o episódio é mudo");
 
-        Assert.That(protos.HasIndex<Content.Shared.Dataset.LocalizedDatasetPrototype>(periodico.Messages!.Value),
+        Assert.That(protos.HasIndex<LocalizedDatasetPrototype>(periodico.Messages!.Value),
             Is.True,
             $"o dataset {periodico.Messages} não existe");
 
         await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Toda frase que o dataset promete tem que existir na tradução.
+    ///
+    /// O dataset é prefixo mais contagem, então subir a contagem sem escrever
+    /// as frases faz o jogo mostrar o nome cru da chave na tela, tipo
+    /// "depression-thought-17". Eu fiz exatamente isso hoje com um sed que
+    /// casou nos dois datasets de uma vez.
+    /// </summary>
+    [Test]
+    public async Task TodaFrasePrometidaPeloDatasetExiste()
+    {
+        var server = Server;
+        var protos = server.ProtoMan;
+
+        // O Loc estático não funciona da thread do teste: dá "IoC has no
+        // context on this thread". Tem que ser o gerenciador do servidor, e
+        // dentro de um WaitPost, que roda na thread dele.
+        var loc = server.ResolveDependency<ILocalizationManager>();
+        var faltando = new List<string>();
+
+        await server.WaitPost(() =>
+        {
+            foreach (var id in new[] { "WhiskeyDepressaoPensamentos", "WhiskeyAlucinacaoFrases" })
+            {
+                foreach (var chave in protos.Index<LocalizedDatasetPrototype>(id).Values)
+                {
+                    if (!loc.TryGetString(chave, out _))
+                        faltando.Add($"{id} promete {chave}");
+                }
+            }
+        });
+
+        Assert.That(faltando, Is.Empty,
+            "dataset prometendo chave que não existe na tradução: " + string.Join(", ", faltando));
     }
 
     [Test]

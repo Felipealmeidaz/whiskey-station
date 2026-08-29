@@ -24,7 +24,7 @@
   id: WhiskeyDepressaoPensamentos
   values:
     prefix: depression-thought-
-    count: 14
+    count: 20
 
 - type: localizedDataset
   id: WhiskeyAlucinacaoFrases
