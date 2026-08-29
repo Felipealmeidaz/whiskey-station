@@ -1,4 +1,4 @@
-﻿job-name-d-class = Classe D
+﻿job-name-d-class = Prisioneiro
 
 job-name-spacepol = Oficial da Polícia Espacial
 
