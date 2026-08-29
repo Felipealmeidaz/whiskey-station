@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# As quatro vozes já existem no repositório, vieram do Goobstation e têm
+# atribuição em Audio/_Goobstation/Hallucinations/attributions.yml. A coleção
+# própria existe para não pendurar um traço na bloodCrawl, que é do demônio.
+- type: soundCollection
+  id: WhiskeyAlucinacaoVozes
+  files:
+  - /Audio/_Goobstation/Hallucinations/behind_you1.ogg
+  - /Audio/_Goobstation/Hallucinations/i_see_you1.ogg
+  - /Audio/_Goobstation/Hallucinations/im_here1.ogg
+  - /Audio/_Goobstation/Hallucinations/turn_around1.ogg
+
+- type: localizedDataset
+  id: WhiskeyAlucinacaoFrases
+  values:
+    prefix: hallucination-voice-
+    count: 14
+
+- type: trait
+  id: Schizophrenia
+  name: trait-schizophrenia-name
+  description: trait-schizophrenia-desc
+  category: Disabilities
+  components:
+    - type: Hallucination
+      sounds:
+        collection: WhiskeyAlucinacaoVozes
+      minTimeBetweenSounds: 40
+      maxTimeBetweenSounds: 180
+      maxSoundDistance: 6
+      messages: WhiskeyAlucinacaoFrases
+      minTimeBetweenMessages: 120
+      maxTimeBetweenMessages: 420
