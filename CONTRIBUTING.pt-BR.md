@@ -22,6 +22,8 @@ Quando pedirem mudanças, faça, marque os comentários como resolvidos e **test
 
 PR grande é mais difícil de revisar e mais difícil de reverter. Quando der para dividir, divida.
 
+Se a tua entrega tem um sistema novo e o conteúdo que usa ele, mande em duas PRs: uma para o sistema, outra para o conteúdo. O sistema entra primeiro. Assim, se o conteúdo precisar voltar atrás por balanceamento, o sistema fica. Vale igual quando o sistema vem portado de outro fork.
+
 ## Onde colocar arquivo
 
 Conteúdo novo da Whiskey vai em pasta própria, `_Whiskey`. Conteúdo de outra origem vai na pasta daquela origem.

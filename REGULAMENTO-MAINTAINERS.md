@@ -70,6 +70,12 @@ Não se deve realizar merge apenas para esvaziar a fila de PRs.
 
 Alterações grandes devem ser preferencialmente divididas quando isso melhorar a revisão ou permitir reversões mais seguras.
 
+Quando uma entrega tem um sistema novo e o conteúdo que usa esse sistema, os dois devem ir em Pull Requests separados: um para o sistema, outro para o conteúdo. O sistema entra primeiro, e o conteúdo vem depois, apoiado nele.
+
+Isso existe por três motivos práticos. Sistema e conteúdo falham de formas diferentes, e separados podem ser revertidos separadamente: se o conteúdo estiver mal balanceado, ele volta atrás sem levar o sistema junto. Sistema costuma ser porte ou código novo, e conteúdo costuma ser YAML e tradução, que pedem olhos e critérios diferentes na revisão. E PR de mil linhas não é revisada de verdade, é aprovada no olho.
+
+A mesma divisão vale quando o sistema vem portado de outro fork: o porte fica numa PR, com a checagem de licença e as diferenças de engine, e o que a Whiskey escreve em cima fica em outra.
+
 Merge direto é exceção e deve ser reservado para situações justificadas, especialmente emergências.
 
 ## 7. Emergências
