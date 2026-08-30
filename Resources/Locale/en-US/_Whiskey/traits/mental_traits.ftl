@@ -44,3 +44,7 @@ depression-thought-17 = You are not going to save anyone, asshole. You never did
 depression-thought-18 = It would be easier for everyone if you were not here.
 depression-thought-19 = You have thought about what it would be like to just not wake up.
 depression-thought-20 = Look at you. What a shit life.
+
+# O MoodEffectPrototype monta a descrição como mood-effect-<ID>. Sem esta
+# chave o alerta de humor mostra o nome cru na tela e o servidor loga erro.
+mood-effect-WhiskeyDepressaoEpisodio = The weight has come down again.
