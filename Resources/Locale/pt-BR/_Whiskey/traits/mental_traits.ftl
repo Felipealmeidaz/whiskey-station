@@ -18,4 +18,3 @@ hallucination-voice-11 = Estão falando de você no rádio.
 hallucination-voice-12 = Aquela porta estava trancada agora há pouco.
 hallucination-voice-13 = Tem alguma coisa errada com o ar.
 hallucination-voice-14 = Você está sozinho. Sempre esteve.
-
